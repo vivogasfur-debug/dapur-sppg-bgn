@@ -1,0 +1,65 @@
+// Prisma Schema - Dashboard Manajemen Proyek
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("anggota") // admin, manajer, anggota
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignedTasks Task[]    @relation("TaskAssignee")
+  activities    Activity[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("aktif") // aktif, selesai, ditunda, dibatalkan
+  budget      Float
+  spent       Float    @default(0)
+ startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tasks Task[]
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("menunggu") // menunggu, berjalan, selesai, dibatalkan
+  priority    String   @default("sedang") // rendah, sedang, tinggi, kritis
+  projectId   String
+  assigneeId  String?
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project  Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee User?    @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  action    String   // dibuat, diperbarui, diselesaikan, dll
+  details   String?
+  category  String   @default("umum") // proyek, tugas, sistem
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
