@@ -1,0 +1,42 @@
+▲ Next.js 16.1.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://21.0.9.249:3000
+- Environments: .env
+
+✓ Starting...
+✓ Ready in 659ms
+ GET / 200 in 1388ms (compile: 1276ms, render: 113ms)
+ GET / 200 in 26ms (compile: 2ms, render: 24ms)
+ GET / 200 in 38ms (compile: 2ms, render: 36ms)
+ GET / 200 in 51ms (compile: 8ms, render: 43ms)
+ GET / 200 in 32ms (compile: 3ms, render: 30ms)
+ GET / 200 in 36ms (compile: 3ms, render: 33ms)
+prisma:query SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`name`, `main`.`User`.`password`, `main`.`User`.`role`, `main`.`User`.`avatar`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+ POST /api/login 200 in 646ms (compile: 487ms, render: 159ms)
+ GET / 200 in 68ms (compile: 4ms, render: 64ms)
+ GET / 200 in 34ms (compile: 3ms, render: 31ms)
+ GET / 200 in 36ms (compile: 5ms, render: 31ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`name`, `main`.`User`.`password`, `main`.`User`.`role`, `main`.`User`.`avatar`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+ POST /api/login 200 in 84ms (compile: 4ms, render: 80ms)
+ GET / 200 in 35ms (compile: 2ms, render: 33ms)
+ GET / 200 in 27ms (compile: 3ms, render: 24ms)
+ GET / 200 in 29ms (compile: 2ms, render: 26ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`name`, `main`.`User`.`password`, `main`.`User`.`role`, `main`.`User`.`avatar`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+ POST /api/login 200 in 82ms (compile: 2ms, render: 80ms)
+ GET / 200 in 31ms (compile: 3ms, render: 27ms)
+ GET / 200 in 25ms (compile: 1752µs, render: 23ms)
+ GET / 200 in 29ms (compile: 2ms, render: 27ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`name`, `main`.`User`.`password`, `main`.`User`.`role`, `main`.`User`.`avatar`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+ POST /api/login 200 in 81ms (compile: 3ms, render: 79ms)
+ GET / 200 in 152ms (compile: 94ms, render: 58ms)
+ GET / 200 in 20ms (compile: 3ms, render: 17ms)
+✓ Compiled in 0ms
+✓ Compiled in 236ms
+ GET / 200 in 126ms (compile: 46ms, render: 80ms)
+ GET / 200 in 35ms (compile: 3ms, render: 32ms)
+prisma:query SELECT 1
+prisma:query SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`name`, `main`.`User`.`password`, `main`.`User`.`role`, `main`.`User`.`avatar`, `main`.`User`.`createdAt`, `main`.`User`.`updatedAt` FROM `main`.`User` WHERE (`main`.`User`.`email` = ? AND 1=1) LIMIT ? OFFSET ?
+ POST /api/login 200 in 90ms (compile: 2ms, render: 88ms)

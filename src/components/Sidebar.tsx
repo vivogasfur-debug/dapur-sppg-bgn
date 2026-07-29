@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { 
   LayoutDashboard, 
   Boxes, 
@@ -51,15 +52,19 @@ export default function Sidebar({ activeMenu, setActiveMenu }: SidebarProps) {
       </button>
 
       <div>
-        {/* Header Logo */}
+        {/* Header Logo BGN */}
         <div className={`mb-8 p-2.5 bg-slate-800/60 rounded-xl border border-slate-700/50 flex items-center ${
           isOpen ? 'justify-between space-x-2' : 'justify-center'
         }`}>
-          {isOpen && (
-            <div className="w-7 h-7 shrink-0 flex items-center justify-center bg-emerald-500/20 rounded-lg">
-              <UtensilsCrossed className="w-4 h-4 text-emerald-400" />
-            </div>
-          )}
+          <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg overflow-hidden">
+            <Image 
+              src="/bgn.png" 
+              alt="Logo BGN" 
+              width={40} 
+              height={40}
+              className="object-contain"
+            />
+          </div>
 
           {isOpen && (
             <div className="text-center overflow-hidden transition-all duration-200">
@@ -71,10 +76,6 @@ export default function Sidebar({ activeMenu, setActiveMenu }: SidebarProps) {
               </p>
             </div>
           )}
-
-          <div className="w-7 h-7 shrink-0 flex items-center justify-center bg-blue-500/20 rounded-lg">
-            <span className="text-[10px] font-bold text-blue-400">BGN</span>
-          </div>
         </div>
 
         {/* Menu Navigasi */}

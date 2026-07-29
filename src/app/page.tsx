@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Lock, Mail, Loader2, UtensilsCrossed } from 'lucide-react'
+import { Lock, Mail, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 import MainApp from '@/components/MainApp'
 
 export default function Home() {
@@ -41,8 +42,14 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900 text-white mb-4">
-            <UtensilsCrossed className="w-8 h-8" />
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-md border border-slate-200 mb-4 overflow-hidden">
+            <Image 
+              src="/bgn.png" 
+              alt="Logo BGN" 
+              width={72} 
+              height={72}
+              className="object-contain"
+            />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-800">Dapur SPPG</h1>
           <p className="text-slate-400 mt-1 text-sm">Sistem Operasional BGN</p>
