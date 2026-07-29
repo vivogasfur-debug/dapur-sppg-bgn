@@ -46,3 +46,6 @@ prisma:query SELECT `main`.`User`.`id`, `main`.`User`.`email`, `main`.`User`.`na
  GET / 200 in 28ms (compile: 2ms, render: 26ms)
  GET / 200 in 23ms (compile: 1495µs, render: 21ms)
  GET / 200 in 33ms (compile: 3ms, render: 30ms)
+ GET / 200 in 60ms (compile: 3ms, render: 58ms)
+ GET / 200 in 29ms (compile: 1920µs, render: 27ms)
+ GET / 200 in 30ms (compile: 2ms, render: 27ms)
