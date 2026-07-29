@@ -17,7 +17,9 @@ import {
   Heart,
   Milk,
   AlertCircle,
-  Calendar
+  Calendar,
+  Upload,
+  Loader2
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -219,6 +221,39 @@ export default function MainApp() {
     }
   };
 
+  const [importing, setImporting] = useState(false);
+  const csvInputRef = { current: null as HTMLInputElement | null };
+
+  const getImportType = () => {
+    if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') return 'students';
+    if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') return 'teachers';
+    return 'beneficiaries-3b';
+  };
+
+  const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', getImportType());
+      const res = await fetch('/api/import-csv', { method: 'POST', body: formData });
+      const result = await res.json();
+      if (res.ok && result.inserted > 0) {
+        toast.success(`${result.inserted} data berhasil diimport dari CSV`);
+        fetchData();
+      } else {
+        toast.error(result.error || 'Gagal import CSV');
+      }
+    } catch {
+      toast.error('Gagal membaca file CSV');
+    } finally {
+      setImporting(false);
+      if (csvInputRef.current) csvInputRef.current.value = '';
+    }
+  };
+
   const filteredStudents = students.filter(s =>
     s.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -299,6 +334,18 @@ export default function MainApp() {
                 <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0">
                   <Plus className="w-3.5 h-3.5" /><span>Tambah Data</span>
                 </button>
+                <input
+                  ref={csvInputRef}
+                  type="file" accept=".csv" onChange={handleImportCSV} className="hidden"
+                />
+                <button
+                  onClick={() => csvInputRef.current?.click()}
+                  disabled={importing}
+                  className="flex items-center space-x-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50"
+                >
+                  {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  <span>Import CSV</span>
+                </button>
               </div>
             </div>
 
@@ -354,7 +401,7 @@ export default function MainApp() {
                           <td className="py-2.5 px-3 border-r border-slate-100">
                             {s.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold flex items-center space-x-1 w-fit"><AlertCircle className="w-3 h-3" /><span>{s.allergyType}</span></span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}
                           </td>
-                          <td className="py-2.5 px-3 text-center"><button onClick={() => setStudents(students.filter(x => x.id !== s.id))} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                          <td className="py-2.5 px-3 text-center"><button onClick={() => handleDelete('students', s.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
                         </tr>
                       )) : (<tr><td colSpan={17} className="py-6 text-center text-slate-400 italic">Data siswa tidak ditemukan...</td></tr>)}
                     </tbody>
@@ -398,7 +445,7 @@ export default function MainApp() {
                           <td className="py-2.5 px-3 border-r border-slate-100">
                             {t.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold flex items-center space-x-1 w-fit"><AlertCircle className="w-3 h-3" /><span>{t.allergyType}</span></span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}
                           </td>
-                          <td className="py-2.5 px-3 text-center"><button onClick={() => setTeachers(teachers.filter(x => x.id !== t.id))} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                          <td className="py-2.5 px-3 text-center"><button onClick={() => handleDelete('teachers', t.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
                         </tr>
                       )) : (<tr><td colSpan={13} className="py-6 text-center text-slate-400 italic">Data guru / tendik tidak ditemukan...</td></tr>)}
                     </tbody>
@@ -432,7 +479,7 @@ export default function MainApp() {
                             {b.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold">{b.allergyType}</span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}
                           </td>
                           <td className="py-2.5 px-3"><span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-semibold">{b.status}</span></td>
-                          <td className="py-2.5 px-3 text-center"><button onClick={() => setBeneficiaries3b(beneficiaries3b.filter(x => x.id !== b.id))} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                          <td className="py-2.5 px-3 text-center"><button onClick={() => handleDelete('beneficiaries-3b', b.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
                         </tr>
                       ))}
                     </tbody>
