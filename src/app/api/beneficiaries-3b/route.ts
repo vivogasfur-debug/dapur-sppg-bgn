@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
+
+export async function GET() {
+  try {
+    const { data, error } = await supabase
+      .from('beneficiaries_3b')
+      .select('*')
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+    return NextResponse.json(data)
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal memuat data'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { data, error } = await supabase.from('beneficiaries_3b').insert([{
+      sppg_code: body.sppgCode || 'SPPG-SMB-01',
+      posyandu_name: body.posyanduName,
+      sub_category: body.subCategory,
+      nik: body.nik || null,
+      full_name: body.fullName,
+      gender: body.gender,
+      birth_date: body.birthDate || null,
+      detail_info: body.detailInfo || null,
+      pic_name: body.picName,
+      phone: body.phone,
+      has_allergy: body.hasAllergy || false,
+      allergy_type: body.hasAllergy ? body.allergyType : null,
+      status: 'Aktif',
+    }]).select()
+
+    if (error) throw error
+    return NextResponse.json(data[0], { status: 201 })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal menyimpan data'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
+
+    const { error } = await supabase.from('beneficiaries_3b').delete().eq('id', id)
+    if (error) throw error
+    return NextResponse.json({ success: true })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal menghapus data'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import Sidebar from './Sidebar';
 import { 
   Utensils, 
@@ -94,45 +95,55 @@ export default function MainApp() {
   const [activeMenu, setActiveMenu] = useState('Penerima Manfaat');
   const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [pmSubTab, setPmSubTab] = useState<'Siswa' | 'Guru' | 'Bumil' | 'Busui' | 'Balita'>('Siswa');
+  const [loading, setLoading] = useState(true);
 
-  const [students, setStudents] = useState<StudentBeneficiary[]>([
-    {
-      id: 'STU-001', no: 1, nama: 'Ahmad Rizky Pratama', schoolName: 'SDN 01 Sambas',
-      nipd: '21221001', jk: 'L', nisn: '0012345678', tempatLahir: 'Sambas',
-      tanggalLahir: '2015-05-12', nik: '6101021205150001', agama: 'Islam',
-      alamat: 'Jl. Merdeka No. 12, Sambas', kelas: '4B', beratBadan: 28,
-      tinggiBadan: 132, namaAyah: 'Hendra', namaIbu: 'Siti Sarah',
-      hasAllergy: true, allergyType: 'Udang & Telur',
-    },
-    {
-      id: 'STU-002', no: 2, nama: 'Siti Aisyah Nurhaliza', schoolName: 'SDN 02 Pemangkat',
-      nipd: '21221002', jk: 'P', nisn: '0012345679', tempatLahir: 'Sambas',
-      tanggalLahir: '2016-02-10', nik: '6101025002160002', agama: 'Islam',
-      alamat: 'Desa Pemangkat Kota', kelas: '3A', beratBadan: 24,
-      tinggiBadan: 125, namaAyah: 'Rahmat', namaIbu: 'Mariana',
-      hasAllergy: false, allergyType: '-',
-    },
-  ]);
+  const [students, setStudents] = useState<StudentBeneficiary[]>([]);
+  const [teachers, setTeachers] = useState<TeacherBeneficiary[]>([]);
+  const [beneficiaries3b, setBeneficiaries3b] = useState<Beneficiary3B[]>([]);
 
-  const [teachers, setTeachers] = useState<TeacherBeneficiary[]>([
-    {
-      id: 'TCH-001', fullName: 'Bpk. Supardi, S.Pd', schoolName: 'SDN 01 Sambas',
-      nuptk: '1234567890123456', nip: '198801012015011001', jk: 'L',
-      tempatLahir: 'Sambas', tanggalLahir: '1988-01-01', nik: '610102198801010001',
-      jenisTendik: 'Guru', alamat: 'Jl. Pemuda No. 05, Sambas',
-      hasAllergy: false, allergyType: '-', status: 'Aktif',
-    },
-  ]);
+  // Load data dari Supabase saat pertama kali mount
+  const fetchData = useCallback(async () => {
+    try {
+      const [sRes, tRes, bRes] = await Promise.all([
+        fetch('/api/students').then(r => r.json()),
+        fetch('/api/teachers').then(r => r.json()),
+        fetch('/api/beneficiaries-3b').then(r => r.json()),
+      ]);
 
-  const [beneficiaries3b, setBeneficiaries3b] = useState<Beneficiary3B[]>([
-    {
-      id: '3B-001', sppgCode: 'SPPG-SMB-01', posyanduName: 'Posyandu Melati 01',
-      subCategory: 'Bumil', nik: '6101025508920003', fullName: 'Ibu Rahmawati',
-      gender: 'P', birthDate: '1992-08-15', detailInfo: 'Usia Hamil: 24 Minggu',
-      picName: 'Ibu Dewi (Kader)', phone: '085211223344',
-      hasAllergy: true, allergyType: 'Ikan Laut', status: 'Aktif',
-    },
-  ]);
+      if (Array.isArray(sRes)) setStudents(sRes.map((s: any) => ({
+        id: s.id, no: 0, nama: s.nama, schoolName: s.school_name,
+        nipd: s.nipd || '-', jk: s.jk, nisn: s.nisn || '-',
+        tempatLahir: s.tempat_lahir || '-', tanggalLahir: s.tanggal_lahir || '-',
+        nik: s.nik || '-', agama: s.agama || 'Islam', alamat: s.alamat || '-',
+        kelas: s.kelas || '-', beratBadan: s.berat_badan || 0, tinggiBadan: s.tinggi_badan || 0,
+        namaAyah: s.nama_ayah || '-', namaIbu: s.nama_ibu || '-',
+        hasAllergy: s.has_allergy, allergyType: s.allergy_type || '-',
+      })));
+
+      if (Array.isArray(tRes)) setTeachers(tRes.map((t: any) => ({
+        id: t.id, fullName: t.full_name, schoolName: t.school_name,
+        nuptk: t.nuptk || '-', nip: t.nip || '-', jk: t.jk,
+        tempatLahir: t.tempat_lahir || '-', tanggalLahir: t.tanggal_lahir || '-',
+        nik: t.nik || '-', jenisTendik: t.jenis_tendik || 'Guru',
+        alamat: t.alamat || '-', hasAllergy: t.has_allergy,
+        allergyType: t.allergy_type || '-', status: t.status || 'Aktif',
+      })));
+
+      if (Array.isArray(bRes)) setBeneficiaries3b(bRes.map((b: any) => ({
+        id: b.id, sppgCode: b.sppg_code || '-', posyanduName: b.posyandu_name,
+        subCategory: b.sub_category, nik: b.nik || '-', fullName: b.full_name,
+        gender: b.gender, birthDate: b.birth_date || '-', detailInfo: b.detail_info || '-',
+        picName: b.pic_name, phone: b.phone, hasAllergy: b.has_allergy,
+        allergyType: b.allergy_type || '-', status: b.status || 'Aktif',
+      })));
+    } catch {
+      toast.error('Gagal memuat data dari database');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -162,41 +173,50 @@ export default function MainApp() {
     setPmSubTab(tab === 'Sekolah' ? 'Siswa' : 'Bumil');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
-      setStudents([...students, {
-        id: `STU-${Date.now().toString().slice(-4)}`, no: students.length + 1,
-        schoolName: formSiswa.schoolName, nama: formSiswa.nama, nipd: formSiswa.nipd || '-',
-        jk: formSiswa.jk, nisn: formSiswa.nisn || '-',
-        tempatLahir: formSiswa.tempatLahir || '-', tanggalLahir: formSiswa.tanggalLahir || '-',
-        nik: formSiswa.nik || '-', agama: formSiswa.agama, alamat: formSiswa.alamat || '-',
-        kelas: formSiswa.kelas, beratBadan: Number(formSiswa.beratBadan) || 0,
-        tinggiBadan: Number(formSiswa.tinggiBadan) || 0, namaAyah: formSiswa.namaAyah || '-',
-        namaIbu: formSiswa.namaIbu || '-', hasAllergy: formSiswa.hasAllergy,
-        allergyType: formSiswa.hasAllergy ? formSiswa.allergyType : '-',
- }]);
-    } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
-      setTeachers([...teachers, {
-        id: `TCH-${Date.now().toString().slice(-4)}`, schoolName: formGuru.schoolName,
-        fullName: formGuru.fullName, nuptk: formGuru.nuptk || '-', nip: formGuru.nip || '-',
-        jk: formGuru.jk, tempatLahir: formGuru.tempatLahir || '-',
-        tanggalLahir: formGuru.tanggalLahir || '-', nik: formGuru.nik || '-',
-        jenisTendik: formGuru.jenisTendik, alamat: formGuru.alamat || '-',
-        hasAllergy: formGuru.hasAllergy, allergyType: formGuru.hasAllergy ? formGuru.allergyType : '-',
-        status: 'Aktif',
-      }]);
-    } else {
-      setBeneficiaries3b([...beneficiaries3b, {
-        id: `3B-${Date.now().toString().slice(-4)}`, sppgCode: 'SPPG-SMB-01',
-        posyanduName: form3B.posyanduName, subCategory: pmSubTab as 'Bumil' | 'Busui' | 'Balita',
-        nik: form3B.nik || '-', fullName: form3B.fullName, gender: form3B.gender,
-        birthDate: form3B.birthDate || '-', detailInfo: form3B.detailInfo || '-',
-        picName: form3B.picName, phone: form3B.phone, hasAllergy: form3B.hasAllergy,
-        allergyType: form3B.hasAllergy ? form3B.allergyType : '-', status: 'Aktif',
-      }]);
+    try {
+      if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
+        const res = await fetch('/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formSiswa),
+        });
+        if (!res.ok) throw new Error();
+        toast.success('Data siswa tersimpan ke database');
+      } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
+        const res = await fetch('/api/teachers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formGuru),
+        });
+        if (!res.ok) throw new Error();
+        toast.success('Data guru tersimpan ke database');
+      } else {
+        const res = await fetch('/api/beneficiaries-3b', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...form3B, subCategory: pmSubTab }),
+        });
+        if (!res.ok) throw new Error();
+        toast.success('Data 3B tersimpan ke database');
+      }
+      setIsModalOpen(false);
+      fetchData(); // refresh data dari Supabase
+    } catch {
+      toast.error('Gagal menyimpan data');
     }
-    setIsModalOpen(false);
+  };
+
+  const handleDelete = async (type: 'students' | 'teachers' | 'beneficiaries-3b', id: string) => {
+    try {
+      const res = await fetch(`/api/${type}?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      toast.success('Data dihapus');
+      fetchData();
+    } catch {
+      toast.error('Gagal menghapus data');
+    }
   };
 
   const filteredStudents = students.filter(s =>
