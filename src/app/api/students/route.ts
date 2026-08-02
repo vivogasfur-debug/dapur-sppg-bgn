@@ -47,6 +47,41 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
+
+    const body = await req.json()
+    const { error } = await supabase.from('students').update({
+      nama: body.nama,
+      school_name: body.schoolName,
+      nipd: body.nipd || null,
+      jk: body.jk,
+      nisn: body.nisn || null,
+      tempat_lahir: body.tempatLahir || null,
+      tanggal_lahir: body.tanggalLahir || null,
+      nik: body.nik || null,
+      agama: body.agama || 'Islam',
+      alamat: body.alamat || null,
+      kelas: body.kelas,
+      berat_badan: body.beratBadan || 0,
+      tinggi_badan: body.tinggiBadan || 0,
+      nama_ayah: body.namaAyah || null,
+      nama_ibu: body.namaIbu || null,
+      has_allergy: body.hasAllergy || false,
+      allergy_type: body.hasAllergy ? body.allergyType : null,
+    }).eq('id', id)
+
+    if (error) throw error
+    return NextResponse.json({ success: true })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal memperbarui data'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)

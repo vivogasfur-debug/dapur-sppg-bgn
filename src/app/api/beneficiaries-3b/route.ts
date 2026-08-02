@@ -43,6 +43,35 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PUT(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
+
+    const body = await req.json()
+    const { error } = await supabase.from('beneficiaries_3b').update({
+      posyandu_name: body.posyanduName,
+      sub_category: body.subCategory,
+      nik: body.nik || null,
+      full_name: body.fullName,
+      gender: body.gender,
+      birth_date: body.birthDate || null,
+      detail_info: body.detailInfo || null,
+      pic_name: body.picName,
+      phone: body.phone,
+      has_allergy: body.hasAllergy || false,
+      allergy_type: body.hasAllergy ? body.allergyType : null,
+    }).eq('id', id)
+
+    if (error) throw error
+    return NextResponse.json({ success: true })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal memperbarui data'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)

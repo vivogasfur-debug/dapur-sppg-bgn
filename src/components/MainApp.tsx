@@ -19,7 +19,8 @@ import {
   AlertCircle,
   Calendar,
   Upload,
-  Loader2
+  Loader2,
+  Pencil
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -148,6 +149,7 @@ export default function MainApp() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const [formSiswa, setFormSiswa] = useState({
@@ -179,35 +181,81 @@ export default function MainApp() {
     e.preventDefault();
     try {
       if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
-        const res = await fetch('/api/students', {
-          method: 'POST',
+        const url = editingId ? `/api/students?id=${editingId}` : '/api/students';
+        const res = await fetch(url, {
+          method: editingId ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formSiswa),
         });
         if (!res.ok) throw new Error();
-        toast.success('Data siswa tersimpan ke database');
+        toast.success(editingId ? 'Data siswa diperbarui' : 'Data siswa tersimpan');
       } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
-        const res = await fetch('/api/teachers', {
-          method: 'POST',
+        const url = editingId ? `/api/teachers?id=${editingId}` : '/api/teachers';
+        const res = await fetch(url, {
+          method: editingId ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formGuru),
         });
         if (!res.ok) throw new Error();
-        toast.success('Data guru tersimpan ke database');
+        toast.success(editingId ? 'Data guru diperbarui' : 'Data guru tersimpan');
       } else {
-        const res = await fetch('/api/beneficiaries-3b', {
-          method: 'POST',
+        const url = editingId ? `/api/beneficiaries-3b?id=${editingId}` : '/api/beneficiaries-3b';
+        const res = await fetch(url, {
+          method: editingId ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...form3B, subCategory: pmSubTab }),
         });
         if (!res.ok) throw new Error();
-        toast.success('Data 3B tersimpan ke database');
+        toast.success(editingId ? 'Data 3B diperbarui' : 'Data 3B tersimpan');
       }
       setIsModalOpen(false);
-      fetchData(); // refresh data dari Supabase
+      setEditingId(null);
+      fetchData();
     } catch {
       toast.error('Gagal menyimpan data');
     }
+  };
+
+  const handleEdit = (type: string, item: any) => {
+    setEditingId(item.id);
+    if (type === 'students') {
+      setPmSubTab('Siswa'); setPmMainTab('Sekolah');
+      setFormSiswa({
+        schoolName: item.schoolName, nama: item.nama, nipd: item.nipd || '',
+        jk: item.jk, nisn: item.nisn || '', tempatLahir: item.tempatLahir || '',
+        tanggalLahir: item.tanggalLahir || '', nik: item.nik || '', agama: item.agama || 'Islam',
+        alamat: item.alamat || '', kelas: item.kelas || '',
+        beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''),
+        namaAyah: item.namaAyah || '', namaIbu: item.namaIbu || '',
+        hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '',
+      });
+    } else if (type === 'teachers') {
+      setPmSubTab('Guru'); setPmMainTab('Sekolah');
+      setFormGuru({
+        schoolName: item.schoolName, fullName: item.fullName, nuptk: item.nuptk || '',
+        nip: item.nip || '', jk: item.jk, tempatLahir: item.tempatLahir || '',
+        tanggalLahir: item.tanggalLahir || '', nik: item.nik || '',
+        jenisTendik: item.jenisTendik || 'Guru', alamat: item.alamat || '',
+        hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '',
+      });
+    } else {
+      setPmSubTab(item.subCategory); setPmMainTab('3B');
+      setForm3B({
+        posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '',
+        gender: item.gender, birthDate: item.birthDate || '', detailInfo: item.detailInfo || '',
+        picName: item.picName, phone: item.phone,
+        hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '',
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const openAddModal = () => {
+    setEditingId(null);
+    setFormSiswa({ schoolName: 'SDN 01 Sambas', nama: '', nipd: '', jk: 'L', nisn: '', tempatLahir: '', tanggalLahir: '', nik: '', agama: 'Islam', alamat: '', kelas: '', beratBadan: '', tinggiBadan: '', namaAyah: '', namaIbu: '', hasAllergy: false, allergyType: '' });
+    setFormGuru({ schoolName: 'SDN 01 Sambas', fullName: '', nuptk: '', nip: '', jk: 'L', tempatLahir: '', tanggalLahir: '', nik: '', jenisTendik: 'Guru', alamat: '', hasAllergy: false, allergyType: '' });
+    setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', detailInfo: '', picName: '', phone: '', hasAllergy: false, allergyType: '' });
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (type: 'students' | 'teachers' | 'beneficiaries-3b', id: string) => {
@@ -331,7 +379,7 @@ export default function MainApp() {
                   <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
                   <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={`Cari nama / sekolah ${pmSubTab}...`} className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all" />
                 </div>
-                <button onClick={() => setIsModalOpen(true)} className="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0">
+                <button onClick={openAddModal} className="flex items-center space-x-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0">
                   <Plus className="w-3.5 h-3.5" /><span>Tambah Data</span>
                 </button>
                 <input
@@ -401,7 +449,7 @@ export default function MainApp() {
                           <td className="py-2.5 px-3 border-r border-slate-100">
                             {s.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold flex items-center space-x-1 w-fit"><AlertCircle className="w-3 h-3" /><span>{s.allergyType}</span></span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}
                           </td>
-                          <td className="py-2.5 px-3 text-center"><button onClick={() => handleDelete('students', s.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                          <td className="py-2.5 px-3 text-center"><div className="flex items-center justify-center space-x-1"><button onClick={() => handleEdit('students', s)} className="text-blue-400 hover:text-blue-600 p-1" title="Edit"><Pencil className="w-3.5 h-3.5" /></button><button onClick={() => handleDelete('students', s.id)} className="text-slate-400 hover:text-rose-500 p-1" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                         </tr>
                       )) : (<tr><td colSpan={17} className="py-6 text-center text-slate-400 italic">Data siswa tidak ditemukan...</td></tr>)}
                     </tbody>
@@ -445,7 +493,7 @@ export default function MainApp() {
                           <td className="py-2.5 px-3 border-r border-slate-100">
                             {t.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold flex items-center space-x-1 w-fit"><AlertCircle className="w-3 h-3" /><span>{t.allergyType}</span></span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}
                           </td>
-                          <td className="py-2.5 px-3 text-center"><button onClick={() => handleDelete('teachers', t.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                          <td className="py-2.5 px-3 text-center"><div className="flex items-center justify-center space-x-1"><button onClick={() => handleEdit('teachers', t)} className="text-blue-400 hover:text-blue-600 p-1" title="Edit"><Pencil className="w-3.5 h-3.5" /></button><button onClick={() => handleDelete('teachers', t.id)} className="text-slate-400 hover:text-rose-500 p-1" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                         </tr>
                       )) : (<tr><td colSpan={13} className="py-6 text-center text-slate-400 italic">Data guru / tendik tidak ditemukan...</td></tr>)}
                     </tbody>
@@ -481,7 +529,7 @@ export default function MainApp() {
                             {b.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold">{b.allergyType}</span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}
                           </td>
                           <td className="py-2.5 px-3"><span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-semibold">{b.status}</span></td>
-                          <td className="py-2.5 px-3 text-center"><button onClick={() => handleDelete('beneficiaries-3b', b.id)} className="text-slate-400 hover:text-rose-500 p-1"><Trash2 className="w-3.5 h-3.5" /></button></td>
+                          <td className="py-2.5 px-3 text-center"><div className="flex items-center justify-center space-x-1"><button onClick={() => handleEdit('beneficiaries-3b', b)} className="text-blue-400 hover:text-blue-600 p-1" title="Edit"><Pencil className="w-3.5 h-3.5" /></button><button onClick={() => handleDelete('beneficiaries-3b', b.id)} className="text-slate-400 hover:text-rose-500 p-1" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                         </tr>
                       ))}
                     </tbody>
@@ -516,8 +564,8 @@ export default function MainApp() {
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-xl overflow-hidden max-h-[90vh] flex flex-col">
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <div>
-                <h3 className="text-base font-bold text-slate-800">Tambah Data {pmSubTab}</h3>
-                <p className="text-xs text-slate-500">Form Isian Format Tabel Excel BGN</p>
+                <h3 className="text-base font-bold text-slate-800">{editingId ? 'Edit Data' : 'Tambah Data'} {pmSubTab}</h3>
+                <p className="text-xs text-slate-500">{editingId ? 'Ubah data yang sudah ada' : 'Form Isian Format Tabel Excel BGN'}</p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg">
                 <X className="w-5 h-5" />
