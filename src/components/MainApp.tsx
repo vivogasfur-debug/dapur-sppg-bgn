@@ -199,11 +199,12 @@ export default function MainApp() {
       const today = new Date().toISOString().slice(0, 10);
       const keyword = searchTerm.trim().replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
       const workbook = XLSX.utils.book_new();
+      const safeStr = (v: any) => (v === null || v === undefined || v === '') ? '-' : String(v);
 
       if (scope === 'all' || pmSubTab === 'Siswa') {
         const data = scope === 'all' ? students : filteredStudents;
         const headers = ['No', 'Nama Siswa', 'Sekolah', 'NIPD', 'JK', 'NISN', 'Tempat Lahir', 'Tanggal Lahir', 'NIK', 'Agama', 'Alamat', 'Kelas', 'BB (kg)', 'TB (cm)', 'Nama Ayah', 'Nama Ibu', 'Alergi'];
-        const rows = data.map((s, i) => [i+1, s.nama, s.schoolName, s.nipd, s.jk, s.nisn, s.tempatLahir, s.tanggalLahir, s.nik, s.agama, s.alamat, s.kelas, s.beratBadan, s.tinggiBadan, s.namaAyah, s.namaIbu, s.hasAllergy ? s.allergyType : 'Tidak']);
+        const rows = data.map((s, i) => [safeStr(i+1), safeStr(s.nama), safeStr(s.schoolName), safeStr(s.nipd), safeStr(s.jk), safeStr(s.nisn), safeStr(s.tempatLahir), safeStr(s.tanggalLahir), safeStr(s.nik), safeStr(s.agama), safeStr(s.alamat), safeStr(s.kelas), safeStr(s.beratBadan), safeStr(s.tinggiBadan), safeStr(s.namaAyah), safeStr(s.namaIbu), s.hasAllergy ? safeStr(s.allergyType) : 'Tidak']);
         const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
         ws['!cols'] = headers.map((_, i) => ({ wch: i === 0 ? 5 : i === 1 ? 25 : i === 2 ? 25 : i === 8 ? 20 : i === 12 ? 8 : 15 }));
         XLSX.utils.book_append_sheet(workbook, ws, 'Siswa');
@@ -212,7 +213,7 @@ export default function MainApp() {
       if (scope === 'all' || pmSubTab === 'Guru') {
         const data = scope === 'all' ? teachers : filteredTeachers;
         const headers = ['No', 'Nama Guru/Tendik', 'Sekolah', 'NUPTK', 'NIP', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'NIK', 'Jenis Tendik', 'Alamat', 'Status', 'Alergi'];
-        const rows = data.map((t, i) => [i+1, t.fullName, t.schoolName, t.nuptk, t.nip, t.jk, t.tempatLahir, t.tanggalLahir, t.nik, t.jenisTendik, t.alamat, t.status || 'Aktif', t.hasAllergy ? t.allergyType : 'Tidak']);
+        const rows = data.map((t, i) => [safeStr(i+1), safeStr(t.fullName), safeStr(t.schoolName), safeStr(t.nuptk), safeStr(t.nip), safeStr(t.jk), safeStr(t.tempatLahir), safeStr(t.tanggalLahir), safeStr(t.nik), safeStr(t.jenisTendik), safeStr(t.alamat), safeStr(t.status || 'Aktif'), t.hasAllergy ? safeStr(t.allergyType) : 'Tidak']);
         const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
         ws['!cols'] = headers.map((_, i) => ({ wch: i === 0 ? 5 : i === 1 ? 25 : i === 2 ? 25 : 15 }));
         XLSX.utils.book_append_sheet(workbook, ws, 'Guru-Tendik');
@@ -221,7 +222,7 @@ export default function MainApp() {
       if (scope === 'all' || ['Bumil', 'Busui', 'Balita'].includes(pmSubTab)) {
         const data = scope === 'all' ? beneficiaries3b : filtered3b;
         const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tanggal Lahir', 'Posyandu', 'Detail Info Gizi', 'PJ Kader', 'No. Telp Kader', 'Status', 'Alergi'];
-        const rows = data.map((b, i) => [i+1, b.subCategory, b.fullName, b.nik, b.gender, b.birthDate, b.posyanduName, b.detailInfo, b.picName, b.phone, b.status, b.hasAllergy ? b.allergyType : 'Tidak']);
+        const rows = data.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.birthDate), safeStr(b.posyanduName), safeStr(b.detailInfo), safeStr(b.picName), safeStr(b.phone), safeStr(b.status), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
         const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
         ws['!cols'] = headers.map((_, i) => ({ wch: i === 0 ? 5 : i === 2 ? 25 : 15 }));
         XLSX.utils.book_append_sheet(workbook, ws, scope === 'all' ? 'Penerima 3B' : pmSubTab);
@@ -239,7 +240,18 @@ export default function MainApp() {
           : `data-${label}-${today}.xlsx`;
       }
 
-      XLSX.writeFile(workbook, filename);
+      // Write explicitly as xlsx binary and download
+      const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+
       const sheetCount = workbook.SheetNames.length;
       toast.success(`File ${filename} berhasil diexport (${sheetCount} sheet)`);
     } catch (err) {
