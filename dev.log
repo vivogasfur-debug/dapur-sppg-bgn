@@ -65,3 +65,7 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
 ✓ Compiled in 270ms
   Reload env: .env.local
  GET / 200 in 734ms (compile: 709ms, render: 26ms)
+ GET / 200 in 629ms (compile: 245ms, render: 384ms)
+ GET / 200 in 206ms (compile: 180ms, render: 26ms)
+ GET / 200 in 203ms (compile: 178ms, render: 25ms)
+ GET / 200 in 313ms (compile: 284ms, render: 29ms)
