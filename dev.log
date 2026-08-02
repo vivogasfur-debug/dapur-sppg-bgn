@@ -1,6 +1,6 @@
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.2.31:3000
+- Network:       http://21.0.7.69:3000
 - Environments: .env
 
 ✓ Starting...
@@ -9,149 +9,12 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-✓ Ready in 712ms
+✓ Ready in 680ms
 ○ Compiling / ...
- GET / 200 in 2.0s (compile: 1990ms, render: 46ms)
- GET / 200 in 200ms (compile: 175ms, render: 26ms)
- GET / 200 in 273ms (compile: 245ms, render: 28ms)
- GET / 200 in 212ms (compile: 184ms, render: 28ms)
-⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
-Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
-✓ Compiled in 3.5s
-⚠ Fast Refresh had to perform a full reload when [turbopack]/browser/dev/hmr-client/hmr-client.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
- GET / 200 in 735ms (compile: 287ms, render: 448ms)
- GET / 200 in 1308ms (compile: 475ms, render: 833ms)
- GET / 200 in 249ms (compile: 217ms, render: 32ms)
-✓ Compiled in 166ms
- GET / 200 in 234ms (compile: 212ms, render: 22ms)
- GET / 200 in 203ms (compile: 189ms, render: 14ms)
- GET / 200 in 184ms (compile: 172ms, render: 12ms)
- GET / 200 in 184ms (compile: 171ms, render: 13ms)
- GET / 200 in 177ms (compile: 163ms, render: 14ms)
- GET / 200 in 181ms (compile: 169ms, render: 12ms)
- GET / 200 in 183ms (compile: 171ms, render: 12ms)
- GET / 200 in 180ms (compile: 167ms, render: 13ms)
- GET / 200 in 187ms (compile: 174ms, render: 13ms)
- GET / 200 in 177ms (compile: 164ms, render: 13ms)
- GET / 200 in 179ms (compile: 166ms, render: 13ms)
- GET / 200 in 178ms (compile: 165ms, render: 13ms)
- GET / 200 in 178ms (compile: 166ms, render: 12ms)
- GET / 200 in 184ms (compile: 171ms, render: 12ms)
- GET / 200 in 181ms (compile: 169ms, render: 12ms)
- GET / 200 in 187ms (compile: 167ms, render: 20ms)
- GET / 200 in 184ms (compile: 171ms, render: 13ms)
- GET / 200 in 180ms (compile: 169ms, render: 11ms)
- GET / 200 in 175ms (compile: 162ms, render: 12ms)
- GET / 200 in 177ms (compile: 166ms, render: 11ms)
- GET / 200 in 174ms (compile: 162ms, render: 12ms)
- GET / 200 in 208ms (compile: 188ms, render: 20ms)
- GET / 200 in 239ms (compile: 219ms, render: 19ms)
- GET / 200 in 230ms (compile: 210ms, render: 19ms)
- GET / 200 in 233ms (compile: 213ms, render: 20ms)
- GET / 200 in 328ms (compile: 304ms, render: 24ms)
- GET / 200 in 249ms (compile: 238ms, render: 11ms)
- GET / 200 in 311ms (compile: 272ms, render: 39ms)
- GET / 200 in 259ms (compile: 245ms, render: 14ms)
- GET / 200 in 176ms (compile: 163ms, render: 13ms)
- GET / 200 in 185ms (compile: 174ms, render: 11ms)
- GET / 200 in 175ms (compile: 163ms, render: 12ms)
- GET / 200 in 256ms (compile: 238ms, render: 18ms)
- GET / 200 in 238ms (compile: 216ms, render: 23ms)
- GET / 200 in 238ms (compile: 226ms, render: 12ms)
- GET / 200 in 196ms (compile: 184ms, render: 12ms)
- GET / 200 in 175ms (compile: 163ms, render: 12ms)
- GET / 200 in 181ms (compile: 170ms, render: 11ms)
-✓ Compiled in 520ms
-✓ Compiled in 270ms
-  Reload env: .env.local
- GET / 200 in 734ms (compile: 709ms, render: 26ms)
- GET / 200 in 629ms (compile: 245ms, render: 384ms)
- GET / 200 in 206ms (compile: 180ms, render: 26ms)
- GET / 200 in 203ms (compile: 178ms, render: 25ms)
- GET / 200 in 313ms (compile: 284ms, render: 29ms)
- GET / 200 in 478ms (compile: 254ms, render: 224ms)
- GET / 200 in 199ms (compile: 173ms, render: 26ms)
- GET / 200 in 300ms (compile: 273ms, render: 27ms)
- GET / 200 in 208ms (compile: 181ms, render: 27ms)
- GET / 200 in 293ms (compile: 265ms, render: 28ms)
- GET / 200 in 200ms (compile: 175ms, render: 25ms)
- GET / 200 in 310ms (compile: 281ms, render: 29ms)
- GET / 200 in 207ms (compile: 181ms, render: 26ms)
- POST /api/login 200 in 1599ms (compile: 881ms, render: 718ms)
- GET /api/teachers 200 in 358ms (compile: 235ms, render: 123ms)
- GET /api/students 200 in 499ms (compile: 327ms, render: 173ms)
- GET /api/beneficiaries-3b 200 in 479ms (compile: 271ms, render: 208ms)
- POST /api/seed-stock 200 in 293ms (compile: 112ms, render: 181ms)
- GET /api/stock-transactions 200 in 280ms (compile: 152ms, render: 129ms)
- GET /api/stock-items 200 in 313ms (compile: 134ms, render: 179ms)
- GET / 200 in 336ms (compile: 304ms, render: 33ms)
- GET / 200 in 491ms (compile: 281ms, render: 210ms)
- GET / 200 in 184ms (compile: 160ms, render: 24ms)
- GET / 200 in 290ms (compile: 239ms, render: 51ms)
- GET / 200 in 251ms (compile: 199ms, render: 52ms)
- GET / 200 in 215ms (compile: 190ms, render: 24ms)
- GET / 200 in 212ms (compile: 182ms, render: 29ms)
- GET / 200 in 203ms (compile: 180ms, render: 23ms)
-✓ Compiled in 193ms
-✓ Compiled in 1ms
-Persisting failed: Unable to write SST file 00000178.sst
-
-Caused by:
-    No such file or directory (os error 2)
-⨯ Error: ENOENT: no such file or directory, open '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
-    at ignore-listed frames {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
-}
-
-thread 'tokio-runtime-worker' (4324) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
-Failed to restore task data (corrupted database or bug): Meta for <DiskFileSystem as FileSystem>::raw_read_dir (TaskId 165826))
-
-Caused by:
-    0: Looking up data for TaskId 165826 from database failed
-    1: Unable to open static sorted file referenced from 00000171.meta
-    2: Unable to open static sorted file 00000168.sst
-    3: No such file or directory (os error 2)
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
-
-thread 'tokio-runtime-worker' (4320) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
-Failed to restore task data (corrupted database or bug): Meta for EcmascriptInputTransforms::extend (TaskId 165913))
-
-Caused by:
-    0: Looking up data for TaskId 165913 from database failed
-    1: Unable to open static sorted file referenced from 00000165.meta
-    2: Unable to open static sorted file 00000161.sst
-    3: No such file or directory (os error 2)
-⨯ Error: ENOENT: no such file or directory, open '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
-    at ignore-listed frames {
-  errno: -2,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
-}
-○ Compiling /_error ...
-Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
-Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
-
-thread 'tokio-runtime-worker' (4324) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
-Failed to restore task data (corrupted database or bug): Data for get_directory_tree (TaskId 165915))
-
-Caused by:
-    0: Looking up data for TaskId 165915 from database failed
-    1: Unable to open static sorted file referenced from 00000175.meta
-    2: Unable to open static sorted file 00000174.sst
-    3: No such file or directory (os error 2)
-Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
-Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
-
-thread 'tokio-runtime-worker' (4320) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
-Failed to restore task data (corrupted database or bug): Meta for <EcmascriptModuleAsset as ResolveOrigin>::origin_path (TaskId 165965))
-
-Caused by:
-    0: Looking up data for TaskId 165965 from database failed
-    1: Unable to open static sorted file referenced from 00000147.meta
-    2: Unable to open static sorted file 00000141.sst
-    3: No such file or directory (os error 2)
-Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+ GET / 200 in 2.4s (compile: 1671ms, render: 742ms)
+ GET / 200 in 7.3s (compile: 6.8s, render: 454ms)
+ GET / 200 in 225ms (compile: 199ms, render: 27ms)
+ GET / 200 in 220ms (compile: 191ms, render: 29ms)
+ GET / 200 in 228ms (compile: 189ms, render: 39ms)
+ GET / 200 in 214ms (compile: 191ms, render: 23ms)
+ GET / 200 in 203ms (compile: 181ms, render: 21ms)
