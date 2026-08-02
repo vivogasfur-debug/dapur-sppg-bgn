@@ -98,3 +98,60 @@ Persisting failed: Unable to write SST file 00000178.sst
 
 Caused by:
     No such file or directory (os error 2)
+⨯ Error: ENOENT: no such file or directory, open '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
+    at ignore-listed frames {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
+}
+
+thread 'tokio-runtime-worker' (4324) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
+Failed to restore task data (corrupted database or bug): Meta for <DiskFileSystem as FileSystem>::raw_read_dir (TaskId 165826))
+
+Caused by:
+    0: Looking up data for TaskId 165826 from database failed
+    1: Unable to open static sorted file referenced from 00000171.meta
+    2: Unable to open static sorted file 00000168.sst
+    3: No such file or directory (os error 2)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tokio-runtime-worker' (4320) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
+Failed to restore task data (corrupted database or bug): Meta for EcmascriptInputTransforms::extend (TaskId 165913))
+
+Caused by:
+    0: Looking up data for TaskId 165913 from database failed
+    1: Unable to open static sorted file referenced from 00000165.meta
+    2: Unable to open static sorted file 00000161.sst
+    3: No such file or directory (os error 2)
+⨯ Error: ENOENT: no such file or directory, open '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
+    at ignore-listed frames {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: '/home/z/my-project/.next/dev/server/app/page/build-manifest.json'
+}
+○ Compiling /_error ...
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread 'tokio-runtime-worker' (4324) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
+Failed to restore task data (corrupted database or bug): Data for get_directory_tree (TaskId 165915))
+
+Caused by:
+    0: Looking up data for TaskId 165915 from database failed
+    1: Unable to open static sorted file referenced from 00000175.meta
+    2: Unable to open static sorted file 00000174.sst
+    3: No such file or directory (os error 2)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)
+
+thread 'tokio-runtime-worker' (4320) panicked at /build/turbopack/crates/turbo-tasks-backend/src/backend/operation/mod.rs:156:17:
+Failed to restore task data (corrupted database or bug): Meta for <EcmascriptModuleAsset as ResolveOrigin>::origin_path (TaskId 165965))
+
+Caused by:
+    0: Looking up data for TaskId 165965 from database failed
+    1: Unable to open static sorted file referenced from 00000147.meta
+    2: Unable to open static sorted file 00000141.sst
+    3: No such file or directory (os error 2)
+Persisting failed: Another write batch or compaction is already active (Only a single write operations is allowed at a time)

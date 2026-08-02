@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import Sidebar from './Sidebar';
 import StockModule from './StockModule';
+import AhliGiziModule from './AhliGiziModule';
 import Image from 'next/image';
 import * as ExcelJS from 'exceljs';
 import { 
@@ -754,6 +755,9 @@ export default function MainApp() {
 
       case 'Gudang & Stok':
         return <StockModule />;
+
+      case 'Ahli Gizi & Menu':
+        return <AhliGiziModule />;
 
       default:
         return <div className="p-4 bg-white rounded-xl border border-slate-200">Modul {activeMenu} — segera hadir</div>;
