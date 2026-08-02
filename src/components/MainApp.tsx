@@ -457,21 +457,23 @@ export default function MainApp() {
                   <table className="min-w-max w-full text-left border-collapse text-xs whitespace-nowrap">
                     <thead className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500 uppercase tracking-wider text-[11px]">
                       <tr>
-                        <th className="py-2.5 px-3">Nama Penerima / NIK</th>
-                        <th className="py-2.5 px-3">Titik Posyandu</th>
-                        <th className="py-2.5 px-3">Umur</th>
-                        <th className="py-2.5 px-3">Detail Info Gizi</th>
-                        <th className="py-2.5 px-3">PJ Kader / WA</th>
-                        <th className="py-2.5 px-3">Alergi Makanan</th>
-                        <th className="py-2.5 px-3">Status</th>
+                        <th className="py-2.5 px-3 text-center border-r border-slate-200">No</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Nama Penerima / NIK</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Titik Posyandu</th>
+                        <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-blue-50/50 text-blue-800">Umur</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Detail Info Gizi</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">PJ Kader / WA</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Alergi Makanan</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Status</th>
                         <th className="py-2.5 px-3 text-center">Aksi</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
-                      {beneficiaries3b.filter(b => b.subCategory === pmSubTab).map((b) => (
+                      {beneficiaries3b.filter(b => b.subCategory === pmSubTab).map((b, idx) => (
                         <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-2.5 px-3"><p className="font-semibold text-slate-800">{b.fullName}</p><p className="text-slate-400 text-[11px]">NIK: {b.nik}</p></td>
-                          <td className="py-2.5 px-3 font-medium text-slate-800">{b.posyanduName}</td>
+                          <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx + 1}</td>
+                          <td className="py-2.5 px-3 border-r border-slate-100"><p className="font-semibold text-slate-800">{b.fullName}</p><p className="text-slate-400 text-[11px]">NIK: {b.nik}</p></td>
+                          <td className="py-2.5 px-3 border-r border-slate-100 font-medium text-slate-800">{b.posyanduName}</td>
                           <td className="py-2.5 px-3 font-bold text-blue-700">{calculateAge(b.birthDate)}</td>
                           <td className="py-2.5 px-3"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.detailInfo}</span></td>
                           <td className="py-2.5 px-3"><p className="font-semibold text-slate-800">{b.picName}</p><p className="text-slate-500">{b.phone}</p></td>
