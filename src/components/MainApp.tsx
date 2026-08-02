@@ -196,25 +196,53 @@ export default function MainApp() {
   const handleExportExcel = async (scope: 'current' | 'all') => {
     setExporting(true);
     try {
-      let url = '/api/export-excel?type=';
-      if (scope === 'all') {
-        url += 'all';
-      } else if (pmSubTab === 'Siswa') {
-        url += 'students';
-      } else if (pmSubTab === 'Guru') {
-        url += 'teachers';
-      } else {
-        url += `beneficiaries-3b&sub=${pmSubTab}`;
+      const XLSX = await import('xlsx');
+      const wb = XLSX.utils.book_new();
+      const today = new Date().toISOString().slice(0, 10);
+
+      if (scope === 'all' || pmSubTab === 'Siswa') {
+        const rows = (scope === 'all' ? students : filteredStudents).map((s, i) => ({
+          'No': i + 1, 'Nama Siswa': s.nama, 'Sekolah': s.schoolName,
+          'NIPD': s.nipd, 'JK': s.jk, 'NISN': s.nisn,
+          'Tempat Lahir': s.tempatLahir, 'Tanggal Lahir': s.tanggalLahir,
+          'NIK': s.nik, 'Agama': s.agama, 'Alamat': s.alamat,
+          'Kelas': s.kelas, 'BB (kg)': s.beratBadan, 'TB (cm)': s.tinggiBadan,
+          'Nama Ayah': s.namaAyah, 'Nama Ibu': s.namaIbu,
+          'Alergi': s.hasAllergy ? s.allergyType : 'Tidak',
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 5 }, { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 30 }, { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 15 }];
+        XLSX.utils.book_append_sheet(wb, ws, 'Siswa');
       }
-      const res = await fetch(url);
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `export-${pmSubTab}.xlsx`;
-      document.body.appendChild(a); a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(a.href);
+
+      if (scope === 'all' || pmSubTab === 'Guru') {
+        const rows = (scope === 'all' ? teachers : filteredTeachers).map((t, i) => ({
+          'No': i + 1, 'Nama Guru/Tendik': t.fullName, 'Sekolah': t.schoolName,
+          'NUPTK': t.nuptk, 'NIP': t.nip, 'JK': t.jk,
+          'Tempat Lahir': t.tempatLahir, 'Tanggal Lahir': t.tanggalLahir,
+          'NIK': t.nik, 'Jenis Tendik': t.jenisTendik, 'Alamat': t.alamat,
+          'Status': t.status || 'Aktif', 'Alergi': t.hasAllergy ? t.allergyType : 'Tidak',
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 22 }, { wch: 5 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 18 }, { wch: 30 }, { wch: 10 }, { wch: 15 }];
+        XLSX.utils.book_append_sheet(wb, ws, 'Guru/Tendik');
+      }
+
+      if (scope === 'all' || ['Bumil', 'Busui', 'Balita'].includes(pmSubTab)) {
+        const data3b = scope === 'all' ? beneficiaries3b : filtered3b;
+        const rows = data3b.map((b, i) => ({
+          'No': i + 1, 'Kategori': b.subCategory, 'Nama Penerima': b.fullName,
+          'NIK': b.nik, 'JK': b.gender, 'Tanggal Lahir': b.birthDate,
+          'Posyandu': b.posyanduName, 'Detail Info Gizi': b.detailInfo,
+          'PJ Kader': b.picName, 'No. Telp Kader': b.phone,
+          'Status': b.status, 'Alergi': b.hasAllergy ? b.allergyType : 'Tidak',
+        }));
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [{ wch: 5 }, { wch: 10 }, { wch: 25 }, { wch: 20 }, { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 15 }];
+        XLSX.utils.book_append_sheet(wb, ws, scope === 'all' ? 'Penerima 3B' : pmSubTab);
+      }
+
+      XLSX.writeFile(wb, scope === 'all' ? `data-penerima-manfaat-${today}.xlsx` : `data-${pmSubTab.toLowerCase()}-${today}.xlsx`);
       toast.success(`Data ${scope === 'all' ? 'semua penerima manfaat' : pmSubTab} berhasil diexport`);
     } catch { toast.error('Gagal export data'); }
     finally { setExporting(false); }
