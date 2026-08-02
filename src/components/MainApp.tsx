@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import Sidebar from './Sidebar';
 import Image from 'next/image';
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import { 
   Utensils, Plus, Search, X, Trash2, Phone,
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
@@ -214,38 +214,153 @@ export default function MainApp() {
     finally { setImporting(false); if (csvInputRef.current) csvInputRef.current.value = ''; }
   };
 
-  const handleExportExcel = (scope: 'current' | 'all') => {
+  const handleExportExcel = async (scope: 'current' | 'all') => {
+    setExporting(true);
     try {
       const today = new Date().toISOString().slice(0, 10);
       const keyword = searchTerm.trim().replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
-      const workbook = XLSX.utils.book_new();
       const safeStr = (v: any) => (v === null || v === undefined || v === '') ? '-' : String(v);
 
+      // Fetch logo
+      const logoRes = await fetch('/bgn.png');
+      const logoBuf = await logoRes.arrayBuffer();
+      const logoB64 = Buffer.from(logoBuf).toString('base64');
+
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'Dapur SPPG BGN';
+
+      const addKop = (ws: ExcelJS.Worksheet, title: string, headers: string[], rows: string[][], colWidths: number[]) => {
+        // Row 1-4: Kop with logo
+        ws.mergeCells('A1', 'B4');
+        const logoId = workbook.addImage({ base64: `image/png;base64,${logoB64}`, extension: 'png' });
+        ws.addImage(logoId, { tl: { col: 0, row: 0 }, ext: { width: 70, height: 70 } });
+
+        // Title text
+        ws.mergeCells('C1', `${String.fromCharCode(64 + headers.length)}1`);
+        const c1 = ws.getCell('C1');
+        c1.value = 'BADAN GIZI NASIONAL';
+        c1.font = { bold: true, size: 14, name: 'Calibri' };
+        c1.alignment = { vertical: 'middle', horizontal: 'center' };
+
+        ws.mergeCells('C2', `${String.fromCharCode(64 + headers.length)}2`);
+        const c2 = ws.getCell('C2');
+        c2.value = 'Satuan Pelayanan Pemenuhan Gizi (SPPG)';
+        c2.font = { bold: true, size: 11, name: 'Calibri' };
+        c2.alignment = { vertical: 'middle', horizontal: 'center' };
+
+        ws.mergeCells('C3', `${String.fromCharCode(64 + headers.length)}3`);
+        const c3 = ws.getCell('C3');
+        c3.value = 'Kabupaten Buton Tengah';
+        c3.font = { size: 10, name: 'Calibri' };
+        c3.alignment = { vertical: 'middle', horizontal: 'center' };
+
+        ws.mergeCells('C4', `${String.fromCharCode(64 + headers.length)}4`);
+        const c4 = ws.getCell('C4');
+        c4.value = 'Kecamatan Sangia Wambulu, Kelurahan Tolandona';
+        c4.font = { size: 9, name: 'Calibri', italic: true };
+        c4.alignment = { vertical: 'middle', horizontal: 'center' };
+
+        // Set row heights for kop
+        ws.getRow(1).height = 22;
+        ws.getRow(2).height = 20;
+        ws.getRow(3).height = 18;
+        ws.getRow(4).height = 18;
+
+        // Row 5: border separator
+        ws.getRow(5).height = 4;
+        const lastCol = String.fromCharCode(64 + headers.length);
+        for (let c = 1; c <= headers.length; c++) {
+          const cell = ws.getRow(5).getCell(c);
+          cell.border = { bottom: { style: 'double' as any } };
+        }
+
+        // Row 6: empty spacer
+        ws.getRow(6).height = 8;
+
+        // Row 7: Data title
+        ws.mergeCells(`A7`, `${lastCol}7`);
+        const titleCell = ws.getCell('A7');
+        titleCell.value = title;
+        titleCell.font = { bold: true, size: 12, name: 'Calibri' };
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws.getRow(7).height = 24;
+
+        // Row 8: Column headers
+        const headerRow = ws.getRow(8);
+        headerRow.height = 22;
+        headers.forEach((h, i) => {
+          const cell = headerRow.getCell(i + 1);
+          cell.value = h;
+          cell.font = { bold: true, size: 10, name: 'Calibri', color: { argb: 'FFFFFFFF' } };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+          cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+          cell.border = {
+            top: { style: 'thin' as any, color: { argb: 'FFBDBDBD' } },
+            left: { style: 'thin' as any, color: { argb: 'FFBDBDBD' } },
+            bottom: { style: 'thin' as any, color: { argb: 'FFBDBDBD' } },
+            right: { style: 'thin' as any, color: { argb: 'FFBDBDBD' } },
+          };
+        });
+
+        // Data rows starting at row 9
+        rows.forEach((row, ri) => {
+          const dataRow = ws.getRow(9 + ri);
+          dataRow.height = 18;
+          row.forEach((val, ci) => {
+            const cell = dataRow.getCell(ci + 1);
+            cell.value = val;
+            cell.font = { size: 10, name: 'Calibri' };
+            cell.alignment = { vertical: 'middle', horizontal: ci === 0 ? 'center' : 'left', wrapText: true };
+            cell.border = {
+              top: { style: 'thin' as any, color: { argb: 'FFE0E0E0' } },
+              left: { style: 'thin' as any, color: { argb: 'FFE0E0E0' } },
+              bottom: { style: 'thin' as any, color: { argb: 'FFE0E0E0' } },
+              right: { style: 'thin' as any, color: { argb: 'FFE0E0E0' } },
+            };
+          });
+        });
+
+        // Alternate row colors
+        rows.forEach((_, ri) => {
+          if (ri % 2 === 1) {
+            const dataRow = ws.getRow(9 + ri);
+            headers.forEach((_, ci) => {
+              dataRow.getCell(ci + 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F5F5' } };
+            });
+          }
+        });
+
+        // Column widths
+        colWidths.forEach((w, i) => {
+          ws.getColumn(i + 1).width = w;
+        });
+      };
+
+      // Siswa
       if (scope === 'all' || pmSubTab === 'Siswa') {
         const data = scope === 'all' ? students : filteredStudents;
         const headers = ['No', 'Nama Siswa', 'Sekolah', 'NIPD', 'JK', 'NISN', 'Tempat Lahir', 'Tanggal Lahir', 'NIK', 'Agama', 'Alamat', 'Kelas', 'BB (kg)', 'TB (cm)', 'Nama Ayah', 'Nama Ibu', 'Alergi'];
         const rows = data.map((s, i) => [safeStr(i+1), safeStr(s.nama), safeStr(s.schoolName), safeStr(s.nipd), safeStr(s.jk), safeStr(s.nisn), safeStr(s.tempatLahir), safeStr(s.tanggalLahir), safeStr(s.nik), safeStr(s.agama), safeStr(s.alamat), safeStr(s.kelas), safeStr(s.beratBadan), safeStr(s.tinggiBadan), safeStr(s.namaAyah), safeStr(s.namaIbu), s.hasAllergy ? safeStr(s.allergyType) : 'Tidak']);
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((_, i) => ({ wch: i === 0 ? 5 : i === 1 ? 25 : i === 2 ? 25 : i === 8 ? 20 : i === 12 ? 8 : 15 }));
-        XLSX.utils.book_append_sheet(workbook, ws, 'Siswa');
+        const ws = workbook.addWorksheet('Siswa');
+        addKop(ws, 'DATA PENERIMA MANFAAT - SISWA', headers, rows, [5, 25, 25, 12, 5, 18, 15, 15, 20, 10, 20, 8, 8, 8, 20, 20, 12]);
       }
 
+      // Guru
       if (scope === 'all' || pmSubTab === 'Guru') {
         const data = scope === 'all' ? teachers : filteredTeachers;
         const headers = ['No', 'Nama Guru/Tendik', 'Sekolah', 'NUPTK', 'NIP', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'NIK', 'Jenis Tendik', 'Alamat', 'Status', 'Alergi'];
         const rows = data.map((t, i) => [safeStr(i+1), safeStr(t.fullName), safeStr(t.schoolName), safeStr(t.nuptk), safeStr(t.nip), safeStr(t.jk), safeStr(t.tempatLahir), safeStr(t.tanggalLahir), safeStr(t.nik), safeStr(t.jenisTendik), safeStr(t.alamat), safeStr(t.status || 'Aktif'), t.hasAllergy ? safeStr(t.allergyType) : 'Tidak']);
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((_, i) => ({ wch: i === 0 ? 5 : i === 1 ? 25 : i === 2 ? 25 : 15 }));
-        XLSX.utils.book_append_sheet(workbook, ws, 'Guru-Tendik');
+        const ws = workbook.addWorksheet('Guru/Tendik');
+        addKop(ws, 'DATA PENERIMA MANFAAT - GURU/TENDIK', headers, rows, [5, 25, 25, 18, 18, 5, 15, 15, 20, 15, 20, 10, 12]);
       }
 
+      // 3B
       if (scope === 'all' || ['Bumil', 'Busui', 'Balita'].includes(pmSubTab)) {
         const data = scope === 'all' ? beneficiaries3b : filtered3b;
         const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tanggal Lahir', 'Posyandu', 'Detail Info Gizi', 'PJ Kader', 'No. Telp Kader', 'Status', 'Alergi'];
         const rows = data.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.birthDate), safeStr(b.posyanduName), safeStr(b.detailInfo), safeStr(b.picName), safeStr(b.phone), safeStr(b.status), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
-        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-        ws['!cols'] = headers.map((_, i) => ({ wch: i === 0 ? 5 : i === 2 ? 25 : 15 }));
-        XLSX.utils.book_append_sheet(workbook, ws, scope === 'all' ? 'Penerima 3B' : pmSubTab);
+        const ws = workbook.addWorksheet(scope === 'all' ? 'Penerima 3B' : pmSubTab);
+        addKop(ws, `DATA PENERIMA MANFAAT - ${pmSubTab.toUpperCase()}`, headers, rows, [5, 10, 25, 20, 5, 15, 20, 18, 18, 15, 10, 12]);
       }
 
       let filename: string;
@@ -260,9 +375,8 @@ export default function MainApp() {
           : `data-${label}-${today}.xlsx`;
       }
 
-      // Write explicitly as xlsx binary and download
-      const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-      const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -272,12 +386,12 @@ export default function MainApp() {
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      const sheetCount = workbook.SheetNames.length;
+      const sheetCount = workbook.worksheets.length;
       toast.success(`File ${filename} berhasil diexport (${sheetCount} sheet)`);
     } catch (err) {
       console.error('Export error:', err);
       toast.error('Gagal export data');
-    }
+    } finally { setExporting(false); }
   };
 
   const filteredStudents = students.filter(s => s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || s.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm) || s.nik.includes(searchTerm));
