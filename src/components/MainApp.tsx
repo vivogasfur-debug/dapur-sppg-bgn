@@ -426,27 +426,29 @@ export default function MainApp() {
                   </button>
                 </div>
               )}
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative flex-1 min-w-[160px]">
                   <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
                   <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={`Cari ${pmSubTab}...`} className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
                 </div>
-                <button onClick={openAddModal} className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0">
-                  <Plus className="w-3.5 h-3.5" /><span className="hidden xs:inline">Tambah</span>
-                </button>
-                <input ref={csvInputRef} type="file" accept=".csv" onChange={handleImportCSV} className="hidden" />
-                <button onClick={() => csvInputRef.current?.click()} disabled={importing} className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50">
-                  {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                  <span className="hidden sm:inline">CSV</span>
-                </button>
-                <button onClick={() => handleExportExcel('current')} disabled={exporting} className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50">
-                  {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                  <span className="hidden sm:inline">Export</span>
-                </button>
-                <button onClick={() => handleExportExcel('all')} disabled={exporting} className="flex items-center gap-1 bg-violet-500 hover:bg-violet-600 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50">
-                  {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                  <span className="hidden xs:inline">Semua</span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={openAddModal} className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm">
+                    <Plus className="w-4 h-4" /><span className="sm:inline hidden">Tambah</span>
+                  </button>
+                  <input ref={csvInputRef} type="file" accept=".csv" onChange={handleImportCSV} className="hidden" />
+                  <button onClick={() => csvInputRef.current?.click()} disabled={importing} className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Import CSV">
+                    {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    <span className="sm:inline hidden">Import</span>
+                  </button>
+                  <button onClick={() => handleExportExcel('current')} disabled={exporting} className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Export Excel">
+                    {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    <span className="sm:inline hidden">Export</span>
+                  </button>
+                  <button onClick={() => handleExportExcel('all')} disabled={exporting} className="flex items-center gap-1 bg-violet-500 hover:bg-violet-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Export Semua Data">
+                    {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    <span className="sm:inline hidden">Semua</span>
+                  </button>
+                </div>
               </div>
             </div>
 
