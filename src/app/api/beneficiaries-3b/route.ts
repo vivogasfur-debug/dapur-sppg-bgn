@@ -76,8 +76,16 @@ export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
-    if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
+    const all = searchParams.get('all')
+    const sub = searchParams.get('sub_category')
 
+    if (all === 'true' && sub) {
+      const { error } = await supabase.from('beneficiaries_3b').delete().eq('sub_category', sub)
+      if (error) throw error
+      return NextResponse.json({ success: true, deleted: 'all' })
+    }
+
+    if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
     const { error } = await supabase.from('beneficiaries_3b').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ success: true })

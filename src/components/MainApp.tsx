@@ -167,6 +167,26 @@ export default function MainApp() {
     } catch { toast.error('Gagal menghapus data'); }
   };
 
+  const [deletingAll, setDeletingAll] = useState(false);
+  const handleDeleteAll = async () => {
+    const count = pmSubTab === 'Siswa' ? students.length
+      : pmSubTab === 'Guru' ? teachers.length
+      : beneficiaries3b.filter(b => b.subCategory === pmSubTab).length;
+    if (count === 0) { toast.error('Tidak ada data untuk dihapus'); return; }
+    if (!confirm(`HAPUS SEMUA data ${pmSubTab} (${count} data)?\n\nTindakan ini tidak dapat dibatalkan!`)) return;
+    if (!confirm('Anda yakin? Ketuk OK untuk menghapus semua data.')) return;
+    setDeletingAll(true);
+    try {
+      let url = '/api/students?all=true';
+      if (pmSubTab === 'Guru') url = '/api/teachers?all=true';
+      else if (['Bumil', 'Busui', 'Balita'].includes(pmSubTab)) url = `/api/beneficiaries-3b?all=true&sub_category=${pmSubTab}`;
+      const res = await fetch(url, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      toast.success(`Semua data ${pmSubTab} berhasil dihapus`); fetchData();
+    } catch { toast.error('Gagal menghapus semua data'); }
+    finally { setDeletingAll(false); }
+  };
+
   const openAddModal = () => {
     setEditingId(null);
     if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') setFormSiswa({ schoolName: 'SDN 01 Sambas', nama: '', nipd: '', jk: 'L', nisn: '', tempatLahir: '', tanggalLahir: '', nik: '', agama: 'Islam', alamat: '', kelas: '', beratBadan: '', tinggiBadan: '', namaAyah: '', namaIbu: '', hasAllergy: false, allergyType: '' });
@@ -459,6 +479,10 @@ export default function MainApp() {
                   <button onClick={() => handleExportExcel('all')} disabled={exporting} className="flex items-center gap-1 bg-violet-500 hover:bg-violet-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Export Semua Data">
                     {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     <span className="sm:inline hidden">Semua</span>
+                  </button>
+                  <button onClick={handleDeleteAll} disabled={deletingAll} className="flex items-center gap-1 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Hapus Semua Data">
+                    {deletingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    <span className="sm:inline hidden">Hapus Semua</span>
                   </button>
                 </div>
               </div>
