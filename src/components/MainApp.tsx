@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { 
   Utensils, Plus, Search, X, Trash2, Phone,
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
-  AlertCircle, Calendar, Upload, Loader2, Pencil, Menu
+  AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -96,6 +96,7 @@ export default function MainApp() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [importing, setImporting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const csvInputRef = { current: null as HTMLInputElement | null };
 
   const [formSiswa, setFormSiswa] = useState({
@@ -190,6 +191,33 @@ export default function MainApp() {
       else toast.error(result.error || 'Gagal import CSV');
     } catch { toast.error('Gagal membaca file CSV'); }
     finally { setImporting(false); if (csvInputRef.current) csvInputRef.current.value = ''; }
+  };
+
+  const handleExportExcel = async (scope: 'current' | 'all') => {
+    setExporting(true);
+    try {
+      let url = '/api/export-excel?type=';
+      if (scope === 'all') {
+        url += 'all';
+      } else if (pmSubTab === 'Siswa') {
+        url += 'students';
+      } else if (pmSubTab === 'Guru') {
+        url += 'teachers';
+      } else {
+        url += `beneficiaries-3b&sub=${pmSubTab}`;
+      }
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = res.headers.get('Content-Disposition')?.split('filename=')[1]?.replace(/"/g, '') || `export-${pmSubTab}.xlsx`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      toast.success(`Data ${scope === 'all' ? 'semua penerima manfaat' : pmSubTab} berhasil diexport`);
+    } catch { toast.error('Gagal export data'); }
+    finally { setExporting(false); }
   };
 
   const filteredStudents = students.filter(s => s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || s.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm) || s.nik.includes(searchTerm));
@@ -382,6 +410,14 @@ export default function MainApp() {
                 <button onClick={() => csvInputRef.current?.click()} disabled={importing} className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50">
                   {importing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
                   <span className="hidden sm:inline">CSV</span>
+                </button>
+                <button onClick={() => handleExportExcel('current')} disabled={exporting} className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50">
+                  {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">Export</span>
+                </button>
+                <button onClick={() => handleExportExcel('all')} disabled={exporting} className="flex items-center gap-1 bg-violet-500 hover:bg-violet-600 active:scale-95 text-white px-3 py-2 rounded-lg text-xs font-bold transition-all shadow-sm shrink-0 disabled:opacity-50">
+                  {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                  <span className="hidden xs:inline">Semua</span>
                 </button>
               </div>
             </div>
