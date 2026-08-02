@@ -196,57 +196,76 @@ export default function MainApp() {
   const handleExportExcel = async (scope: 'current' | 'all') => {
     setExporting(true);
     try {
-      const XLSX = await import('xlsx');
-      const wb = XLSX.utils.book_new();
       const today = new Date().toISOString().slice(0, 10);
+      const keyword = searchTerm.trim().replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
+      const wb: { name: string; headers: string[]; rows: string[][] }[] = [];
+
+      const makeSheet = (name: string, headers: string[], rows: string[][]) => {
+        wb.push({ name, headers, rows });
+      };
 
       if (scope === 'all' || pmSubTab === 'Siswa') {
-        const rows = (scope === 'all' ? students : filteredStudents).map((s, i) => ({
-          'No': i + 1, 'Nama Siswa': s.nama, 'Sekolah': s.schoolName,
-          'NIPD': s.nipd, 'JK': s.jk, 'NISN': s.nisn,
-          'Tempat Lahir': s.tempatLahir, 'Tanggal Lahir': s.tanggalLahir,
-          'NIK': s.nik, 'Agama': s.agama, 'Alamat': s.alamat,
-          'Kelas': s.kelas, 'BB (kg)': s.beratBadan, 'TB (cm)': s.tinggiBadan,
-          'Nama Ayah': s.namaAyah, 'Nama Ibu': s.namaIbu,
-          'Alergi': s.hasAllergy ? s.allergyType : 'Tidak',
-        }));
-        const ws = XLSX.utils.json_to_sheet(rows);
-        ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 5 }, { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 30 }, { wch: 8 }, { wch: 10 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 15 }];
-        XLSX.utils.book_append_sheet(wb, ws, 'Siswa');
+        const data = scope === 'all' ? students : filteredStudents;
+        makeSheet('Siswa',
+          ['No', 'Nama Siswa', 'Sekolah', 'NIPD', 'JK', 'NISN', 'Tempat Lahir', 'Tanggal Lahir', 'NIK', 'Agama', 'Alamat', 'Kelas', 'BB (kg)', 'TB (cm)', 'Nama Ayah', 'Nama Ibu', 'Alergi'],
+          data.map((s, i) => [String(i+1), s.nama, s.schoolName, s.nipd, s.jk, s.nisn, s.tempatLahir, s.tanggalLahir, s.nik, s.agama, s.alamat, s.kelas, String(s.beratBadan), String(s.tinggiBadan), s.namaAyah, s.namaIbu, s.hasAllergy ? s.allergyType : 'Tidak'])
+        );
       }
 
       if (scope === 'all' || pmSubTab === 'Guru') {
-        const rows = (scope === 'all' ? teachers : filteredTeachers).map((t, i) => ({
-          'No': i + 1, 'Nama Guru/Tendik': t.fullName, 'Sekolah': t.schoolName,
-          'NUPTK': t.nuptk, 'NIP': t.nip, 'JK': t.jk,
-          'Tempat Lahir': t.tempatLahir, 'Tanggal Lahir': t.tanggalLahir,
-          'NIK': t.nik, 'Jenis Tendik': t.jenisTendik, 'Alamat': t.alamat,
-          'Status': t.status || 'Aktif', 'Alergi': t.hasAllergy ? t.allergyType : 'Tidak',
-        }));
-        const ws = XLSX.utils.json_to_sheet(rows);
-        ws['!cols'] = [{ wch: 5 }, { wch: 25 }, { wch: 25 }, { wch: 20 }, { wch: 22 }, { wch: 5 }, { wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 18 }, { wch: 30 }, { wch: 10 }, { wch: 15 }];
-        XLSX.utils.book_append_sheet(wb, ws, 'Guru/Tendik');
+        const data = scope === 'all' ? teachers : filteredTeachers;
+        makeSheet('Guru/Tendik',
+          ['No', 'Nama Guru/Tendik', 'Sekolah', 'NUPTK', 'NIP', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'NIK', 'Jenis Tendik', 'Alamat', 'Status', 'Alergi'],
+          data.map((t, i) => [String(i+1), t.fullName, t.schoolName, t.nuptk, t.nip, t.jk, t.tempatLahir, t.tanggalLahir, t.nik, t.jenisTendik, t.alamat, t.status || 'Aktif', t.hasAllergy ? t.allergyType : 'Tidak'])
+        );
       }
 
       if (scope === 'all' || ['Bumil', 'Busui', 'Balita'].includes(pmSubTab)) {
-        const data3b = scope === 'all' ? beneficiaries3b : filtered3b;
-        const rows = data3b.map((b, i) => ({
-          'No': i + 1, 'Kategori': b.subCategory, 'Nama Penerima': b.fullName,
-          'NIK': b.nik, 'JK': b.gender, 'Tanggal Lahir': b.birthDate,
-          'Posyandu': b.posyanduName, 'Detail Info Gizi': b.detailInfo,
-          'PJ Kader': b.picName, 'No. Telp Kader': b.phone,
-          'Status': b.status, 'Alergi': b.hasAllergy ? b.allergyType : 'Tidak',
-        }));
-        const ws = XLSX.utils.json_to_sheet(rows);
-        ws['!cols'] = [{ wch: 5 }, { wch: 10 }, { wch: 25 }, { wch: 20 }, { wch: 5 }, { wch: 15 }, { wch: 25 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 10 }, { wch: 15 }];
-        XLSX.utils.book_append_sheet(wb, ws, scope === 'all' ? 'Penerima 3B' : pmSubTab);
+        const data = scope === 'all' ? beneficiaries3b : filtered3b;
+        makeSheet(scope === 'all' ? 'Penerima 3B' : pmSubTab,
+          ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tanggal Lahir', 'Posyandu', 'Detail Info Gizi', 'PJ Kader', 'No. Telp Kader', 'Status', 'Alergi'],
+          data.map((b, i) => [String(i+1), b.subCategory, b.fullName, b.nik, b.gender, b.birthDate, b.posyanduName, b.detailInfo, b.picName, b.phone, b.status, b.hasAllergy ? b.allergyType : 'Tidak'])
+        );
       }
 
-      XLSX.writeFile(wb, scope === 'all' ? `data-penerima-manfaat-${today}.xlsx` : `data-${pmSubTab.toLowerCase()}-${today}.xlsx`);
-      toast.success(`Data ${scope === 'all' ? 'semua penerima manfaat' : pmSubTab} berhasil diexport`);
-    } catch { toast.error('Gagal export data'); }
+      // Build XML Spreadsheet (Excel-compatible, no library needed)
+      let xml = '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">';
+      for (const sheet of wb) {
+        xml += `<Worksheet ss:Name="${sheet.name.replace(/&/g,'&amp;')}"><Table>`;
+        xml += '<Row>' + sheet.headers.map(h => `<Cell><Data ss:Type="String">${escXml(h)}</Data></Cell>`).join('') + '</Row>';
+        for (const row of sheet.rows) {
+          xml += '<Row>' + row.map(cell => `<Cell><Data ss:Type="String">${escXml(cell)}</Data></Cell>`).join('') + '</Row>';
+        }
+        xml += '</Table></Worksheet>';
+      }
+      xml += '</Workbook>';
+
+      const blob = new Blob(['\ufeff' + xml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+      const a = document.createElement('a');
+      let filename: string;
+      if (scope === 'all') {
+        filename = `data-semua-penerima-manfaat-${today}.xls`;
+      } else {
+        const label = pmSubTab.toLowerCase();
+        filename = keyword
+          ? `data-${label}-${keyword}-${today}.xls`
+          : `data-${label}-${today}.xls`;
+      }
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      const totalRows = wb.reduce((sum, s) => sum + s.rows.length, 0);
+      toast.success(`${totalRows} data ${scope === 'all' ? 'semua penerima manfaat' : pmSubTab} berhasil diexport`);
+    } catch (err) {
+      console.error('Export error:', err);
+      toast.error('Gagal export data');
+    }
     finally { setExporting(false); }
   };
+
+  const escXml = (s: string) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
   const filteredStudents = students.filter(s => s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || s.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm) || s.nik.includes(searchTerm));
   const filteredTeachers = teachers.filter(t => t.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || t.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) || t.nik.includes(searchTerm) || t.nip.includes(searchTerm));
