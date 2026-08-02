@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Plus, Search, X, Trash2, Pencil, Loader2, Package, ArrowDownCircle, ArrowUpCircle,
-  AlertTriangle, ShoppingCart, History, Warehouse
+  AlertTriangle, ShoppingCart, History, Warehouse, Database, Copy, Check, ExternalLink
 } from 'lucide-react';
 
 interface StockItem {
@@ -25,6 +25,10 @@ export default function StockModule() {
   const [items, setItems] = useState<StockItem[]>([]);
   const [transactions, setTransactions] = useState<StockTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [needsSetup, setNeedsSetup] = useState(false);
+  const [setupSql, setSetupSql] = useState('');
+  const [seeding, setSeeding] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [subTab, setSubTab] = useState<'items' | 'transactions'>('items');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -43,6 +47,19 @@ export default function StockModule() {
 
   const fetchData = useCallback(async () => {
     try {
+      // First check if tables exist
+      const checkRes = await fetch('/api/seed-stock', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'check' })
+      });
+      const checkData = await checkRes.json();
+      if (!checkData.exists) {
+        setNeedsSetup(true);
+        setSetupSql(checkData.sql || '');
+        setLoading(false);
+        return;
+      }
+      setNeedsSetup(false);
+
       const [iRes, tRes] = await Promise.all([
         fetch('/api/stock-items').then(r => r.json()),
         fetch('/api/stock-transactions').then(r => r.json()),
@@ -158,8 +175,82 @@ export default function StockModule() {
     } catch { toast.error('Gagal menghapus transaksi'); }
   };
 
+  const handleSeed = async () => {
+    setSeeding(true);
+    try {
+      const res = await fetch('/api/seed-stock', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'seed' })
+      });
+      const data = await res.json();
+      if (data.error) { toast.error(data.error); return; }
+      toast.success(data.message || 'Data simulasi berhasil dimuat!');
+      setNeedsSetup(false);
+      fetchData();
+    } catch { toast.error('Gagal seeding data'); }
+    finally { setSeeding(false); }
+  };
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(setupSql);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCheckAgain = () => { setLoading(true); fetchData(); };
+
   if (loading) return (
     <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /></div>
+  );
+
+  // Setup screen when tables don't exist
+  if (needsSetup) return (
+    <div className="max-w-lg mx-auto space-y-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center space-y-4">
+        <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mx-auto">
+          <Database className="w-8 h-8 text-amber-500" />
+        </div>
+        <div>
+          <h2 className="text-lg font-bold text-slate-800">Setup Database Diperlukan</h2>
+          <p className="text-sm text-slate-500 mt-1">Tabel gudang & stok belum dibuat di Supabase. Ikuti langkah berikut:</p>
+        </div>
+        <div className="bg-slate-50 rounded-xl p-4 text-left space-y-3">
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
+            <div>
+              <p className="text-sm font-semibold text-slate-700">Buka Supabase SQL Editor</p>
+              <a href="https://supabase.com/dashboard/project/zwbspstsbpzsnphdohko/sql" target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline flex items-center gap-1 mt-0.5">
+                Klik di sini untuk membuka <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
+            <div>
+              <p className="text-sm font-semibold text-slate-700">Salin & Jalankan SQL</p>
+              <p className="text-xs text-slate-500 mt-0.5">Salin SQL di bawah, tempel di SQL Editor, lalu klik <b>Run</b></p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</span>
+            <div>
+              <p className="text-sm font-semibold text-slate-700">Klik "Cek Ulang" di bawah</p>
+              <p className="text-xs text-slate-500 mt-0.5">Setelah SQL berhasil, klik tombol untuk memuat data simulasi</p>
+            </div>
+          </div>
+        </div>
+        <div className="relative">
+          <pre className="bg-slate-900 text-emerald-400 rounded-xl p-4 text-[11px] overflow-auto max-h-48 font-mono leading-relaxed">{setupSql}</pre>
+          <button onClick={handleCopySql} className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition-colors" title="Salin SQL">
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+          </button>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={handleCheckAgain} className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+            Cek Ulang & Muat Data
+          </button>
+        </div>
+      </div>
+    </div>
   );
 
   return (

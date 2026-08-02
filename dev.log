@@ -1,6 +1,6 @@
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.10.128:3000
+- Network:       http://21.0.2.31:3000
 - Environments: .env
 
 ✓ Starting...
@@ -9,67 +9,59 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-✓ Ready in 733ms
+✓ Ready in 712ms
 ○ Compiling / ...
- GET / 200 in 4.5s (compile: 4.4s, render: 142ms)
- GET / 200 in 34ms (compile: 3ms, render: 31ms)
- GET / 200 in 360ms (compile: 300ms, render: 60ms)
- GET / 200 in 36ms (compile: 3ms, render: 33ms)
- GET / 200 in 31ms (compile: 3ms, render: 28ms)
- GET / 200 in 33ms (compile: 3ms, render: 30ms)
- GET / 200 in 29ms (compile: 2ms, render: 27ms)
- GET / 200 in 61ms (compile: 2ms, render: 58ms)
- GET / 200 in 33ms (compile: 2ms, render: 31ms)
- GET / 200 in 28ms (compile: 2ms, render: 26ms)
- GET / 200 in 32ms (compile: 2ms, render: 29ms)
+ GET / 200 in 2.0s (compile: 1990ms, render: 46ms)
+ GET / 200 in 200ms (compile: 175ms, render: 26ms)
+ GET / 200 in 273ms (compile: 245ms, render: 28ms)
+ GET / 200 in 212ms (compile: 184ms, render: 28ms)
 ⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
 Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
-⨯ Error: supabaseUrl is required.
-    at module evaluation (src/lib/supabase.ts:6:37)
-    at module evaluation (src/app/api/login/route.ts:2:1)
-    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    |                                     ^ {
-  page: '/api/login'
-}
- POST /api/login 500 in 2.2s (compile: 2.2s, render: 91ms)
-⨯ Error: supabaseUrl is required.
-    at module evaluation (src/lib/supabase.ts:6:37)
-    at module evaluation (src/app/api/login/route.ts:2:1)
-    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    |                                     ^ {
-  page: '/api/login'
-}
- POST /api/login 500 in 59ms (compile: 49ms, render: 10ms)
-⨯ Error: supabaseUrl is required.
-    at module evaluation (src/lib/supabase.ts:6:37)
-    at module evaluation (src/app/api/login/route.ts:2:1)
-    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    |                                     ^ {
-  page: '/api/login'
-}
- POST /api/login 500 in 43ms (compile: 36ms, render: 7ms)
-⨯ Error: supabaseUrl is required.
-    at module evaluation (src/lib/supabase.ts:6:37)
-    at module evaluation (src/app/api/login/route.ts:2:1)
-    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    |                                     ^ {
-  page: '/api/login'
-}
- POST /api/login 500 in 45ms (compile: 38ms, render: 7ms)
+✓ Compiled in 3.5s
+⚠ Fast Refresh had to perform a full reload when [turbopack]/browser/dev/hmr-client/hmr-client.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET / 200 in 735ms (compile: 287ms, render: 448ms)
+ GET / 200 in 1308ms (compile: 475ms, render: 833ms)
+ GET / 200 in 249ms (compile: 217ms, render: 32ms)
+✓ Compiled in 166ms
+ GET / 200 in 234ms (compile: 212ms, render: 22ms)
+ GET / 200 in 203ms (compile: 189ms, render: 14ms)
+ GET / 200 in 184ms (compile: 172ms, render: 12ms)
+ GET / 200 in 184ms (compile: 171ms, render: 13ms)
+ GET / 200 in 177ms (compile: 163ms, render: 14ms)
+ GET / 200 in 181ms (compile: 169ms, render: 12ms)
+ GET / 200 in 183ms (compile: 171ms, render: 12ms)
+ GET / 200 in 180ms (compile: 167ms, render: 13ms)
+ GET / 200 in 187ms (compile: 174ms, render: 13ms)
+ GET / 200 in 177ms (compile: 164ms, render: 13ms)
+ GET / 200 in 179ms (compile: 166ms, render: 13ms)
+ GET / 200 in 178ms (compile: 165ms, render: 13ms)
+ GET / 200 in 178ms (compile: 166ms, render: 12ms)
+ GET / 200 in 184ms (compile: 171ms, render: 12ms)
+ GET / 200 in 181ms (compile: 169ms, render: 12ms)
+ GET / 200 in 187ms (compile: 167ms, render: 20ms)
+ GET / 200 in 184ms (compile: 171ms, render: 13ms)
+ GET / 200 in 180ms (compile: 169ms, render: 11ms)
+ GET / 200 in 175ms (compile: 162ms, render: 12ms)
+ GET / 200 in 177ms (compile: 166ms, render: 11ms)
+ GET / 200 in 174ms (compile: 162ms, render: 12ms)
+ GET / 200 in 208ms (compile: 188ms, render: 20ms)
+ GET / 200 in 239ms (compile: 219ms, render: 19ms)
+ GET / 200 in 230ms (compile: 210ms, render: 19ms)
+ GET / 200 in 233ms (compile: 213ms, render: 20ms)
+ GET / 200 in 328ms (compile: 304ms, render: 24ms)
+ GET / 200 in 249ms (compile: 238ms, render: 11ms)
+ GET / 200 in 311ms (compile: 272ms, render: 39ms)
+ GET / 200 in 259ms (compile: 245ms, render: 14ms)
+ GET / 200 in 176ms (compile: 163ms, render: 13ms)
+ GET / 200 in 185ms (compile: 174ms, render: 11ms)
+ GET / 200 in 175ms (compile: 163ms, render: 12ms)
+ GET / 200 in 256ms (compile: 238ms, render: 18ms)
+ GET / 200 in 238ms (compile: 216ms, render: 23ms)
+ GET / 200 in 238ms (compile: 226ms, render: 12ms)
+ GET / 200 in 196ms (compile: 184ms, render: 12ms)
+ GET / 200 in 175ms (compile: 163ms, render: 12ms)
+ GET / 200 in 181ms (compile: 170ms, render: 11ms)
+✓ Compiled in 520ms
+✓ Compiled in 270ms
   Reload env: .env.local
-✓ Compiled in 669ms
- GET / 200 in 84ms (compile: 49ms, render: 35ms)
- POST /api/login 200 in 421ms (compile: 113ms, render: 308ms)
-[?25h
+ GET / 200 in 734ms (compile: 709ms, render: 26ms)
