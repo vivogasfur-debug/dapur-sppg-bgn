@@ -18,3 +18,58 @@ https://nextjs.org/telemetry
  GET / 200 in 31ms (compile: 3ms, render: 28ms)
  GET / 200 in 33ms (compile: 3ms, render: 30ms)
  GET / 200 in 29ms (compile: 2ms, render: 27ms)
+ GET / 200 in 61ms (compile: 2ms, render: 58ms)
+ GET / 200 in 33ms (compile: 2ms, render: 31ms)
+ GET / 200 in 28ms (compile: 2ms, render: 26ms)
+ GET / 200 in 32ms (compile: 2ms, render: 29ms)
+⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+⨯ Error: supabaseUrl is required.
+    at module evaluation (src/lib/supabase.ts:6:37)
+    at module evaluation (src/app/api/login/route.ts:2:1)
+    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
+  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  5 |
+> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    |                                     ^ {
+  page: '/api/login'
+}
+ POST /api/login 500 in 2.2s (compile: 2.2s, render: 91ms)
+⨯ Error: supabaseUrl is required.
+    at module evaluation (src/lib/supabase.ts:6:37)
+    at module evaluation (src/app/api/login/route.ts:2:1)
+    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
+  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  5 |
+> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    |                                     ^ {
+  page: '/api/login'
+}
+ POST /api/login 500 in 59ms (compile: 49ms, render: 10ms)
+⨯ Error: supabaseUrl is required.
+    at module evaluation (src/lib/supabase.ts:6:37)
+    at module evaluation (src/app/api/login/route.ts:2:1)
+    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
+  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  5 |
+> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    |                                     ^ {
+  page: '/api/login'
+}
+ POST /api/login 500 in 43ms (compile: 36ms, render: 7ms)
+⨯ Error: supabaseUrl is required.
+    at module evaluation (src/lib/supabase.ts:6:37)
+    at module evaluation (src/app/api/login/route.ts:2:1)
+    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
+  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  5 |
+> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    |                                     ^ {
+  page: '/api/login'
+}
+ POST /api/login 500 in 45ms (compile: 38ms, render: 7ms)
+  Reload env: .env.local
+✓ Compiled in 669ms
+ GET / 200 in 84ms (compile: 49ms, render: 35ms)
+ POST /api/login 200 in 421ms (compile: 113ms, render: 308ms)
+[?25h
