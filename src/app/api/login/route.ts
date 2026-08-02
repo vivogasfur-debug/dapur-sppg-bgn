@@ -9,14 +9,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email dan kata sandi diperlukan' }, { status: 400 })
     }
 
+    // Debug: log Supabase connection status
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase env vars:', { hasUrl: !!supabaseUrl, hasKey: !!supabaseKey })
+      return NextResponse.json({ error: 'Konfigurasi server belum lengkap (env vars missing)' }, { status: 500 })
+    }
+
     const { data: users, error } = await supabase
       .from('users')
       .select('*')
       .eq('email', email)
       .limit(1)
 
-    if (error || !users || users.length === 0) {
-      return NextResponse.json({ error: 'Email tidak ditemukan' }, { status: 401 })
+    if (error) {
+      console.error('Supabase query error:', error.message)
+      return NextResponse.json({ error: `Gagal mengambil data: ${error.message}` }, { status: 500 })
+    }
+    if (!users || users.length === 0) {
+      return NextResponse.json({ error: 'Email tidak ditemukan di database' }, { status: 401 })
     }
 
     const user = users[0]

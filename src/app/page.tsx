@@ -25,11 +25,12 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       })
+      const data = await res.json()
       if (res.ok) {
         setIsAuthenticated(true)
         toast.success('Selamat datang!')
       } else {
-        toast.error('Email atau kata sandi salah')
+        toast.error(data.error || 'Email atau kata sandi salah')
       }
     } catch {
       toast.error('Terjadi kesalahan saat masuk')
