@@ -9,6 +9,9 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "Dapur SPPG - Sistem Operasional BGN",
   description: "Sistem Operasional Dapur Satuan Pangan Penyangga Gaizi BGN",
+  icons: {
+    icon: "/bgn.png",
+  },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
