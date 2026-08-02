@@ -85,3 +85,16 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  GET /api/stock-transactions 200 in 280ms (compile: 152ms, render: 129ms)
  GET /api/stock-items 200 in 313ms (compile: 134ms, render: 179ms)
  GET / 200 in 336ms (compile: 304ms, render: 33ms)
+ GET / 200 in 491ms (compile: 281ms, render: 210ms)
+ GET / 200 in 184ms (compile: 160ms, render: 24ms)
+ GET / 200 in 290ms (compile: 239ms, render: 51ms)
+ GET / 200 in 251ms (compile: 199ms, render: 52ms)
+ GET / 200 in 215ms (compile: 190ms, render: 24ms)
+ GET / 200 in 212ms (compile: 182ms, render: 29ms)
+ GET / 200 in 203ms (compile: 180ms, render: 23ms)
+✓ Compiled in 193ms
+✓ Compiled in 1ms
+Persisting failed: Unable to write SST file 00000178.sst
+
+Caused by:
+    No such file or directory (os error 2)
