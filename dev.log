@@ -505,3 +505,7 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
 ✓ Compiled in 268ms
 ✓ Compiled in 235ms
 ✓ Compiled in 535ms
+(node:1074) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 exit listeners added to [process]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
+(Use `node --trace-warnings ...` to show where the warning was created)
+ GET / 200 in 901ms (compile: 319ms, render: 582ms)
+ GET / 200 in 324ms (compile: 293ms, render: 32ms)

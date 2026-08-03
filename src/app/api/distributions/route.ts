@@ -102,29 +102,84 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'seed') {
-      const { data: existing } = await supabase.from('distributions').select('id').limit(1)
-      if (existing && existing.length > 0) {
-        return NextResponse.json({ message: 'Data distribusi sudah ada', seeded: false })
-      }
+      // Hapus data lama dulu
+      await supabase.from('distribution_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('distributions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
-      const { data: stockItems } = await supabase.from('stock_items').select('id, name, unit').limit(5)
+      const { data: stockItems } = await supabase.from('stock_items').select('id, name, unit, stock_qty').order('name')
       const items = stockItems || []
 
+      if (items.length === 0) {
+        return NextResponse.json({ message: 'Belum ada data stok. Seed stok terlebih dahulu.', seeded: false })
+      }
+
+      // Sekolah & posyandu simulasi
+      const sekolahList = ['SDN 1 Sangia', 'SDN 2 Wambulu', 'SDN 3 Borong', 'SDN 4 Tambada']
+      const posyanduList = ['Posyandu Melati', 'Posyandu Mawar', 'Posyandu Dahlia', 'Posyandu Anggrek']
+      const picSekolah = ['Pak Budi Santoso', 'Bu Sari Wulandari', 'Pak Andi Pratama', 'Bu Dewi Lestari']
+      const picPosyandu = ['Bu Ratna Sari', 'Bu Nurhaliza', 'Bu Hj. Aminah', 'Bu Kartika']
+
       const now = new Date()
+      const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+
+      // Jumlah distribusi per hari: Senin-Jumat aktif, Sabtu kadang, Minggu libur
+      const dailyPlan = [
+        null,                                     // Minggu (libur)
+        ['Sekolah', 'Sekolah', 'Posyandu'],       // Senin
+        ['Sekolah', 'Posyandu', 'Posyandu'],       // Selasa
+        ['Sekolah', 'Sekolah', 'Posyandu'],       // Rabu
+        ['Sekolah', 'Posyandu'],                   // Kamis
+        ['Sekolah', 'Sekolah', 'Posyandu', 'Posyandu'], // Jumat
+        ['Posyandu'],                             // Sabtu (hanya posyandu)
+      ]
+
       const sampleDists = []
-      for (let i = 0; i < 8; i++) {
+      let distIdx = 0
+
+      for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
         const d = new Date(now)
-        d.setDate(d.getDate() - i * 3)
-        sampleDists.push({
-          distribution_date: d.toISOString().slice(0, 10),
-          destination_type: i % 2 === 0 ? 'Sekolah' : 'Posyandu',
-          destination_name: i % 2 === 0
-            ? ['SDN 1 Sangia', 'SDN 2 Wambulu', 'SDN 3 Borong', 'SDN 4 Tambada'][i % 4]
-            : ['Posyandu Melati', 'Posyandu Mawar', 'Posyandu Dahlia', 'Posyandu Anggrek'][i % 4],
-          pic_name: ['Pak Budi', 'Bu Sari', 'Pak Andi', 'Bu Dewi'][i % 4],
-          notes: i === 0 ? 'Distribusi rutin mingguan' : null,
-          status: (['Diterima', 'Dikirim', 'Draft', 'Diterima', 'Dikirim', 'Diterima', 'Draft', 'Dibatalkan'] as const)[i],
-        })
+        d.setDate(d.getDate() - dayOffset)
+        const dayOfWeek = d.getDay() // 0=Minggu
+        const plan = dailyPlan[dayOfWeek]
+        if (!plan) continue // libur
+
+        for (const type of plan) {
+          const destList = type === 'Sekolah' ? sekolahList : posyanduList
+          const picList = type === 'Sekolah' ? picSekolah : picPosyandu
+          const destIdx = distIdx % destList.length
+
+          // Hari ini = Draft, kemarin = Dikirim, lainnya = Diterima (kecuali 1 dibatalkan)
+          let status: 'Draft' | 'Dikirim' | 'Diterima' | 'Dibatalkan'
+          if (dayOffset === 0) status = 'Draft'
+          else if (dayOffset === 1) status = 'Dikirim'
+          else if (distIdx === 3) status = 'Dibatalkan'
+          else status = 'Diterima'
+
+          const notesList = [
+            'Distribusi rutin mingguan',
+            'Tambahan untuk kebutuhan mendesak',
+            null,
+            'Pengganti distribusi sebelumnya',
+            'Distribusi awal bulan',
+            null,
+            null,
+            'Permintaan khusus dari PIC',
+            null,
+            null,
+            'Distribusi rutin',
+            null,
+          ]
+
+          sampleDists.push({
+            distribution_date: d.toISOString().slice(0, 10),
+            destination_type: type as 'Sekolah' | 'Posyandu',
+            destination_name: destList[destIdx],
+            pic_name: picList[destIdx],
+            notes: notesList[distIdx % notesList.length],
+            status,
+          })
+          distIdx++
+        }
       }
 
       const { data: dists, error: distErr } = await supabase
@@ -133,16 +188,33 @@ export async function GET(req: NextRequest) {
         .select()
       if (distErr) throw distErr
 
+      // Buat item per distribusi — tiap distribusi 3-6 barang, bervariasi per hari
       const distItems = []
-      for (const dist of dists || []) {
-        const numItems = 2 + Math.floor(Math.random() * 3)
-        for (let j = 0; j < numItems && j < items.length; j++) {
+      for (let di = 0; di < (dists || []).length; di++) {
+        const dist = dists![di]
+        const numItems = 3 + (di % 4) // 3-6 item per distribusi
+        // Rotasi barang agar tidak selalu sama
+        const startIdx = (di * 2) % items.length
+
+        for (let j = 0; j < numItems; j++) {
+          const itemIdx = (startIdx + j) % items.length
+          const si = items[itemIdx]
+          // Jumlah realistis berdasarkan unit
+          let qty: number
+          if (si.unit === 'kg' || si.unit === 'liter') {
+            qty = (2 + Math.floor(Math.random() * 8)) + (j % 2 === 0 ? 0.5 : 0)
+          } else if (si.unit === 'gram' || si.unit === 'ml') {
+            qty = (200 + Math.floor(Math.random() * 800))
+          } else {
+            qty = (5 + Math.floor(Math.random() * 20))
+          }
+
           distItems.push({
             distribution_id: dist.id,
-            item_id: items[j % items.length].id,
-            item_name: items[j % items.length].name,
-            quantity: (5 + Math.floor(Math.random() * 20)) * (j % 2 === 0 ? 1 : 0.5),
-            unit: items[j % items.length].unit,
+            item_id: si.id,
+            item_name: si.name,
+            quantity: qty,
+            unit: si.unit,
             notes: j === 0 ? 'Prioritas utama' : null,
           })
         }
@@ -153,7 +225,28 @@ export async function GET(req: NextRequest) {
         if (itemErr) throw itemErr
       }
 
-      return NextResponse.json({ message: 'Data distribusi berhasil disemai', seeded: true, count: dists?.length })
+      // Buat transaksi stok keluar untuk yang Dikirim/Diterima
+      for (const dist of dists || []) {
+        if (dist.status !== 'Dikirim' && dist.status !== 'Diterima') continue
+        const relatedItems = distItems.filter(di => di.distribution_id === dist.id)
+        for (const item of relatedItems) {
+          await supabase.from('stock_transactions').insert([{
+            item_id: item.item_id,
+            type: 'Keluar',
+            quantity: item.quantity,
+            transaction_date: dist.distribution_date,
+            notes: `Distribusi ke ${dist.destination_name} (${dist.destination_type})`,
+            reference: `DIST-${dist.id.toString().slice(0, 8)}`,
+          }])
+        }
+      }
+
+      return NextResponse.json({
+        message: `Simulasi 1 minggu berhasil: ${dists?.length} distribusi, ${distItems.length} item barang`,
+        seeded: true,
+        count: dists?.length,
+        items: distItems.length,
+      })
     }
 
     // Default: list distributions with items
