@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import {
   Plus, Search, X, Trash2, Pencil, Loader2, Package, ArrowDownCircle, ArrowUpCircle,
-  AlertTriangle, ShoppingCart, History, Warehouse, Database, Copy, Check, ExternalLink
+  AlertTriangle, ShoppingCart, History, Warehouse, Database, Copy, Check, ExternalLink,
+  Receipt, Link2
 } from 'lucide-react';
 
 interface StockItem {
@@ -42,7 +43,8 @@ export default function StockModule() {
     name: '', category: 'Bahan Makanan', unit: 'kg', stock_qty: '', min_stock: '', location: '', description: ''
   });
   const [formTx, setFormTx] = useState({
-    itemId: '', type: 'Masuk' as 'Masuk' | 'Keluar', quantity: '', date: new Date().toISOString().slice(0, 10), notes: '', reference: ''
+    itemId: '', type: 'Masuk' as 'Masuk' | 'Keluar', quantity: '', date: new Date().toISOString().slice(0, 10), notes: '', reference: '',
+    supplier: '', hargaTotal: '',
   });
 
   const fetchData = useCallback(async () => {
@@ -137,7 +139,7 @@ export default function StockModule() {
   };
 
   const openTxModal = (type: 'Masuk' | 'Keluar') => {
-    setFormTx({ itemId: items[0]?.id || '', type, quantity: '', date: new Date().toISOString().slice(0, 10), notes: '', reference: '' });
+    setFormTx({ itemId: items[0]?.id || '', type, quantity: '', date: new Date().toISOString().slice(0, 10), notes: '', reference: '', supplier: '', hargaTotal: '' });
     setShowTxModal(true);
   };
 
@@ -160,7 +162,29 @@ export default function StockModule() {
         body: JSON.stringify({ itemId: formTx.itemId, type: formTx.type, quantity: Number(formTx.quantity), date: formTx.date, notes: formTx.notes, reference: formTx.reference })
       });
       if (!res.ok) throw new Error();
+      const txData = await res.json();
       toast.success(`Stok ${formTx.type.toLowerCase()} berhasil dicatat`);
+
+      // If Stok Masuk with supplier & harga, auto-create payment in Akuntan
+      if (formTx.type === 'Masuk' && formTx.supplier && formTx.hargaTotal && Number(formTx.hargaTotal) > 0) {
+        try {
+          var d = new Date(formTx.date + 'T00:00:00');
+          var bulanList = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+          var item = items.find(function(i) { return i.id === formTx.itemId; });
+          await fetch('/api/akun-pembayaran', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              jenis: 'barang_masuk', tanggal: formTx.date, bulan: bulanList[d.getMonth()], tahun: String(d.getFullYear()),
+              penerima: formTx.supplier,
+              keterangan: (item ? item.name + ' ' : '') + Number(formTx.quantity) + (item ? ' ' + item.unit : '') + (formTx.reference ? ' (' + formTx.reference + ')' : ''),
+              jumlah: Number(formTx.hargaTotal), status: 'Belum Bayar', stock_tx_id: txData.id,
+            })
+          });
+          toast.success('Pembayaran otomatis dicatat di Akuntan & Keuangan');
+        } catch { /* silent - stock tx already saved */ }
+      }
+
       setShowTxModal(false); fetchData();
     } catch { toast.error('Gagal menyimpan transaksi'); }
     finally { setSaving(false); }
@@ -547,6 +571,14 @@ export default function StockModule() {
               </div>
               <div><label className="text-xs font-semibold text-slate-500 mb-1 block">Referensi (Sumber/Tujuan)</label><input type="text" value={formTx.reference} onChange={e => setFormTx({...formTx, reference: e.target.value})} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" placeholder="Contoh: Dinas Kesehatan" /></div>
               <div><label className="text-xs font-semibold text-slate-500 mb-1 block">Keterangan</label><input type="text" value={formTx.notes} onChange={e => setFormTx({...formTx, notes: e.target.value})} className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" placeholder="Opsional" /></div>
+              {formTx.type === 'Masuk' && (
+                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-3">
+                  <p className="text-xs font-bold text-emerald-700 flex items-center gap-1"><Receipt className="w-3.5 h-3.5" />Catat Pembayaran ke Akuntan <span className="font-normal text-emerald-500">(opsional)</span></p>
+                  <div><label className="text-xs font-semibold text-slate-600 mb-1 block">Nama Supplier</label><input type="text" value={formTx.supplier} onChange={e => setFormTx({...formTx, supplier: e.target.value})} className="w-full px-3 py-2 border border-emerald-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50" placeholder="Contoh: CV Pangan Sehat" /></div>
+                  <div><label className="text-xs font-semibold text-slate-600 mb-1 block">Harga Total (Rp)</label><input type="number" min="0" value={formTx.hargaTotal} onChange={e => setFormTx({...formTx, hargaTotal: e.target.value})} className="w-full px-3 py-2 border border-emerald-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50" placeholder="0" /></div>
+                  <p className="text-[10px] text-emerald-600">Jika diisi, pembayaran akan otomatis terekam di menu Akuntan & Keuangan</p>
+                </div>
+              )}
               <div className="flex gap-2 pt-2">
                 <button type="button" onClick={() => setShowTxModal(false)} className="flex-1 py-2.5 rounded-lg border border-slate-200 text-sm font-semibold text-slate-500 hover:bg-slate-50">Batal</button>
                 <button type="submit" disabled={saving} className={`flex-1 py-2.5 rounded-lg text-white text-sm font-bold disabled:opacity-50 flex items-center justify-center gap-1 ${formTx.type === 'Masuk' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-amber-500 hover:bg-amber-600'}`}>{saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}Simpan Transaksi</button>

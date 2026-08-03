@@ -6,14 +6,14 @@ import {
   Plus, Trash2, Pencil, Loader2, Receipt, Copy, Check, ExternalLink,
   Search, X, Package, Users, GraduationCap, Baby, RotateCcw,
   Wallet, ArrowUpRight, ArrowDownRight, CircleCheck, CircleX, Clock,
-  AlertCircle, Filter
+  AlertCircle, Filter, Link2
 } from 'lucide-react';
 
 // === TYPES ===
 interface Pembayaran {
   id: string; jenis: string; tanggal: string; bulan: string | null;
   tahun: string | null; penerima: string; keterangan: string | null;
-  jumlah: number; status: string; catatan: string | null; created_at: string;
+  jumlah: number; status: string; catatan: string | null; created_at: string; stock_tx_id: string | null;
 }
 
 interface Summary {
@@ -331,7 +331,10 @@ export default function AkuntanModule() {
                     </span>
                   </div>
                   <div className="col-span-2 text-sm font-semibold text-slate-800 truncate" title={p.penerima}>{p.penerima}</div>
-                  <div className="col-span-3 text-xs text-slate-500 truncate" title={p.keterangan || ''}>{p.keterangan || '-'}</div>
+                  <div className="col-span-3 flex items-center gap-1.5">
+                    <span className="text-xs text-slate-500 truncate" title={p.keterangan || ''}>{p.keterangan || '-'}</span>
+                    {p.stock_tx_id && <span className="shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-600 text-[9px] font-bold"><Link2 className="w-2.5 h-2.5" />Gudang</span>}
+                  </div>
                   <div className="col-span-1 text-sm font-bold text-slate-800 text-right">{fmtRp(p.jumlah)}</div>
                   <div className="col-span-1 flex justify-center">
                     <span className={"inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold " + (sCfg ? sCfg.bg + ' ' + sCfg.color : 'bg-slate-100 text-slate-500')}>

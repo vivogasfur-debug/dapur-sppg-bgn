@@ -13,6 +13,7 @@ const SETUP_SQL = `CREATE TABLE IF NOT EXISTS akun_pembayaran (
   status TEXT DEFAULT 'Belum Bayar' CHECK (status IN ('Lunas', 'Belum Bayar', 'Dibatalkan')),
   bukti_bayar TEXT,
   catatan TEXT,
+  stock_tx_id UUID,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -20,7 +21,15 @@ ALTER TABLE akun_pembayaran ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all on akun_pembayaran" ON akun_pembayaran FOR ALL USING (true) WITH CHECK (true);
 CREATE INDEX IF NOT EXISTS idx_akun_bayar_jenis ON akun_pembayaran(jenis);
 CREATE INDEX IF NOT EXISTS idx_akun_bayar_tanggal ON akun_pembayaran(tanggal DESC);
-CREATE INDEX IF NOT EXISTS idx_akun_bayar_status ON akun_pembayaran(status);`;
+CREATE INDEX IF NOT EXISTS idx_akun_bayar_status ON akun_pembayaran(status);
+CREATE INDEX IF NOT EXISTS idx_akun_bayar_stock_tx ON akun_pembayaran(stock_tx_id);
+
+-- Jika tabel sudah ada tanpa kolom stock_tx_id, tambahkan:
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'akun_pembayaran' AND column_name = 'stock_tx_id') THEN
+    ALTER TABLE akun_pembayaran ADD COLUMN stock_tx_id UUID;
+  END IF;
+END $$;`;
 
 const SEED_DATA = [
   // Pembayaran Barang Masuk
@@ -114,6 +123,7 @@ export async function POST(req: NextRequest) {
       jumlah: Number(body.jumlah) || 0,
       status: body.status || 'Belum Bayar',
       catatan: body.catatan || null,
+      stock_tx_id: body.stock_tx_id || null,
     }]).select()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data![0], { status: 201 })
@@ -139,6 +149,7 @@ export async function PUT(req: NextRequest) {
     if (body.jumlah !== undefined) updateData.jumlah = Number(body.jumlah) || 0
     if (body.status !== undefined) updateData.status = body.status
     if (body.catatan !== undefined) updateData.catatan = body.catatan || null
+    if (body.stock_tx_id !== undefined) updateData.stock_tx_id = body.stock_tx_id || null
     const { data, error } = await supabase.from('akun_pembayaran').update(updateData).eq('id', id).select()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data![0])
