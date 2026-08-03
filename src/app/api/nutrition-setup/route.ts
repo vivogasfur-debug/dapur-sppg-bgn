@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS weekly_menu_plans (
   tipe_porsi TEXT NOT NULL CHECK (tipe_porsi IN ('porsi_besar', 'porsi_kecil', 'porsi_bayi')),
   penerima TEXT DEFAULT 'Umum',
   catatan TEXT,
+  gambar TEXT,
   status TEXT DEFAULT 'Aktif',
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -46,6 +47,13 @@ CREATE INDEX IF NOT EXISTS idx_weekly_menu_porsi ON weekly_menu_plans(tipe_porsi
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'nutrition_menu_db' AND column_name = 'gambar_url') THEN
     ALTER TABLE nutrition_menu_db ADD COLUMN gambar_url TEXT;
+  END IF;
+END $$;
+
+-- Jika tabel sudah ada tanpa kolom gambar di weekly_menu_plans, tambahkan:
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'weekly_menu_plans' AND column_name = 'gambar') THEN
+    ALTER TABLE weekly_menu_plans ADD COLUMN gambar TEXT;
   END IF;
 END $$;`
 

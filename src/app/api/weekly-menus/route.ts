@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
           menu_db_id: menuMap.get(p.menu_nama) || null,
           tipe_porsi: p.tipe_porsi,
           penerima: p.tipe_porsi === 'porsi_bayi' ? 'Bayi' : 'Umum',
-          catatan: null, status: 'Aktif',
+          catatan: null, gambar: null, status: 'Aktif',
         }
       })
       const { data, error } = await supabase.from('weekly_menu_plans').insert(plans).select('id,hari,tipe_porsi')
@@ -59,8 +59,8 @@ export async function GET(req: NextRequest) {
 
     // Get weekly plans joined with menu_db
     let q = supabase.from('weekly_menu_plans').select(`
-      id, tanggal, hari, menu_db_id, tipe_porsi, penerima, catatan, status, created_at,
-      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)
+      id, tanggal, hari, menu_db_id, tipe_porsi, penerima, catatan, gambar, status, created_at,
+      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi, gambar_url)
     `).order('tanggal', { ascending: true }).order('tipe_porsi')
     if (tanggal) q = q.eq('tanggal', tanggal)
     if (tipe) q = q.eq('tipe_porsi', tipe)
@@ -81,15 +81,44 @@ export async function POST(req: NextRequest) {
       menu_db_id: body.menu_db_id || null,
       tipe_porsi: body.tipe_porsi,
       penerima: body.penerima || 'Umum',
-      catatan: body.catatan || null, status: 'Aktif',
+      catatan: body.catatan || null,
+      gambar: body.gambar || null,
+      status: 'Aktif',
     }]).select(`
-      id, tanggal, hari, tipe_porsi, penerima, catatan, status,
+      id, tanggal, hari, tipe_porsi, penerima, catatan, gambar, status,
       nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan)
     `)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data![0], { status: 201 })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal menyimpan'
+    return NextResponse.json({ error: msg }, { status: 500 })
+  }
+}
+
+// PUT: Update a weekly plan (used for updating gambar, catatan, etc.)
+export async function PUT(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
+
+    const body = await req.json()
+    const updateData: Record<string, unknown> = {}
+    if (body.gambar !== undefined) updateData.gambar = body.gambar || null
+    if (body.catatan !== undefined) updateData.catatan = body.catatan || null
+    if (body.tipe_porsi !== undefined) updateData.tipe_porsi = body.tipe_porsi
+    if (body.menu_db_id !== undefined) updateData.menu_db_id = body.menu_db_id || null
+    if (body.penerima !== undefined) updateData.penerima = body.penerima
+
+    const { data, error } = await supabase.from('weekly_menu_plans').update(updateData).eq('id', id).select(`
+      id, tanggal, hari, tipe_porsi, penerima, catatan, gambar, status,
+      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan)
+    `)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data![0])
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Gagal memperbarui'
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

@@ -21,6 +21,7 @@ interface MenuDbItem {
 interface WeeklyPlan {
   id: string; tanggal: string; hari: string; menu_db_id: string | null;
   tipe_porsi: string; penerima: string; catatan: string | null; status: string;
+  gambar: string | null;
   nutrition_menu_db: MenuDbItem | null;
 }
 
@@ -66,7 +67,11 @@ export default function AhliGiziModule() {
   const [saving, setSaving] = useState(false);
 
   // Form: Add Weekly Plan (dropdown from DB)
-  const [planForm, setPlanForm] = useState({ tanggal: '', hari: '', tipe_porsi: 'porsi_besar', menu_db_id: '', catatan: '' });
+  const [planForm, setPlanForm] = useState({ tanggal: '', hari: '', tipe_porsi: 'porsi_besar', menu_db_id: '', catatan: '', gambar: '' });
+
+  // Edit image modal for weekly plan
+  const [editImagePlan, setEditImagePlan] = useState<WeeklyPlan | null>(null);
+  const [editImageForm, setEditImageForm] = useState({ gambar: '' });
   // Form: Add/Edit Menu DB
   const [menuForm, setMenuForm] = useState({
     nama_menu: '', tipe_porsi: 'porsi_besar', nasi: 'Nasi Putih',
@@ -136,8 +141,52 @@ export default function AhliGiziModule() {
 
   // === HANDLE: Add Weekly Plan ===
   const openAddPlan = (hari?: string, tanggal?: string) => {
-    setPlanForm({ tanggal: tanggal || new Date().toISOString().slice(0,10), hari: hari || '', tipe_porsi: 'porsi_besar', menu_db_id: '', catatan: '' });
+    setPlanForm({ tanggal: tanggal || new Date().toISOString().slice(0,10), hari: hari || '', tipe_porsi: 'porsi_besar', menu_db_id: '', catatan: '', gambar: '' });
     setShowPlanModal(true);
+  };
+
+  // Handle image upload for weekly plan
+  const handlePlanImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Ukuran gambar maks 2MB'); return; }
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      setPlanForm(function(f) { return { ...f, gambar: reader.result as string }; });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handle image upload for edit image modal
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Ukuran gambar maks 2MB'); return; }
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      setEditImageForm({ gambar: reader.result as string });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const openEditImage = (plan: WeeklyPlan) => {
+    setEditImagePlan(plan);
+    setEditImageForm({ gambar: plan.gambar || '' });
+  };
+
+  const handleSaveEditImage = async () => {
+    if (!editImagePlan) return;
+    try {
+      const res = await fetch('/api/weekly-menus?id=' + editImagePlan.id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gambar: editImageForm.gambar || null }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success('Gambar menu harian diperbarui');
+      setEditImagePlan(null);
+      fetchWeekly();
+    } catch { toast.error('Gagal menyimpan gambar'); }
   };
 
   const handleSavePlan = async (e: React.FormEvent) => {
@@ -148,7 +197,7 @@ export default function AhliGiziModule() {
       const res = await fetch('/api/weekly-menus', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(planForm),
+        body: JSON.stringify({ ...planForm, gambar: planForm.gambar || null }),
       });
       if (!res.ok) throw new Error();
       toast.success('Menu ditambahkan ke rencana mingguan');
@@ -417,17 +466,25 @@ export default function AhliGiziModule() {
                                   </div>
                                   {menu && (
                                     <div className="flex items-center gap-3">
-                                      {menu.gambar_url ? (
-                                        <img src={menu.gambar_url} alt={menu.nama_menu} className="w-14 h-14 rounded-lg object-cover shrink-0 border border-slate-200" />
-                                      ) : (
-                                        <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200"><ImageIcon className="w-6 h-6 text-slate-300" /></div>
-                                      )}
+                                      <div className="relative group">
+                                        {p.gambar ? (
+                                          <img src={p.gambar} alt={menu.nama_menu} className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-200" />
+                                        ) : menu.gambar_url ? (
+                                          <img src={menu.gambar_url} alt={menu.nama_menu} className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-200 opacity-60" />
+                                        ) : (
+                                          <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200"><ImageIcon className="w-7 h-7 text-slate-300" /></div>
+                                        )}
+                                        <button onClick={function() { openEditImage(p); }} className="absolute inset-0 rounded-xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                          <ImagePlus className="w-6 h-6 text-white" />
+                                        </button>
+                                      </div>
                                       <div>
                                         <p className="font-semibold text-slate-800 text-sm">{menu.nama_menu}</p>
                                         <div className="flex items-center gap-2 flex-wrap mt-0.5">
                                           {menu.kalori_est && <span className="text-[10px] text-orange-500 font-semibold">{menu.kalori_est} kkal</span>}
                                           {menu.protein_g && <span className="text-[10px] text-blue-500 font-semibold">{menu.protein_g}g protein</span>}
                                         </div>
+                                        {p.gambar && <span className="text-[9px] text-emerald-500 font-semibold mt-0.5 block flex items-center gap-0.5"><Check className="w-3 h-3" />Foto hari ini</span>}
                                       </div>
                                     </div>
                                   )}
@@ -443,6 +500,7 @@ export default function AhliGiziModule() {
                                   {(menu?.catatan || p.catatan) && <p className="text-xs text-slate-400 mt-1 italic">{menu?.catatan || p.catatan}</p>}
                                 </div>
                                 <div className="flex items-center gap-1 shrink-0">
+                                  <button onClick={function() { openEditImage(p); }} className="p-2 rounded-lg hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors" title="Upload/ubah gambar hari ini"><ImagePlus className="w-4 h-4" /></button>
                                   <button onClick={function() { handleDeletePlan(p.id); }} className="p-2 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                 </div>
                               </div>
@@ -617,6 +675,29 @@ export default function AhliGiziModule() {
                 );
               })()}
               <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Gambar Menu Hari Ini <span className="text-slate-400 font-normal">(opsional)</span></label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center justify-center w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-400 hover:bg-emerald-50/50 cursor-pointer transition-all overflow-hidden">
+                    {planForm.gambar ? (
+                      <img src={planForm.gambar} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center">
+                        <ImagePlus className="w-6 h-6 text-slate-400 mx-auto" />
+                        <span className="text-[10px] text-slate-400 mt-0.5 block">Pilih Foto</span>
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" onChange={handlePlanImageUpload} className="hidden" />
+                  </label>
+                  <div className="flex-1">
+                    <p className="text-[11px] text-slate-400">Upload foto menu yang dijual hari ini (maks 2MB)</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">JPG, PNG, atau WebP</p>
+                    {planForm.gambar && (
+                      <button type="button" onClick={function() { setPlanForm(function(f) { return { ...f, gambar: '' }; }); }} className="text-[11px] text-red-500 hover:text-red-600 font-semibold mt-1 flex items-center gap-0.5"><X className="w-3 h-3" />Hapus Gambar</button>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1">Catatan (Opsional)</label>
                 <textarea value={planForm.catatan} onChange={function(e) { setPlanForm(function(f) { return { ...f, catatan: e.target.value }; }); }} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none" placeholder="Catatan khusus..." />
               </div>
@@ -705,6 +786,49 @@ export default function AhliGiziModule() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== MODAL: EDIT GAMBAR MENU HARIAN ==================== */}
+      {editImagePlan && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4" onClick={function() { setEditImagePlan(null); }}>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={function(e) { e.stopPropagation(); }}>
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-lg text-slate-800">Upload Gambar Hari Ini</h3>
+                <p className="text-xs text-slate-400 mt-0.5">{editImagePlan.hari}, {fmtDate(editImagePlan.tanggal)}</p>
+              </div>
+              <button onClick={function() { setEditImagePlan(null); }} className="p-1.5 rounded-lg hover:bg-slate-100"><X className="w-5 h-5 text-slate-400" /></button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex justify-center">
+                <label className="flex items-center justify-center w-56 h-56 rounded-2xl border-2 border-dashed border-slate-300 hover:border-emerald-400 hover:bg-emerald-50/50 cursor-pointer transition-all overflow-hidden">
+                  {editImageForm.gambar ? (
+                    <img src={editImageForm.gambar} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-center">
+                      <ImagePlus className="w-10 h-10 text-slate-300 mx-auto" />
+                      <span className="text-sm text-slate-400 mt-2 block font-medium">Klik untuk pilih foto</span>
+                      <span className="text-[10px] text-slate-300 mt-0.5 block">Maks 2MB</span>
+                    </div>
+                  )}
+                  <input type="file" accept="image/*" onChange={handleEditImageUpload} className="hidden" />
+                </label>
+              </div>
+              {editImageForm.gambar && (
+                <div className="flex justify-center">
+                  <button onClick={function() { setEditImageForm({ gambar: '' }); }} className="text-xs text-red-500 hover:text-red-600 font-semibold flex items-center gap-1"><X className="w-3 h-3" />Hapus Gambar</button>
+                </div>
+              )}
+              {editImagePlan.nutrition_menu_db && (
+                <p className="text-center text-xs text-slate-400">Menu: <span className="font-semibold text-slate-600">{editImagePlan.nutrition_menu_db.nama_menu}</span></p>
+              )}
+              <div className="flex gap-2">
+                <button onClick={function() { setEditImagePlan(null); }} className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm font-semibold hover:bg-slate-50">Batal</button>
+                <button onClick={handleSaveEditImage} className="flex-1 px-4 py-3 rounded-xl bg-emerald-500 text-white text-sm font-semibold hover:bg-emerald-600">Simpan Gambar</button>
+              </div>
+            </div>
           </div>
         </div>
       )}
