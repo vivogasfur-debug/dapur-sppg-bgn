@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Lock, Mail, Loader2 } from 'lucide-react'
+import { Lock, Mail, Loader2, Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import MainApp from '@/components/MainApp'
 
@@ -11,6 +11,7 @@ export default function Home() {
   const [email, setEmail] = useState('admin@dashboard.id')
   const [password, setPassword] = useState('password123')
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   if (isAuthenticated) {
     return <MainApp />
@@ -70,7 +71,10 @@ export default function Home() {
               <label className="block text-xs font-semibold text-slate-600">Kata Sandi</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan kata sandi" className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" required />
+                <input id="password" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Masukkan kata sandi" className="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/50" required />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors">
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
             <button type="submit" disabled={loading} className="w-full bg-slate-900 hover:bg-slate-800 active:scale-[0.98] text-white py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50">

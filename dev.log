@@ -86,3 +86,7 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  GET /api/nutrition-menus 200 in 207ms (compile: 138ms, render: 69ms)
  GET /api/weekly-menus 200 in 886ms (compile: 127ms, render: 759ms)
 ✓ Compiled in 189ms
+ GET / 200 in 973ms (compile: 354ms, render: 619ms)
+ GET / 200 in 299ms (compile: 258ms, render: 40ms)
+ GET / 200 in 244ms (compile: 208ms, render: 36ms)
+✓ Compiled in 490ms
