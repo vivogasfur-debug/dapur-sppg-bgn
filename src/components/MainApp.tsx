@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import StockModule from './StockModule';
 import AhliGiziModule from './AhliGiziModule';
 import AkuntanModule from './AkuntanModule';
+import DistribusiModule from './DistribusiModule';
 import Image from 'next/image';
 import * as ExcelJS from 'exceljs';
 import { 
@@ -762,6 +763,9 @@ export default function MainApp() {
 
       case 'Akuntan & Keuangan':
         return <AkuntanModule />;
+
+      case 'Distribusi Lapangan':
+        return <DistribusiModule />;
 
       default:
         return <div className="p-4 bg-white rounded-xl border border-slate-200">Modul {activeMenu} — segera hadir</div>;
