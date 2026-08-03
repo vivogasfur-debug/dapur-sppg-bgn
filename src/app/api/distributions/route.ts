@@ -17,10 +17,15 @@ CREATE TABLE IF NOT EXISTS distributions (
 CREATE TABLE IF NOT EXISTS distribution_items (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   distribution_id UUID NOT NULL REFERENCES distributions(id) ON DELETE CASCADE,
-  item_id UUID NOT NULL REFERENCES stock_items(id),
-  item_name TEXT NOT NULL,
-  quantity NUMERIC(10,2) NOT NULL DEFAULT 0,
-  unit TEXT NOT NULL DEFAULT 'pcs',
+  weekly_plan_id UUID REFERENCES weekly_menu_plans(id) ON DELETE SET NULL,
+  menu_name TEXT NOT NULL,
+  tipe_porsi TEXT NOT NULL DEFAULT 'porsi_besar',
+  nasi TEXT,
+  lauk_pauk TEXT,
+  sayur TEXT,
+  buah TEXT,
+  minuman TEXT,
+  jumlah_porsi INTEGER NOT NULL DEFAULT 1,
   notes TEXT
 );
 
@@ -41,7 +46,6 @@ CREATE TRIGGER trg_distributions_updated_at
   BEFORE UPDATE ON distributions
   FOR EACH ROW EXECUTE FUNCTION update_distributions_updated_at();
 
--- Nonaktifkan RLS agar anon key bisa akses (penting!)
 ALTER TABLE distributions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE distribution_items ENABLE ROW LEVEL SECURITY;
 
@@ -51,14 +55,10 @@ CREATE POLICY "Allow all on distribution_items" ON distribution_items
   FOR ALL USING (true) WITH CHECK (true);
 `
 
-const RLS_FIX_SQL = `-- Jalankan ini di Supabase SQL Editor untuk memperbaiki akses RLS
-ALTER TABLE distributions ENABLE ROW LEVEL SECURITY;
+const RLS_FIX_SQL = `ALTER TABLE distributions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE distribution_items ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow all on distributions" ON distributions
-  FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on distribution_items" ON distribution_items
-  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on distributions" ON distributions FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on distribution_items" ON distribution_items FOR ALL USING (true) WITH CHECK (true);
 `
 
 export async function GET(req: NextRequest) {
@@ -72,12 +72,7 @@ export async function GET(req: NextRequest) {
         const errMsg = error.message || ''
         const isMissing = errMsg.includes('does not exist') || errMsg.includes('relation')
         const isRls = errMsg.includes('permission denied') || errMsg.includes('policy') || errMsg.includes('42501')
-        return NextResponse.json({
-          needsSetup: isMissing,
-          needsRlsFix: isRls,
-          sql: isRls ? RLS_FIX_SQL : SETUP_SQL,
-          error: errMsg,
-        })
+        return NextResponse.json({ needsSetup: isMissing, needsRlsFix: isRls, sql: isRls ? RLS_FIX_SQL : SETUP_SQL, error: errMsg })
       }
       return NextResponse.json({ needsSetup: false, needsRlsFix: false })
     }
@@ -89,178 +84,201 @@ export async function GET(req: NextRequest) {
     if (action === 'summary') {
       const { data: allDist, error: errAll } = await supabase.from('distributions').select('*')
       if (errAll) throw errAll
-
       const draft = allDist?.filter(d => d.status === 'Draft').length || 0
       const dikirim = allDist?.filter(d => d.status === 'Dikirim').length || 0
       const diterima = allDist?.filter(d => d.status === 'Diterima').length || 0
       const dibatalkan = allDist?.filter(d => d.status === 'Dibatalkan').length || 0
-
       return NextResponse.json({ total: allDist?.length || 0, draft, dikirim, diterima, dibatalkan })
     }
 
+    // Ambil daftar sekolah dari students
     if (action === 'schools') {
-      const { data, error } = await supabase
-        .from('students')
-        .select('school_name')
-        .not('school_name', 'is', null)
+      const { data, error } = await supabase.from('students').select('school_name').not('school_name', 'is', null)
       if (error) throw error
       const schools = [...new Set(data?.map(d => d.school_name).filter(Boolean) || [])] as string[]
       return NextResponse.json(schools.sort())
     }
 
+    // Ambil daftar posyandu dari beneficiaries_3b
     if (action === 'posyandu') {
-      const { data, error } = await supabase
-        .from('beneficiaries_3b')
-        .select('posyandu_name')
-        .not('posyandu_name', 'is', null)
+      const { data, error } = await supabase.from('beneficiaries_3b').select('posyandu_name').not('posyandu_name', 'is', null)
       if (error) throw error
       const posyandu = [...new Set(data?.map(d => d.posyandu_name).filter(Boolean) || [])] as string[]
       return NextResponse.json(posyandu.sort())
     }
 
-    if (action === 'stock-items') {
+    // Ambil menu harian dari weekly_menu_plans untuk tanggal tertentu
+    if (action === 'menu-by-date') {
+      const tanggal = searchParams.get('tanggal')
+      if (!tanggal) return NextResponse.json([])
+
       const { data, error } = await supabase
-        .from('stock_items')
-        .select('id, name, unit, stock_qty, category')
-        .gt('stock_qty', 0)
-        .order('name')
+        .from('weekly_menu_plans')
+        .select(`id, tanggal, hari, tipe_porsi, penerima, gambar, status,
+          nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, tipe_porsi)
+        `)
+        .eq('tanggal', tanggal)
+        .order('tipe_porsi')
       if (error) throw error
-      return NextResponse.json(data)
+      return NextResponse.json(data || [])
     }
 
+    // Ambil semua menu minggu ini (untuk referensi)
+    if (action === 'menu-week') {
+      const { data, error } = await supabase
+        .from('weekly_menu_plans')
+        .select(`id, tanggal, hari, tipe_porsi, penerima,
+          nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g)
+        `)
+        .order('tanggal', { ascending: true })
+        .order('tipe_porsi')
+      if (error) throw error
+      return NextResponse.json(data || [])
+    }
+
+    // Seed simulasi 1 minggu
     if (action === 'seed') {
-      // Cek apakah tabel ada & bisa diakses
       const { error: checkErr } = await supabase.from('distributions').select('id').limit(1)
       if (checkErr) {
         const errMsg = checkErr.message || ''
         const isMissing = errMsg.includes('does not exist') || errMsg.includes('relation')
-        const isRls = errMsg.includes('permission denied') || errMsg.includes('policy') || errMsg.includes('42501')
+        const isRls = errMsg.includes('permission denied') || errMsg.includes('policy')
         return NextResponse.json({
-          message: isRls
-            ? 'RLS menghalangi akses. Jalankan SQL berikut di Supabase SQL Editor untuk memperbaiki.'
-            : 'Tabel distribusi belum dibuat. Jalankan SQL setup terlebih dahulu di Supabase SQL Editor.',
-          seeded: false,
-          needsSetup: isMissing,
-          needsRlsFix: isRls,
+          message: isRls ? 'RLS menghalangi. Jalankan SQL fix di Supabase SQL Editor.' : 'Tabel belum dibuat. Jalankan SQL setup.',
+          seeded: false, needsSetup: isMissing, needsRlsFix: isRls,
           sql: isRls ? RLS_FIX_SQL : SETUP_SQL,
         })
       }
 
-      // Hapus data lama (aman karena tabel sudah ada)
+      // Hapus data lama
       await supabase.from('distribution_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       await supabase.from('distributions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
-      const { data: stockItems } = await supabase.from('stock_items').select('id, name, unit, stock_qty').order('name')
-      const items = stockItems || []
+      // Ambil menu mingguan yang tersedia
+      const { data: menus } = await supabase
+        .from('weekly_menu_plans')
+        .select(`id, tanggal, hari, tipe_porsi,
+          nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est)
+        `)
+        .order('tanggal', { ascending: true })
 
-      if (items.length === 0) {
-        return NextResponse.json({ message: 'Belum ada data stok. Seed stok terlebih dahulu di modul Gudang.', seeded: false })
+      const menuByDate: Record<string, typeof menus> = {}
+      for (const m of menus || []) {
+        if (!menuByDate[m.tanggal]) menuByDate[m.tanggal] = []
+        menuByDate[m.tanggal].push(m)
       }
 
-      // Sekolah & posyandu simulasi
       const sekolahList = ['SDN 1 Sangia', 'SDN 2 Wambulu', 'SDN 3 Borong', 'SDN 4 Tambada']
       const posyanduList = ['Posyandu Melati', 'Posyandu Mawar', 'Posyandu Dahlia', 'Posyandu Anggrek']
       const picSekolah = ['Pak Budi Santoso', 'Bu Sari Wulandari', 'Pak Andi Pratama', 'Bu Dewi Lestari']
       const picPosyandu = ['Bu Ratna Sari', 'Bu Nurhaliza', 'Bu Hj. Aminah', 'Bu Kartika']
 
       const now = new Date()
-      const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
-
-      // Jumlah distribusi per hari: Senin-Jumat aktif, Sabtu kadang, Minggu libur
       const dailyPlan = [
-        null,                                     // Minggu (libur)
-        ['Sekolah', 'Sekolah', 'Posyandu'],       // Senin
-        ['Sekolah', 'Posyandu', 'Posyandu'],       // Selasa
-        ['Sekolah', 'Sekolah', 'Posyandu'],       // Rabu
-        ['Sekolah', 'Posyandu'],                   // Kamis
+        null,                                       // Minggu
+        ['Sekolah', 'Sekolah', 'Posyandu'],         // Senin
+        ['Sekolah', 'Posyandu', 'Posyandu'],         // Selasa
+        ['Sekolah', 'Sekolah', 'Posyandu'],         // Rabu
+        ['Sekolah', 'Posyandu'],                     // Kamis
         ['Sekolah', 'Sekolah', 'Posyandu', 'Posyandu'], // Jumat
-        ['Posyandu'],                             // Sabtu (hanya posyandu)
+        ['Posyandu'],                               // Sabtu
       ]
 
       const sampleDists = []
       let distIdx = 0
 
-      for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
-        const d = new Date(now)
-        d.setDate(d.getDate() - dayOffset)
-        const dayOfWeek = d.getDay() // 0=Minggu
+      // Cari tanggal Senin minggu ini
+      const today = now.getDay()
+      const mondayOffset = today === 0 ? -6 : 1 - today
+      const monday = new Date(now)
+      monday.setDate(now.getDate() + mondayOffset - 7) // minggu lalu
+
+      for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+        const d = new Date(monday)
+        d.setDate(monday.getDate() + dayOffset)
+        const dateStr = d.toISOString().slice(0, 10)
+        const dayOfWeek = d.getDay()
         const plan = dailyPlan[dayOfWeek]
-        if (!plan) continue // libur
+        if (!plan) continue
+
+        const dayMenus = menuByDate[dateStr] || []
 
         for (const type of plan) {
           const destList = type === 'Sekolah' ? sekolahList : posyanduList
           const picList = type === 'Sekolah' ? picSekolah : picPosyandu
           const destIdx = distIdx % destList.length
 
-          // Hari ini = Draft, kemarin = Dikirim, lainnya = Diterima (kecuali 1 dibatalkan)
           let status: 'Draft' | 'Dikirim' | 'Diterima' | 'Dibatalkan'
-          if (dayOffset === 0) status = 'Draft'
-          else if (dayOffset === 1) status = 'Dikirim'
+          if (dayOffset >= 5) status = 'Draft' // Sabtu-Minggu draft
+          else if (dayOffset >= 4) status = 'Dikirim' // Jumat dikirim
           else if (distIdx === 3) status = 'Dibatalkan'
           else status = 'Diterima'
 
           const notesList = [
-            'Distribusi rutin mingguan',
-            'Tambahan untuk kebutuhan mendesak',
-            null,
-            'Pengganti distribusi sebelumnya',
-            'Distribusi awal bulan',
-            null,
-            null,
-            'Permintaan khusus dari PIC',
-            null,
-            null,
-            'Distribusi rutin',
-            null,
+            'Distribusi ompreng rutin', 'Tambahan porsi', null,
+            'Pengganti kemarin', 'Menu spesial', null, null, 'Permintaan PIC', null, null, 'Rutin harian', null,
           ]
 
           sampleDists.push({
-            distribution_date: d.toISOString().slice(0, 10),
+            distribution_date: dateStr,
             destination_type: type as 'Sekolah' | 'Posyandu',
             destination_name: destList[destIdx],
             pic_name: picList[destIdx],
             notes: notesList[distIdx % notesList.length],
             status,
+            _menus: dayMenus, // sementara untuk buat items
           })
           distIdx++
         }
       }
 
-      const { data: dists, error: distErr } = await supabase
-        .from('distributions')
-        .insert(sampleDists)
-        .select()
+      // Insert distribusi (tanpa _menus)
+      const insertData = sampleDists.map(({ _menus, ...rest }) => rest)
+      const { data: dists, error: distErr } = await supabase.from('distributions').insert(insertData).select()
       if (distErr) throw distErr
 
-      // Buat item per distribusi — tiap distribusi 3-6 barang, bervariasi per hari
+      // Buat distribution_items dari menu harian
       const distItems = []
       for (let di = 0; di < (dists || []).length; di++) {
         const dist = dists![di]
-        const numItems = 3 + (di % 4) // 3-6 item per distribusi
-        // Rotasi barang agar tidak selalu sama
-        const startIdx = (di * 2) % items.length
+        const dayMenus = sampleDists[di]._menus || []
 
-        for (let j = 0; j < numItems; j++) {
-          const itemIdx = (startIdx + j) % items.length
-          const si = items[itemIdx]
-          // Jumlah realistis berdasarkan unit
-          let qty: number
-          if (si.unit === 'kg' || si.unit === 'liter') {
-            qty = (2 + Math.floor(Math.random() * 8)) + (j % 2 === 0 ? 0.5 : 0)
-          } else if (si.unit === 'gram' || si.unit === 'ml') {
-            qty = (200 + Math.floor(Math.random() * 800))
-          } else {
-            qty = (5 + Math.floor(Math.random() * 20))
+        if (dayMenus.length > 0) {
+          // Gunakan menu dari Ahli Gizi
+          for (const menu of dayMenus) {
+            const menuDb = (menu as Record<string, unknown>).nutrition_menu_db as Record<string, unknown> | null
+            distItems.push({
+              distribution_id: dist.id,
+              weekly_plan_id: menu.id,
+              menu_name: menuDb?.nama_menu || `Menu ${menu.hari} ${menu.tipe_porsi}`,
+              tipe_porsi: menu.tipe_porsi,
+              nasi: menuDb?.nasi || null,
+              lauk_pauk: menuDb?.lauk_pauk || null,
+              sayur: menuDb?.sayur || null,
+              buah: menuDb?.buah || null,
+              minuman: menuDb?.minuman || null,
+              jumlah_porsi: menu.tipe_porsi === 'porsi_bayi' ? 10 + Math.floor(Math.random() * 15) : 20 + Math.floor(Math.random() * 40),
+              notes: null,
+            })
           }
-
-          distItems.push({
-            distribution_id: dist.id,
-            item_id: si.id,
-            item_name: si.name,
-            quantity: qty,
-            unit: si.unit,
-            notes: j === 0 ? 'Prioritas utama' : null,
-          })
+        } else {
+          // Fallback: menu generik jika tidak ada menu dari Ahli Gizi
+          const hari = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][new Date(dist.distribution_date + 'T00:00:00').getDay()]
+          const genericMenus = [
+            { tipe_porsi: 'porsi_besar', nama: `Menu ${hari} Porsi Besar` },
+            { tipe_porsi: 'porsi_kecil', nama: `Menu ${hari} Porsi Kecil` },
+          ]
+          for (const gm of genericMenus) {
+            distItems.push({
+              distribution_id: dist.id,
+              weekly_plan_id: null,
+              menu_name: gm.nama,
+              tipe_porsi: gm.tipe_porsi,
+              nasi: 'Nasi Putih', lauk_pauk: '-', sayur: '-', buah: null, minuman: null,
+              jumlah_porsi: gm.tipe_porsi === 'porsi_kecil' ? 30 : 25,
+              notes: 'Menu belum diatur di Ahli Gizi',
+            })
+          }
         }
       }
 
@@ -269,31 +287,13 @@ export async function GET(req: NextRequest) {
         if (itemErr) throw itemErr
       }
 
-      // Buat transaksi stok keluar untuk yang Dikirim/Diterima
-      for (const dist of dists || []) {
-        if (dist.status !== 'Dikirim' && dist.status !== 'Diterima') continue
-        const relatedItems = distItems.filter(di => di.distribution_id === dist.id)
-        for (const item of relatedItems) {
-          await supabase.from('stock_transactions').insert([{
-            item_id: item.item_id,
-            type: 'Keluar',
-            quantity: item.quantity,
-            transaction_date: dist.distribution_date,
-            notes: `Distribusi ke ${dist.destination_name} (${dist.destination_type})`,
-            reference: `DIST-${dist.id.toString().slice(0, 8)}`,
-          }])
-        }
-      }
-
       return NextResponse.json({
-        message: `Simulasi 1 minggu berhasil: ${dists?.length} distribusi, ${distItems.length} item barang`,
-        seeded: true,
-        count: dists?.length,
-        items: distItems.length,
+        message: `Simulasi 1 minggu: ${dists?.length} distribusi, ${distItems.length} menu ompreng`,
+        seeded: true, count: dists?.length, items: distItems.length,
       })
     }
 
-    // Default: list distributions with items
+    // Default: list distribusi dengan items
     const destType = searchParams.get('destination_type')
     const status = searchParams.get('status')
     const search = searchParams.get('search')
@@ -331,11 +331,7 @@ export async function GET(req: NextRequest) {
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal memuat data distribusi'
     const isRls = msg.includes('permission denied') || msg.includes('policy') || msg.includes('42501')
-    return NextResponse.json({
-      error: msg,
-      needsRlsFix: isRls,
-      sql: isRls ? RLS_FIX_SQL : undefined,
-    }, { status: 500 })
+    return NextResponse.json({ error: msg, needsRlsFix: isRls, sql: isRls ? RLS_FIX_SQL : undefined }, { status: 500 })
   }
 }
 
@@ -360,39 +356,22 @@ export async function POST(req: NextRequest) {
     const distId = dist[0].id
 
     if (items && items.length > 0) {
-      const distItems = items.map((item: { item_id: string; item_name: string; quantity: number; unit: string; notes?: string }) => ({
+      const distItems = items.map((item: Record<string, unknown>) => ({
         distribution_id: distId,
-        item_id: item.item_id,
-        item_name: item.item_name,
-        quantity: item.quantity,
-        unit: item.unit,
+        weekly_plan_id: item.weekly_plan_id || null,
+        menu_name: item.menu_name,
+        tipe_porsi: item.tipe_porsi || 'porsi_besar',
+        nasi: item.nasi || null,
+        lauk_pauk: item.lauk_pauk || null,
+        sayur: item.sayur || null,
+        buah: item.buah || null,
+        minuman: item.minuman || null,
+        jumlah_porsi: item.jumlah_porsi || 1,
         notes: item.notes || null,
       }))
 
       const { error: itemErr } = await supabase.from('distribution_items').insert(distItems)
       if (itemErr) throw itemErr
-
-      if (distData.status === 'Dikirim' || distData.status === 'Diterima') {
-        for (const item of items) {
-          const { data: stockItem } = await supabase
-            .from('stock_items')
-            .select('stock_qty')
-            .eq('id', item.item_id)
-            .single()
-          if (stockItem) {
-            const newQty = Number(stockItem.stock_qty) - Number(item.quantity)
-            await supabase.from('stock_items').update({ stock_qty: Math.max(0, newQty) }).eq('id', item.item_id)
-          }
-          await supabase.from('stock_transactions').insert([{
-            item_id: item.item_id,
-            type: 'Keluar',
-            quantity: item.quantity,
-            transaction_date: distData.distribution_date || new Date().toISOString().slice(0, 10),
-            notes: `Distribusi ke ${distData.destination_name} (${distData.destination_type})`,
-            reference: `DIST-${distId.toString().slice(0, 8)}`,
-          }])
-        }
-      }
     }
 
     return NextResponse.json(dist[0], { status: 201 })
@@ -411,74 +390,8 @@ export async function PUT(req: NextRequest) {
 
     if (action === 'status') {
       const body = await req.json()
-      const { data: oldDist, error: fetchErr } = await supabase
-        .from('distributions')
-        .select('status')
-        .eq('id', id)
-        .single()
-      if (fetchErr) throw fetchErr
-
-      const oldStatus = oldDist.status
-      const newStatus = body.status
-
-      const { error: updateErr } = await supabase
-        .from('distributions')
-        .update({ status: newStatus })
-        .eq('id', id)
+      const { error: updateErr } = await supabase.from('distributions').update({ status: body.status }).eq('id', id)
       if (updateErr) throw updateErr
-
-      if ((newStatus === 'Dikirim' || newStatus === 'Diterima') && oldStatus === 'Draft') {
-        const { data: distItems } = await supabase
-          .from('distribution_items')
-          .select('item_id, item_name, quantity, unit')
-          .eq('distribution_id', id)
-
-        const { data: dist } = await supabase
-          .from('distributions')
-          .select('destination_name, destination_type, distribution_date')
-          .eq('id', id)
-          .single()
-
-        for (const item of distItems || []) {
-          const { data: stockItem } = await supabase
-            .from('stock_items')
-            .select('stock_qty')
-            .eq('id', item.item_id)
-            .single()
-          if (stockItem) {
-            const newQty = Number(stockItem.stock_qty) - Number(item.quantity)
-            await supabase.from('stock_items').update({ stock_qty: Math.max(0, newQty) }).eq('id', item.item_id)
-          }
-          await supabase.from('stock_transactions').insert([{
-            item_id: item.item_id,
-            type: 'Keluar',
-            quantity: item.quantity,
-            transaction_date: dist?.distribution_date || new Date().toISOString().slice(0, 10),
-            notes: `Distribusi ke ${dist?.destination_name} (${dist?.destination_type})`,
-            reference: `DIST-${id.toString().slice(0, 8)}`,
-          }])
-        }
-      }
-
-      if ((oldStatus === 'Dikirim' || oldStatus === 'Diterima') && (newStatus === 'Draft' || newStatus === 'Dibatalkan')) {
-        const { data: distItems } = await supabase
-          .from('distribution_items')
-          .select('item_id, quantity')
-          .eq('distribution_id', id)
-
-        for (const item of distItems || []) {
-          const { data: stockItem } = await supabase
-            .from('stock_items')
-            .select('stock_qty')
-            .eq('id', item.item_id)
-            .single()
-          if (stockItem) {
-            const newQty = Number(stockItem.stock_qty) + Number(item.quantity)
-            await supabase.from('stock_items').update({ stock_qty: newQty }).eq('id', item.item_id)
-          }
-        }
-      }
-
       return NextResponse.json({ success: true })
     }
 
@@ -500,12 +413,17 @@ export async function PUT(req: NextRequest) {
     if (items) {
       await supabase.from('distribution_items').delete().eq('distribution_id', id)
       if (items.length > 0) {
-        const distItems = items.map((item: { item_id: string; item_name: string; quantity: number; unit: string; notes?: string }) => ({
+        const distItems = items.map((item: Record<string, unknown>) => ({
           distribution_id: id,
-          item_id: item.item_id,
-          item_name: item.item_name,
-          quantity: item.quantity,
-          unit: item.unit,
+          weekly_plan_id: item.weekly_plan_id || null,
+          menu_name: item.menu_name,
+          tipe_porsi: item.tipe_porsi || 'porsi_besar',
+          nasi: item.nasi || null,
+          lauk_pauk: item.lauk_pauk || null,
+          sayur: item.sayur || null,
+          buah: item.buah || null,
+          minuman: item.minuman || null,
+          jumlah_porsi: item.jumlah_porsi || 1,
           notes: item.notes || null,
         }))
         await supabase.from('distribution_items').insert(distItems)
@@ -526,40 +444,13 @@ export async function DELETE(req: NextRequest) {
     const all = searchParams.get('all')
 
     if (all === 'true') {
-      const { data: allDist } = await supabase
-        .from('distributions')
-        .select('id, status')
-      for (const d of allDist || []) {
-        if (d.status === 'Dikirim' || d.status === 'Diterima') {
-          const { data: dItems } = await supabase
-            .from('distribution_items')
-            .select('item_id, quantity')
-            .eq('distribution_id', d.id)
-          for (const item of dItems || []) {
-            const { data: si } = await supabase.from('stock_items').select('stock_qty').eq('id', item.item_id).single()
-            if (si) await supabase.from('stock_items').update({ stock_qty: Number(si.stock_qty) + Number(item.quantity) }).eq('id', item.item_id)
-          }
-        }
-      }
+      await supabase.from('distribution_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       const { error } = await supabase.from('distributions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       if (error) throw error
       return NextResponse.json({ success: true, deleted: 'all' })
     }
 
     if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
-
-    const { data: dist } = await supabase.from('distributions').select('status').eq('id', id).single()
-    if (dist && (dist.status === 'Dikirim' || dist.status === 'Diterima')) {
-      const { data: dItems } = await supabase
-        .from('distribution_items')
-        .select('item_id, quantity')
-        .eq('distribution_id', id)
-      for (const item of dItems || []) {
-        const { data: si } = await supabase.from('stock_items').select('stock_qty').eq('id', item.item_id).single()
-        if (si) await supabase.from('stock_items').update({ stock_qty: Number(si.stock_qty) + Number(item.quantity) }).eq('id', item.item_id)
-      }
-    }
-
     const { error } = await supabase.from('distributions').delete().eq('id', id)
     if (error) throw error
     return NextResponse.json({ success: true })
