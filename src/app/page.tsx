@@ -45,7 +45,7 @@ export default function Home() {
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/login-bg.png')" }}
+        style={{ backgroundImage: "url('/login-bg.jpg')" }}
       />
       {/* Dark gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-black/50 to-emerald-900/40" />
