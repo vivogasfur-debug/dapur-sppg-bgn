@@ -359,6 +359,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { items, ...distData } = body
 
+    // Cek RLS dulu
+    const { error: chkErr } = await supabase.from('distributions').select('id').limit(1)
+    if (chkErr) {
+      const msg = chkErr.message || ''
+      const isRls = msg.includes('permission denied') || msg.includes('policy') || msg.includes('42501')
+      if (isRls) return NextResponse.json({ error: 'RLS menghalangi. Jalankan SQL fix di halaman utama modul Distribusi.', needsRlsFix: true, sql: RLS_FIX_SQL }, { status: 500 })
+      return NextResponse.json({ error: 'Tabel belum siap. Jalankan setup di halaman utama modul Distribusi.' }, { status: 500 })
+    }
+
     const { data: dist, error: distErr } = await supabase
       .from('distributions')
       .insert([{
@@ -375,27 +384,39 @@ export async function POST(req: NextRequest) {
     const distId = dist[0].id
 
     if (items && items.length > 0) {
+      // Bersihkan item: pastikan field sesuai tipe database
       const distItems = items.map((item: Record<string, unknown>) => ({
         distribution_id: distId,
         weekly_plan_id: item.weekly_plan_id || null,
-        menu_name: item.menu_name,
-        tipe_porsi: item.tipe_porsi || 'porsi_besar',
-        nasi: item.nasi || null,
-        lauk_pauk: item.lauk_pauk || null,
-        sayur: item.sayur || null,
-        buah: item.buah || null,
-        minuman: item.minuman || null,
-        jumlah_porsi: item.jumlah_porsi || 1,
-        notes: item.notes || null,
+        menu_name: String(item.menu_name || ''),
+        tipe_porsi: String(item.tipe_porsi || 'porsi_besar'),
+        nasi: item.nasi ? String(item.nasi) : null,
+        lauk_pauk: item.lauk_pauk ? String(item.lauk_pauk) : null,
+        sayur: item.sayur ? String(item.sayur) : null,
+        buah: item.buah ? String(item.buah) : null,
+        minuman: item.minuman ? String(item.minuman) : null,
+        jumlah_porsi: Number(item.jumlah_porsi) || 1,
+        notes: item.notes ? String(item.notes) : null,
       }))
 
       const { error: itemErr } = await supabase.from('distribution_items').insert(distItems)
-      if (itemErr) throw itemErr
+      if (itemErr) {
+        // Jika RLS, berikan pesan khusus
+        const errMsg = itemErr.message || ''
+        const isRls = errMsg.includes('permission denied') || errMsg.includes('policy') || errMsg.includes('42501')
+        if (isRls) {
+          // Rollback: hapus distribusi yang sudah diinsert
+          await supabase.from('distributions').delete().eq('id', distId)
+          return NextResponse.json({ error: 'RLS menghalangi distribution_items. Jalankan SQL fix di halaman utama modul Distribusi.', needsRlsFix: true, sql: RLS_FIX_SQL }, { status: 500 })
+        }
+        throw itemErr
+      }
     }
 
     return NextResponse.json(dist[0], { status: 201 })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal menyimpan distribusi'
+    console.error('POST distributions error:', msg)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
