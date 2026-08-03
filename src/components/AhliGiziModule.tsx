@@ -6,7 +6,7 @@ import {
   Plus, Trash2, Pencil, Loader2, UtensilsCrossed, Database, Copy, Check,
   CalendarDays, Flame, Beef, Apple, GlassWater, Baby, UserRound, Users,
   ChevronDown, ChevronUp, RotateCcw, Search, X, BookOpen, ClipboardList,
-  Sparkles, ChevronRight, AlertCircle, ExternalLink
+  Sparkles, ChevronRight, AlertCircle, ExternalLink, ImagePlus, ImageIcon
 } from 'lucide-react';
 
 // === TYPES ===
@@ -15,7 +15,7 @@ interface MenuDbItem {
   nasi: string; lauk_pauk: string; sayur: string;
   buah: string | null; minuman: string | null;
   kalori_est: number | null; protein_g: number | null;
-  catatan: string | null; aktif: boolean;
+  catatan: string | null; gambar_url: string | null; aktif: boolean;
 }
 
 interface WeeklyPlan {
@@ -71,7 +71,7 @@ export default function AhliGiziModule() {
   const [menuForm, setMenuForm] = useState({
     nama_menu: '', tipe_porsi: 'porsi_besar', nasi: 'Nasi Putih',
     lauk_pauk: '', sayur: '', buah: '', minuman: '',
-    kalori_est: '', protein_g: '', catatan: '',
+    kalori_est: '', protein_g: '', catatan: '', gambar_url: '',
   });
 
   // === SETUP CHECK ===
@@ -177,7 +177,7 @@ export default function AhliGiziModule() {
   // === HANDLE: Add/Edit Menu DB ===
   const openAddMenu = () => {
     setEditingMenu(null);
-    setMenuForm({ nama_menu: '', tipe_porsi: 'porsi_besar', nasi: 'Nasi Putih', lauk_pauk: '', sayur: '', buah: '', minuman: '', kalori_est: '', protein_g: '', catatan: '' });
+    setMenuForm({ nama_menu: '', tipe_porsi: 'porsi_besar', nasi: 'Nasi Putih', lauk_pauk: '', sayur: '', buah: '', minuman: '', kalori_est: '', protein_g: '', catatan: '', gambar_url: '' });
     setShowMenuModal(true);
   };
 
@@ -188,8 +188,21 @@ export default function AhliGiziModule() {
       lauk_pauk: m.lauk_pauk, sayur: m.sayur, buah: m.buah || '',
       minuman: m.minuman || '', kalori_est: String(m.kalori_est || ''),
       protein_g: String(m.protein_g || ''), catatan: m.catatan || '',
+      gambar_url: m.gambar_url || '',
     });
     setShowMenuModal(true);
+  };
+
+  // Handle image upload (convert to base64)
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Ukuran gambar maks 2MB'); return; }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setMenuForm(function(f) { return { ...f, gambar_url: reader.result as string }; });
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveMenu = async (e: React.FormEvent) => {
@@ -200,7 +213,7 @@ export default function AhliGiziModule() {
       const res = await fetch(url, {
         method: editingMenu ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...menuForm, kalori_est: menuForm.kalori_est ? Number(menuForm.kalori_est) : null, protein_g: menuForm.protein_g ? Number(menuForm.protein_g) : null }),
+        body: JSON.stringify({ ...menuForm, kalori_est: menuForm.kalori_est ? Number(menuForm.kalori_est) : null, protein_g: menuForm.protein_g ? Number(menuForm.protein_g) : null, gambar_url: menuForm.gambar_url || null }),
       });
       if (!res.ok) throw new Error();
       toast.success(editingMenu ? 'Menu diperbarui' : 'Menu baru ditambahkan ke database');
@@ -403,7 +416,20 @@ export default function AhliGiziModule() {
                                     {menu?.protein_g && <span className="flex items-center gap-1 text-[10px] text-blue-500 font-semibold"><Beef className="w-3 h-3" />{menu.protein_g}g protein</span>}
                                   </div>
                                   {menu && (
-                                    <p className="font-semibold text-slate-800 text-sm">{menu.nama_menu}</p>
+                                    <div className="flex items-center gap-3">
+                                      {menu.gambar_url ? (
+                                        <img src={menu.gambar_url} alt={menu.nama_menu} className="w-14 h-14 rounded-lg object-cover shrink-0 border border-slate-200" />
+                                      ) : (
+                                        <div className="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200"><ImageIcon className="w-6 h-6 text-slate-300" /></div>
+                                      )}
+                                      <div>
+                                        <p className="font-semibold text-slate-800 text-sm">{menu.nama_menu}</p>
+                                        <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                                          {menu.kalori_est && <span className="text-[10px] text-orange-500 font-semibold">{menu.kalori_est} kkal</span>}
+                                          {menu.protein_g && <span className="text-[10px] text-blue-500 font-semibold">{menu.protein_g}g protein</span>}
+                                        </div>
+                                      </div>
+                                    </div>
                                   )}
                                   {menu && (
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm">
@@ -473,7 +499,14 @@ export default function AhliGiziModule() {
                 var cfg = PORSI_CONFIG[m.tipe_porsi as keyof typeof PORSI_CONFIG];
                 return (
                   <div key={m.id} className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-sm transition-shadow">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-50">
+                        {m.gambar_url ? (
+                          <img src={m.gambar_url} alt={m.nama_menu} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><ImageIcon className="w-7 h-7 text-slate-300" /></div>
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className={"px-2 py-0.5 rounded-md text-[10px] font-bold " + (cfg ? cfg.bg + ' ' + cfg.text : 'bg-slate-100 text-slate-600')}>{cfg ? cfg.label : m.tipe_porsi}</span>
@@ -558,18 +591,27 @@ export default function AhliGiziModule() {
                 if (!selectedMenu) return null;
                 return (
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-1">
-                    <p className="text-xs font-bold text-emerald-700 flex items-center gap-1"><Sparkles className="w-3 h-3" />Preview Menu</p>
-                    <p className="text-sm font-semibold text-slate-800">{selectedMenu.nama_menu}</p>
-                    <div className="text-xs text-slate-600 space-y-0.5">
-                      <p>Karbo: {selectedMenu.nasi}</p>
-                      <p>Lauk: {selectedMenu.lauk_pauk}</p>
-                      <p>Sayur: {selectedMenu.sayur}</p>
-                      {selectedMenu.buah && <p>Buah: {selectedMenu.buah}</p>}
-                      {selectedMenu.minuman && <p>Minuman: {selectedMenu.minuman}</p>}
-                    </div>
-                    <div className="flex gap-3 mt-1">
-                      {selectedMenu.kalori_est && <span className="text-[10px] text-orange-600 font-semibold">{selectedMenu.kalori_est} kkal</span>}
-                      {selectedMenu.protein_g && <span className="text-[10px] text-blue-600 font-semibold">{selectedMenu.protein_g}g protein</span>}
+                    <div className="flex items-start gap-3">
+                      {selectedMenu.gambar_url ? (
+                        <img src={selectedMenu.gambar_url} alt={selectedMenu.nama_menu} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-emerald-300" />
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-300"><ImageIcon className="w-7 h-7 text-emerald-300" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-emerald-700 flex items-center gap-1"><Sparkles className="w-3 h-3" />Preview Menu</p>
+                        <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{selectedMenu.nama_menu}</p>
+                        <div className="text-xs text-slate-600 space-y-0.5 mt-1">
+                          <p>Karbo: {selectedMenu.nasi}</p>
+                          <p>Lauk: {selectedMenu.lauk_pauk}</p>
+                          <p>Sayur: {selectedMenu.sayur}</p>
+                          {selectedMenu.buah && <p>Buah: {selectedMenu.buah}</p>}
+                          {selectedMenu.minuman && <p>Minuman: {selectedMenu.minuman}</p>}
+                        </div>
+                        <div className="flex gap-3 mt-1">
+                          {selectedMenu.kalori_est && <span className="text-[10px] text-orange-600 font-semibold">{selectedMenu.kalori_est} kkal</span>}
+                          {selectedMenu.protein_g && <span className="text-[10px] text-blue-600 font-semibold">{selectedMenu.protein_g}g protein</span>}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 );
@@ -631,6 +673,29 @@ export default function AhliGiziModule() {
               <div className="grid grid-cols-2 gap-3">
                 <div><label className="block text-xs font-semibold text-slate-500 mb-1">Kalori (kkal)</label><input type="number" value={menuForm.kalori_est} onChange={function(e) { setMenuForm(function(f) { return { ...f, kalori_est: e.target.value }; }); }} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500" placeholder="Estimasi" /></div>
                 <div><label className="block text-xs font-semibold text-slate-500 mb-1">Protein (gram)</label><input type="number" step="0.1" value={menuForm.protein_g} onChange={function(e) { setMenuForm(function(f) { return { ...f, protein_g: e.target.value }; }); }} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500" placeholder="Estimasi" /></div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 mb-1">Gambar Menu</label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center justify-center w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-emerald-400 hover:bg-emerald-50/50 cursor-pointer transition-all overflow-hidden">
+                    {menuForm.gambar_url ? (
+                      <img src={menuForm.gambar_url} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center">
+                        <ImagePlus className="w-6 h-6 text-slate-400 mx-auto" />
+                        <span className="text-[10px] text-slate-400 mt-0.5 block">Pilih Foto</span>
+                      </div>
+                    )}
+                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  </label>
+                  <div className="flex-1">
+                    <p className="text-[11px] text-slate-400">Upload foto menu (maks 2MB)</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">JPG, PNG, atau WebP</p>
+                    {menuForm.gambar_url && (
+                      <button type="button" onClick={function() { setMenuForm(function(f) { return { ...f, gambar_url: '' }; }); }} className="text-[11px] text-red-500 hover:text-red-600 font-semibold mt-1 flex items-center gap-0.5"><X className="w-3 h-3" />Hapus Gambar</button>
+                    )}
+                  </div>
+                </div>
               </div>
               <div><label className="block text-xs font-semibold text-slate-500 mb-1">Catatan</label><textarea value={menuForm.catatan} onChange={function(e) { setMenuForm(function(f) { return { ...f, catatan: e.target.value }; }); }} rows={2} className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 resize-none" placeholder="Catatan ahli gizi..." /></div>
               <div className="flex gap-2 pt-2">

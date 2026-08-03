@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
       kalori_est: body.kalori_est || null,
       protein_g: body.protein_g || null,
       catatan: body.catatan || null,
+      gambar_url: body.gambar_url || null,
       aktif: true,
     }]).select()
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
@@ -100,7 +101,8 @@ export async function PUT(req: NextRequest) {
       nasi: body.nasi, lauk_pauk: body.lauk_pauk, sayur: body.sayur,
       buah: body.buah, minuman: body.minuman,
       kalori_est: body.kalori_est, protein_g: body.protein_g,
-      catatan: body.catatan, aktif: body.aktif,
+      catatan: body.catatan, gambar_url: body.gambar_url,
+      aktif: body.aktif,
     }).eq('id', id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json({ success: true })

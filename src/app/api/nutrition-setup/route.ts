@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS nutrition_menu_db (
   kalori_est NUMERIC,
   protein_g NUMERIC,
   catatan TEXT,
+  gambar_url TEXT,
   aktif BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -39,7 +40,14 @@ CREATE INDEX IF NOT EXISTS idx_nutrition_menu_db_aktif ON nutrition_menu_db(akti
 ALTER TABLE weekly_menu_plans ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all on weekly_menu_plans" ON weekly_menu_plans FOR ALL USING (true) WITH CHECK (true);
 CREATE INDEX IF NOT EXISTS idx_weekly_menu_tanggal ON weekly_menu_plans(tanggal DESC);
-CREATE INDEX IF NOT EXISTS idx_weekly_menu_porsi ON weekly_menu_plans(tipe_porsi);`
+CREATE INDEX IF NOT EXISTS idx_weekly_menu_porsi ON weekly_menu_plans(tipe_porsi);
+
+-- Jika tabel sudah ada tanpa kolom gambar_url, tambahkan:
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'nutrition_menu_db' AND column_name = 'gambar_url') THEN
+    ALTER TABLE nutrition_menu_db ADD COLUMN gambar_url TEXT;
+  END IF;
+END $$;`
 
 export async function GET() {
   try {
