@@ -40,6 +40,25 @@ DROP TRIGGER IF EXISTS trg_distributions_updated_at ON distributions;
 CREATE TRIGGER trg_distributions_updated_at
   BEFORE UPDATE ON distributions
   FOR EACH ROW EXECUTE FUNCTION update_distributions_updated_at();
+
+-- Nonaktifkan RLS agar anon key bisa akses (penting!)
+ALTER TABLE distributions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE distribution_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all on distributions" ON distributions
+  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on distribution_items" ON distribution_items
+  FOR ALL USING (true) WITH CHECK (true);
+`
+
+const RLS_FIX_SQL = `-- Jalankan ini di Supabase SQL Editor untuk memperbaiki akses RLS
+ALTER TABLE distributions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE distribution_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow all on distributions" ON distributions
+  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on distribution_items" ON distribution_items
+  FOR ALL USING (true) WITH CHECK (true);
 `
 
 export async function GET(req: NextRequest) {
@@ -50,9 +69,17 @@ export async function GET(req: NextRequest) {
     if (action === 'check') {
       const { error } = await supabase.from('distributions').select('id').limit(1)
       if (error) {
-        return NextResponse.json({ needsSetup: true, sql: SETUP_SQL })
+        const errMsg = error.message || ''
+        const isMissing = errMsg.includes('does not exist') || errMsg.includes('relation')
+        const isRls = errMsg.includes('permission denied') || errMsg.includes('policy') || errMsg.includes('42501')
+        return NextResponse.json({
+          needsSetup: isMissing,
+          needsRlsFix: isRls,
+          sql: isRls ? RLS_FIX_SQL : SETUP_SQL,
+          error: errMsg,
+        })
       }
-      return NextResponse.json({ needsSetup: false })
+      return NextResponse.json({ needsSetup: false, needsRlsFix: false })
     }
 
     if (action === 'setup') {
@@ -102,14 +129,20 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'seed') {
-      // Cek apakah tabel ada, jika belum berikan SQL setup
+      // Cek apakah tabel ada & bisa diakses
       const { error: checkErr } = await supabase.from('distributions').select('id').limit(1)
       if (checkErr) {
+        const errMsg = checkErr.message || ''
+        const isMissing = errMsg.includes('does not exist') || errMsg.includes('relation')
+        const isRls = errMsg.includes('permission denied') || errMsg.includes('policy') || errMsg.includes('42501')
         return NextResponse.json({
-          message: 'Tabel distribusi belum dibuat. Jalankan SQL setup terlebih dahulu di Supabase SQL Editor.',
+          message: isRls
+            ? 'RLS menghalangi akses. Jalankan SQL berikut di Supabase SQL Editor untuk memperbaiki.'
+            : 'Tabel distribusi belum dibuat. Jalankan SQL setup terlebih dahulu di Supabase SQL Editor.',
           seeded: false,
-          needsSetup: true,
-          sql: SETUP_SQL,
+          needsSetup: isMissing,
+          needsRlsFix: isRls,
+          sql: isRls ? RLS_FIX_SQL : SETUP_SQL,
         })
       }
 
@@ -297,7 +330,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(filtered)
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal memuat data distribusi'
-    return NextResponse.json({ error: msg }, { status: 500 })
+    const isRls = msg.includes('permission denied') || msg.includes('policy') || msg.includes('42501')
+    return NextResponse.json({
+      error: msg,
+      needsRlsFix: isRls,
+      sql: isRls ? RLS_FIX_SQL : undefined,
+    }, { status: 500 })
   }
 }
 

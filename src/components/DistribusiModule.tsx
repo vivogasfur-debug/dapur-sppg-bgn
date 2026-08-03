@@ -112,7 +112,11 @@ export default function DistribusiModule() {
       if (distRes.ok) {
         const data = await distRes.json();
         if (data.error) {
-          if (data.error.includes('does not exist') || data.error.includes('relation')) {
+          // RLS error — tampilkan SQL fix
+          if (data.needsRlsFix || data.error.includes('permission denied') || data.error.includes('policy')) {
+            setNeedsSetup(true);
+            if (data.sql) setSetupSql(data.sql);
+          } else if (data.error.includes('does not exist') || data.error.includes('relation')) {
             setNeedsSetup(true);
             const setupRes = await fetch('/api/distributions?action=setup');
             if (setupRes.ok) {
@@ -125,7 +129,11 @@ export default function DistribusiModule() {
         }
       } else {
         const data = await distRes.json().catch(() => ({}));
-        if (data.error?.includes('does not exist') || data.error?.includes('relation')) {
+        // RLS error dari non-OK response
+        if (data.needsRlsFix || data.error?.includes('permission denied') || data.error?.includes('policy')) {
+          setNeedsSetup(true);
+          if (data.sql) setSetupSql(data.sql);
+        } else if (data.error?.includes('does not exist') || data.error?.includes('relation')) {
           setNeedsSetup(true);
           const setupRes = await fetch('/api/distributions?action=setup');
           if (setupRes.ok) {
@@ -328,8 +336,8 @@ export default function DistribusiModule() {
                 <Database className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">Setup Database Distribusi</h2>
-                <p className="text-orange-100 text-sm">Tabel distribusi belum dibuat di Supabase</p>
+                <h2 className="text-lg font-bold text-white">Perbaikan Akses Database</h2>
+                <p className="text-orange-100 text-sm">RLS (Row Level Security) menghalangi akses ke tabel distribusi</p>
               </div>
             </div>
           </div>
