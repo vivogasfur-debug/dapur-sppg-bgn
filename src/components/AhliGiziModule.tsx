@@ -469,8 +469,6 @@ export default function AhliGiziModule() {
                                       <div className="relative group">
                                         {p.gambar ? (
                                           <img src={p.gambar} alt={menu.nama_menu} className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-200" />
-                                        ) : menu.gambar_url ? (
-                                          <img src={menu.gambar_url} alt={menu.nama_menu} className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-200 opacity-60" />
                                         ) : (
                                           <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200"><ImageIcon className="w-7 h-7 text-slate-300" /></div>
                                         )}
@@ -650,11 +648,7 @@ export default function AhliGiziModule() {
                 return (
                   <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 space-y-1">
                     <div className="flex items-start gap-3">
-                      {selectedMenu.gambar_url ? (
-                        <img src={selectedMenu.gambar_url} alt={selectedMenu.nama_menu} className="w-16 h-16 rounded-lg object-cover shrink-0 border border-emerald-300" />
-                      ) : (
-                        <div className="w-16 h-16 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-300"><ImageIcon className="w-7 h-7 text-emerald-300" /></div>
-                      )}
+                      <div className="w-16 h-16 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0 border border-emerald-300"><ImageIcon className="w-7 h-7 text-emerald-300" /></div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-emerald-700 flex items-center gap-1"><Sparkles className="w-3 h-3" />Preview Menu</p>
                         <p className="text-sm font-semibold text-slate-800 mt-0.5 truncate">{selectedMenu.nama_menu}</p>

@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     // Get weekly plans joined with menu_db
     let q = supabase.from('weekly_menu_plans').select(`
       id, tanggal, hari, menu_db_id, tipe_porsi, penerima, catatan, gambar, status, created_at,
-      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi, gambar_url)
+      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)
     `).order('tanggal', { ascending: true }).order('tipe_porsi')
     if (tanggal) q = q.eq('tanggal', tanggal)
     if (tipe) q = q.eq('tipe_porsi', tipe)
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       status: 'Aktif',
     }]).select(`
       id, tanggal, hari, tipe_porsi, penerima, catatan, gambar, status,
-      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan)
+      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)
     `)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data![0], { status: 201 })
@@ -113,7 +113,7 @@ export async function PUT(req: NextRequest) {
 
     const { data, error } = await supabase.from('weekly_menu_plans').update(updateData).eq('id', id).select(`
       id, tanggal, hari, tipe_porsi, penerima, catatan, gambar, status,
-      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan)
+      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)
     `)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     return NextResponse.json(data![0])
