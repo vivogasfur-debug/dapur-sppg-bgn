@@ -291,8 +291,13 @@ export default function DistribusiModule() {
       const res = await fetch('/api/distributions?action=seed', { method: 'GET' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal menyemai data');
-      if (data.seeded) {
-        toast.success(`${data.count} data distribusi disemai`);
+      if (data.needsSetup) {
+        // Tabel belum ada - tampilkan setup screen
+        setNeedsSetup(true);
+        if (data.sql) setSetupSql(data.sql);
+        toast.error('Tabel belum dibuat! Jalankan SQL setup di bawah ini.');
+      } else if (data.seeded) {
+        toast.success(`${data.count} distribusi, ${data.items || 0} item barang disemai`);
         fetchData();
       } else {
         toast.info(data.message);
@@ -334,9 +339,10 @@ export default function DistribusiModule() {
               <div className="text-sm text-amber-800">
                 <p className="font-semibold mb-1">Langkah Setup:</p>
                 <ol className="list-decimal list-inside space-y-1 text-amber-700">
-                  <li>Buka <strong>Supabase Dashboard</strong> → SQL Editor</li>
-                  <li>Salin SQL di bawah, lalu jalankan (Run)</li>
-                  <li>Kembali ke halaman ini dan refresh</li>
+                  <li>Buka <strong>Supabase Dashboard</strong> (supabase.com) → project Anda → <strong>SQL Editor</strong></li>
+                  <li>Klik tombol <strong>Salin</strong> di bawah, lalu <strong>paste</strong> di SQL Editor</li>
+                  <li>Klik <strong>Run</strong> (atau tekan Ctrl+Enter)</li>
+                  <li>Klik tombol <strong>"Sudah Dijalankan, Cek Ulang"</strong> di bawah</li>
                 </ol>
               </div>
             </div>
@@ -350,6 +356,25 @@ export default function DistribusiModule() {
                 title="Salin SQL"
               >
                 {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-300" />}
+              </button>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={copySql}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  copied
+                    ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                    : 'bg-amber-500 hover:bg-amber-600 text-white'
+                }`}
+              >
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? 'Tersalin!' : 'Salin SQL'}
+              </button>
+              <button
+                onClick={() => { setNeedsSetup(false); setLoading(true); setTimeout(fetchData, 300); }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Sudah Dijalankan, Cek Ulang
               </button>
             </div>
           </div>

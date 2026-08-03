@@ -102,7 +102,18 @@ export async function GET(req: NextRequest) {
     }
 
     if (action === 'seed') {
-      // Hapus data lama dulu
+      // Cek apakah tabel ada, jika belum berikan SQL setup
+      const { error: checkErr } = await supabase.from('distributions').select('id').limit(1)
+      if (checkErr) {
+        return NextResponse.json({
+          message: 'Tabel distribusi belum dibuat. Jalankan SQL setup terlebih dahulu di Supabase SQL Editor.',
+          seeded: false,
+          needsSetup: true,
+          sql: SETUP_SQL,
+        })
+      }
+
+      // Hapus data lama (aman karena tabel sudah ada)
       await supabase.from('distribution_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
       await supabase.from('distributions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
 
@@ -110,7 +121,7 @@ export async function GET(req: NextRequest) {
       const items = stockItems || []
 
       if (items.length === 0) {
-        return NextResponse.json({ message: 'Belum ada data stok. Seed stok terlebih dahulu.', seeded: false })
+        return NextResponse.json({ message: 'Belum ada data stok. Seed stok terlebih dahulu di modul Gudang.', seeded: false })
       }
 
       // Sekolah & posyandu simulasi
