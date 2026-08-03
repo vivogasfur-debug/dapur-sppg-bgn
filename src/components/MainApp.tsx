@@ -229,7 +229,7 @@ export default function MainApp() {
       const logoB64 = Buffer.from(logoBuf).toString('base64');
 
       const workbook = new ExcelJS.Workbook();
-      workbook.creator = 'Dapur SPPG BGN';
+      workbook.creator = 'Dapur SPPG Sangia Wambulu BGN';
 
       const addKop = (ws: ExcelJS.Worksheet, title: string, headers: string[], rows: string[][], colWidths: number[]) => {
         // Row 1-4: Kop with logo
@@ -786,7 +786,7 @@ export default function MainApp() {
             <div className="flex items-center gap-2">
               <Image src="/bgn.png" alt="BGN" width={28} height={28} className="rounded-lg" />
               <div>
-                <h1 className="text-sm font-bold text-slate-800 leading-tight">Dapur SPPG</h1>
+                <h1 className="text-sm font-bold text-slate-800 leading-tight">Dapur SPPG Sangia Wambulu</h1>
                 <p className="text-[10px] text-slate-400">{activeMenu}</p>
               </div>
             </div>
@@ -803,7 +803,7 @@ export default function MainApp() {
           <div className="flex justify-between items-end border-b border-slate-200/60 pb-2">
             <div>
               <h1 className="text-xl font-extrabold text-slate-800 leading-none">{activeMenu}</h1>
-              <p className="text-slate-400 text-xs mt-1">Sistem Operasional Dapur SPPG BGN</p>
+              <p className="text-slate-400 text-xs mt-1">Sistem Operasional Dapur SPPG Sangia Wambulu BGN</p>
             </div>
           </div>
         </header>

@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] })
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Dapur SPPG - Sistem Operasional BGN",
+  title: "Dapur SPPG Sangia Wambulu - Sistem Operasional BGN",
   description: "Sistem Operasional Dapur Satuan Pangan Penyangga Gaizi BGN",
   icons: {
     icon: "/bgn.png",

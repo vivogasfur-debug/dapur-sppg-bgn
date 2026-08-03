@@ -52,7 +52,7 @@ export default function Home() {
               className="object-contain"
             />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-800">Dapur SPPG</h1>
+          <h1 className="text-2xl font-extrabold text-slate-800">Dapur SPPG Sangia Wambulu</h1>
           <p className="text-slate-400 mt-1 text-sm">Sistem Operasional BGN</p>
         </div>
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
@@ -84,7 +84,7 @@ export default function Home() {
               <div className="rounded-lg bg-slate-50 p-2"><p className="font-semibold text-slate-700">Admin</p><p>admin@dashboard.id</p></div>
               <div className="rounded-lg bg-slate-50 p-2"><p className="font-semibold text-slate-700">Manajer</p><p>budi@dashboard.id</p></div>
             </div>
-            <p className="text-[11px] text-slate-400 text-center mt-2">Kata sandi: password123</p>
+            
           </div>
         </div>
       </div>

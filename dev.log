@@ -46,3 +46,29 @@ https://nextjs.org/telemetry
  GET / 200 in 217ms (compile: 191ms, render: 26ms)
 ✓ Compiled in 209ms
 ✓ Compiled in 215ms
+ GET / 200 in 703ms (compile: 266ms, render: 437ms)
+ GET / 200 in 248ms (compile: 219ms, render: 29ms)
+ GET / 200 in 521ms (compile: 293ms, render: 228ms)
+ GET / 200 in 204ms (compile: 176ms, render: 28ms)
+ GET / 200 in 242ms (compile: 215ms, render: 27ms)
+⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+ POST /api/login 200 in 1762ms (compile: 834ms, render: 928ms)
+ GET /api/beneficiaries-3b 200 in 379ms (compile: 258ms, render: 121ms)
+ GET /api/students 200 in 413ms (compile: 230ms, render: 182ms)
+ GET /api/teachers 200 in 453ms (compile: 279ms, render: 174ms)
+✓ Compiled in 178ms
+✓ Compiled in 178ms
+✓ Compiled in 0ms
+ GET /api/teachers 200 in 1016ms (compile: 1511µs, render: 1014ms)
+ GET /api/students 200 in 1065ms (compile: 3ms, render: 1062ms)
+ GET /api/beneficiaries-3b 200 in 1056ms (compile: 1552µs, render: 1054ms)
+ GET /api/students 200 in 73ms (compile: 2ms, render: 71ms)
+ GET /api/teachers 200 in 142ms (compile: 2ms, render: 140ms)
+ GET /api/beneficiaries-3b 200 in 145ms (compile: 6ms, render: 140ms)
+✓ Compiled in 175ms
+ GET / 200 in 292ms (compile: 260ms, render: 32ms)
+ GET / 200 in 228ms (compile: 214ms, render: 14ms)
+ GET / 200 in 203ms (compile: 190ms, render: 13ms)
+ GET / 200 in 198ms (compile: 185ms, render: 13ms)
+✓ Compiled in 287ms

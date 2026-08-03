@@ -94,7 +94,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = fals
               <Image src="/bgn.png" alt="Logo BGN" width={40} height={40} className="object-contain" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-wide text-emerald-400">Dapur SPPG</h1>
+              <h1 className="text-sm font-bold tracking-wide text-emerald-400">Dapur SPPG Sangia Wambulu</h1>
               <p className="text-[10px] text-slate-400">Sistem Operasional</p>
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = fals
             </div>
             {isOpen && (
               <div className="text-center overflow-hidden transition-all duration-200">
-                <h1 className="text-sm font-bold tracking-wide text-emerald-400 leading-tight whitespace-nowrap">Dapur SPPG</h1>
+                <h1 className="text-sm font-bold tracking-wide text-emerald-400 leading-tight whitespace-nowrap">Dapur SPPG Sangia Wambulu</h1>
                 <p className="text-[10px] text-slate-400 whitespace-nowrap">Sistem Operasional</p>
               </div>
             )}

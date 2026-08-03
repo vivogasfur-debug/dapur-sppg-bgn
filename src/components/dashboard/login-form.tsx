@@ -51,8 +51,8 @@ export function LoginForm() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-primary-foreground mb-4">
             <BarChart3 className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">ProyekKu</h1>
-          <p className="text-muted-foreground mt-1">Dashboard Manajemen Proyek</p>
+          <h1 className="text-2xl font-bold text-foreground">Dapur SPPG Sangia Wambulu</h1>
+          <p className="text-muted-foreground mt-1">Dashboard Manajemen Dapur</p>
         </div>
         <Card className="border-border/50 shadow-lg">
           <CardHeader className="text-center pb-2">
@@ -92,7 +92,7 @@ export function LoginForm() {
                   <p>budi@dashboard.id</p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground text-center mt-2">Kata sandi: password123</p>
+
             </div>
           </CardContent>
         </Card>
