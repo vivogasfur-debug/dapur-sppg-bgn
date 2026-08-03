@@ -108,11 +108,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Ambil menu harian dari weekly_menu_plans untuk tanggal tertentu
+    // Pertama coba cocokkan tanggal persis, jika kosong fallback ke hari (day_of_week)
     if (action === 'menu-by-date') {
       const tanggal = searchParams.get('tanggal')
       if (!tanggal) return NextResponse.json([])
 
-      const { data, error } = await supabase
+      // Coba tanggal persis dulu
+      let { data, error } = await supabase
         .from('weekly_menu_plans')
         .select(`id, tanggal, hari, tipe_porsi, penerima, gambar, status,
           nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, tipe_porsi)
@@ -120,6 +122,23 @@ export async function GET(req: NextRequest) {
         .eq('tanggal', tanggal)
         .order('tipe_porsi')
       if (error) throw error
+
+      // Fallback: jika tidak ketemu tanggal persis, cocokkan berdasarkan hari
+      if (!data || data.length === 0) {
+        const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        const dayName = dayNames[new Date(tanggal + 'T00:00:00').getDay()]
+        const fallback = await supabase
+          .from('weekly_menu_plans')
+          .select(`id, tanggal, hari, tipe_porsi, penerima, gambar, status,
+            nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, tipe_porsi)
+          `)
+          .eq('hari', dayName)
+          .order('tipe_porsi')
+        if (!fallback.error && fallback.data && fallback.data.length > 0) {
+          data = fallback.data
+        }
+      }
+
       return NextResponse.json(data || [])
     }
 
