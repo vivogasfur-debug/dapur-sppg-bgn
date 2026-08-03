@@ -34,7 +34,7 @@ const menuItems = [
   { name: 'Akuntan & Keuangan', icon: Receipt },
   { name: 'Distribusi Lapangan', icon: Truck },
   { name: 'Relawan', icon: HeartHandshake },
-  { name: 'Users', icon: Users },
+  { name: 'Manajemen User', icon: Users },
   { name: 'Laporan Ringkas', icon: FileBarChart },
 ];
 
