@@ -415,8 +415,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(dist[0], { status: 201 })
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Gagal menyimpan distribusi'
-    console.error('POST distributions error:', msg)
+    let msg = 'Gagal menyimpan distribusi'
+    if (error instanceof Error) {
+      msg = error.message
+    } else if (error && typeof error === 'object') {
+      const e = error as Record<string, unknown>
+      msg = String(e.message || e.msg || JSON.stringify(e))
+    }
+    console.error('POST distributions error:', msg, error)
     return NextResponse.json({ error: msg }, { status: 500 })
   }
 }

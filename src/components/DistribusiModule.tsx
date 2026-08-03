@@ -277,7 +277,10 @@ export default function DistribusiModule() {
         headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Gagal menyimpan');
+      if (!res.ok) {
+        console.error('Save distribusi error:', JSON.stringify(data));
+        throw new Error(data.error || `HTTP ${res.status}: Gagal menyimpan`);
+      }
       toast.success(isEdit ? 'Distribusi diperbarui' : 'Distribusi ompreng ditambahkan');
       setShowModal(false); resetForm(); fetchData();
     } catch (err: unknown) { toast.error(err instanceof Error ? err.message : 'Gagal menyimpan'); }
