@@ -78,14 +78,6 @@ export default function Home() {
               Masuk
             </button>
           </form>
-          <div className="mt-6 pt-4 border-t border-slate-100">
-            <p className="text-[11px] text-slate-400 text-center mb-2">Akun Demo</p>
-            <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-500">
-              <div className="rounded-lg bg-slate-50 p-2"><p className="font-semibold text-slate-700">Admin</p><p>admin@dashboard.id</p></div>
-              <div className="rounded-lg bg-slate-50 p-2"><p className="font-semibold text-slate-700">Manajer</p><p>budi@dashboard.id</p></div>
-            </div>
-            
-          </div>
         </div>
       </div>
     </div>

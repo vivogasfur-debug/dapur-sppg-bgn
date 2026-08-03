@@ -80,20 +80,6 @@ export function LoginForm() {
                 Masuk
               </Button>
             </form>
-            <div className="mt-6 pt-4 border-t border-border">
-              <p className="text-xs text-muted-foreground text-center mb-2">Akun Demo:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                <div className="rounded-lg bg-muted/50 p-2">
-                  <p className="font-medium text-foreground">Admin</p>
-                  <p>admin@dashboard.id</p>
-                </div>
-                <div className="rounded-lg bg-muted/50 p-2">
-                  <p className="font-medium text-foreground">Manajer</p>
-                  <p>budi@dashboard.id</p>
-                </div>
-              </div>
-
-            </div>
           </CardContent>
         </Card>
       </div>

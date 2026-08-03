@@ -72,3 +72,17 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  GET / 200 in 203ms (compile: 190ms, render: 13ms)
  GET / 200 in 198ms (compile: 185ms, render: 13ms)
 ✓ Compiled in 287ms
+ GET / 200 in 706ms (compile: 248ms, render: 458ms)
+ GET / 200 in 250ms (compile: 222ms, render: 29ms)
+ GET / 200 in 244ms (compile: 208ms, render: 36ms)
+ POST /api/login 200 in 612ms (compile: 3ms, render: 609ms)
+ GET /api/students 200 in 167ms (compile: 2ms, render: 164ms)
+ GET /api/beneficiaries-3b 200 in 78ms (compile: 2ms, render: 76ms)
+ GET /api/teachers 200 in 71ms (compile: 1685µs, render: 69ms)
+ POST /api/seed-stock 200 in 286ms (compile: 117ms, render: 169ms)
+ GET /api/stock-transactions 200 in 335ms (compile: 139ms, render: 197ms)
+ GET /api/stock-items 200 in 362ms (compile: 175ms, render: 187ms)
+ GET /api/nutrition-setup 200 in 313ms (compile: 118ms, render: 195ms)
+ GET /api/nutrition-menus 200 in 207ms (compile: 138ms, render: 69ms)
+ GET /api/weekly-menus 200 in 886ms (compile: 127ms, render: 759ms)
+✓ Compiled in 189ms
