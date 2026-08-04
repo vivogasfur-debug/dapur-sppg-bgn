@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import {
   Plus, Search, X, Trash2, Pencil, Loader2, Package, ArrowDownCircle, ArrowUpCircle,
   AlertTriangle, ShoppingCart, History, Warehouse, Database, Copy, Check, ExternalLink,
-  Receipt, Link2
+  Receipt, Link2, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface StockItem {
@@ -32,6 +32,9 @@ export default function StockModule() {
   const [copied, setCopied] = useState(false);
   const [subTab, setSubTab] = useState<'items' | 'transactions'>('items');
   const [searchTerm, setSearchTerm] = useState('');
+  const [itemPage, setItemPage] = useState(1);
+  const [txPage, setTxPage] = useState(1);
+  const PAGE_SIZE = 20;
 
   // Modal states
   const [showItemModal, setShowItemModal] = useState(false);
@@ -81,6 +84,7 @@ export default function StockModule() {
   }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { setItemPage(1); }, [searchTerm]);
 
   // Derived data
   const lowStockItems = items.filter(i => i.min_stock > 0 && i.stock_qty <= i.min_stock);
@@ -94,6 +98,11 @@ export default function StockModule() {
     i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     i.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const itemTotalPages = Math.ceil(filteredItems.length / PAGE_SIZE);
+  const pagedItems = filteredItems.slice((itemPage - 1) * PAGE_SIZE, itemPage * PAGE_SIZE);
+
+  const txTotalPages = Math.ceil(transactions.length / PAGE_SIZE);
+  const pagedTx = transactions.slice((txPage - 1) * PAGE_SIZE, txPage * PAGE_SIZE);
 
   // Handlers
   const openAddItem = () => {
@@ -377,7 +386,7 @@ export default function StockModule() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filteredItems.length > 0 ? filteredItems.map((item, idx) => {
+                  {pagedItems.length > 0 ? pagedItems.map((item, idx) => {
                     const isLow = item.min_stock > 0 && item.stock_qty <= item.min_stock;
                     return (
                       <tr key={item.id} className={`hover:bg-slate-50/80 transition-colors ${isLow ? 'bg-rose-50/50' : ''}`}>
@@ -403,9 +412,21 @@ export default function StockModule() {
               </table>
             </div>
 
+            {/* Pagination Items */}
+            {itemTotalPages > 1 && (
+              <div className="flex items-center justify-between px-2 mt-3">
+                <span className="text-xs text-slate-400">{filteredItems.length} barang (hal {itemPage}/{itemTotalPages})</span>
+                <div className="flex items-center space-x-1">
+                  <button onClick={() => setItemPage(p => Math.max(1, p - 1))} disabled={itemPage <= 1} className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="w-4 h-4" /></button>
+                  <span className="text-xs font-semibold text-slate-600 px-2">{itemPage}</span>
+                  <button onClick={() => setItemPage(p => Math.min(itemTotalPages, p + 1))} disabled={itemPage >= itemTotalPages} className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="w-4 h-4" /></button>
+                </div>
+              </div>
+            )}
+
             {/* Mobile Cards */}
             <div className="md:hidden space-y-2">
-              {filteredItems.length > 0 ? filteredItems.map((item, idx) => {
+              {pagedItems.length > 0 ? pagedItems.map((item, idx) => {
                 const isLow = item.min_stock > 0 && item.stock_qty <= item.min_stock;
                 return (
                   <div key={item.id} className={`bg-white rounded-xl border p-3 space-y-2 ${isLow ? 'border-rose-200 bg-rose-50/30' : 'border-slate-200'}`}>
@@ -465,9 +486,9 @@ export default function StockModule() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {transactions.length > 0 ? transactions.map((tx, idx) => (
+                  {pagedTx.length > 0 ? pagedTx.map((tx, idx) => (
                     <tr key={tx.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx + 1}</td>
+                      <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{(txPage - 1) * PAGE_SIZE + idx + 1}</td>
                       <td className="py-2.5 px-3 border-r border-slate-100">{tx.transaction_date}</td>
                       <td className="py-2.5 px-3 border-r border-slate-100 font-semibold text-slate-900">{tx.stock_items?.name || '-'}</td>
                       <td className="py-2.5 px-3 text-center border-r border-slate-100">
@@ -487,13 +508,25 @@ export default function StockModule() {
               </table>
             </div>
 
+            {/* Pagination Transactions */}
+            {txTotalPages > 1 && (
+              <div className="flex items-center justify-between px-2 mt-3">
+                <span className="text-xs text-slate-400">{transactions.length} transaksi (hal {txPage}/{txTotalPages})</span>
+                <div className="flex items-center space-x-1">
+                  <button onClick={() => setTxPage(p => Math.max(1, p - 1))} disabled={txPage <= 1} className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="w-4 h-4" /></button>
+                  <span className="text-xs font-semibold text-slate-600 px-2">{txPage}</span>
+                  <button onClick={() => setTxPage(p => Math.min(txTotalPages, p + 1))} disabled={txPage >= txTotalPages} className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed"><ChevronRight className="w-4 h-4" /></button>
+                </div>
+              </div>
+            )}
+
             {/* Mobile Cards */}
             <div className="md:hidden space-y-2">
-              {transactions.length > 0 ? transactions.map((tx, idx) => (
+              {pagedTx.length > 0 ? pagedTx.map((tx, idx) => (
                 <div key={tx.id} className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">{idx + 1}</span>
+                      <span className="w-7 h-7 rounded-lg bg-slate-50 text-slate-600 flex items-center justify-center text-xs font-bold shrink-0">{(txPage - 1) * PAGE_SIZE + idx + 1}</span>
                       <div className="min-w-0">
                         <p className="font-bold text-slate-800 text-sm truncate">{tx.stock_items?.name || '-'}</p>
                         <p className="text-[11px] text-slate-400">{tx.transaction_date}</p>
