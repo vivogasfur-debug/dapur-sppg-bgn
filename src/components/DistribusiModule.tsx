@@ -424,9 +424,6 @@ export default function DistribusiModule() {
             <button onClick={openAddModal} className="flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-medium transition-colors shadow-sm shadow-orange-500/20 active:scale-95">
               <Plus className="w-4 h-4" /> Buat Distribusi
             </button>
-            <button onClick={handleSeed} disabled={seeding} className="flex items-center gap-2 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-sm font-medium transition-colors active:scale-95">
-              {seeding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Database className="w-4 h-4" />} Seed
-            </button>
           </div>
         </div>
       </div>
