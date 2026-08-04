@@ -29,7 +29,7 @@ export default function Home() {
       const data = await res.json()
       if (res.ok) {
         setIsAuthenticated(true)
-        toast.success('Selamat datang!')
+        toast.success(`Selamat datang, ${data.name}!`, { style: { backgroundColor: '#2563eb', color: 'white', border: 'none' } })
       } else {
         toast.error(data.error || 'Email atau kata sandi salah')
       }
