@@ -21,7 +21,7 @@ interface MenuDbItem {
 interface WeeklyPlan {
   id: string; tanggal: string; hari: string; menu_db_id: string | null;
   tipe_porsi: string; penerima: string; catatan: string | null; status: string;
-  gambar: string | null;
+  gambar?: string | null;
   nutrition_menu_db: MenuDbItem | null;
 }
 
@@ -169,9 +169,18 @@ export default function AhliGiziModule() {
     reader.readAsDataURL(file);
   };
 
-  const openEditImage = (plan: WeeklyPlan) => {
+  const openEditImage = async (plan: WeeklyPlan) => {
     setEditImagePlan(plan);
-    setEditImageForm({ gambar: plan.gambar || '' });
+    setEditImageForm({ gambar: '' });
+    // Lazy load gambar hanya saat modal dibuka
+    try {
+      const res = await fetch('/api/weekly-menus?include_gambar=true&tanggal=' + plan.tanggal + '&tipe_porsi=' + plan.tipe_porsi);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        const found = data.find(function(d: any) { return d.id === plan.id; });
+        if (found) setEditImageForm({ gambar: found.gambar || '' });
+      }
+    } catch {}
   };
 
   const handleSaveEditImage = async () => {
@@ -467,11 +476,7 @@ export default function AhliGiziModule() {
                                   {menu && (
                                     <div className="flex items-center gap-3">
                                       <div className="relative group">
-                                        {p.gambar ? (
-                                          <img src={p.gambar} alt={menu.nama_menu} className="w-20 h-20 rounded-xl object-cover shrink-0 border border-slate-200" />
-                                        ) : (
-                                          <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200"><ImageIcon className="w-7 h-7 text-slate-300" /></div>
-                                        )}
+                                        <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 border border-slate-200"><ImageIcon className="w-7 h-7 text-slate-300" /></div>
                                         <button onClick={function() { openEditImage(p); }} className="absolute inset-0 rounded-xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                           <ImagePlus className="w-6 h-6 text-white" />
                                         </button>
@@ -482,7 +487,6 @@ export default function AhliGiziModule() {
                                           {menu.kalori_est && <span className="text-[10px] text-orange-500 font-semibold">{menu.kalori_est} kkal</span>}
                                           {menu.protein_g && <span className="text-[10px] text-blue-500 font-semibold">{menu.protein_g}g protein</span>}
                                         </div>
-                                        {p.gambar && <span className="text-[9px] text-emerald-500 font-semibold mt-0.5 block flex items-center gap-0.5"><Check className="w-3 h-3" />Foto hari ini</span>}
                                       </div>
                                     </div>
                                   )}

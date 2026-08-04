@@ -58,10 +58,14 @@ export async function GET(req: NextRequest) {
     }
 
     // Get weekly plans joined with menu_db
-    let q = supabase.from('weekly_menu_plans').select(`
-      id, tanggal, hari, menu_db_id, tipe_porsi, penerima, catatan, gambar, status, created_at,
-      nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)
-    `).order('tanggal', { ascending: true }).order('tipe_porsi')
+    // gambar dikecualikan dari GET default karena base64 besar, gunakan ?include_gambar=true
+    const includeGambar = searchParams.get('include_gambar') === 'true';
+    const selectFields = includeGambar
+      ? `id, tanggal, hari, menu_db_id, tipe_porsi, penerima, catatan, gambar, status, created_at,
+         nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)`
+      : `id, tanggal, hari, menu_db_id, tipe_porsi, penerima, catatan, status, created_at,
+         nutrition_menu_db:nutrition_menu_db(id, nama_menu, nasi, lauk_pauk, sayur, buah, minuman, kalori_est, protein_g, catatan, tipe_porsi)`;
+    let q = supabase.from('weekly_menu_plans').select(selectFields).order('tanggal', { ascending: true }).order('tipe_porsi')
     if (tanggal) q = q.eq('tanggal', tanggal)
     if (tipe) q = q.eq('tipe_porsi', tipe)
     const { data, error } = await q
