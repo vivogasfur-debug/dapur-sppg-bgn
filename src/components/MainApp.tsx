@@ -13,7 +13,8 @@ import * as ExcelJS from 'exceljs';
 import { 
   Utensils, Plus, Search, X, Trash2, Phone,
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
-  AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download
+  AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
+  Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -506,41 +507,354 @@ export default function MainApp() {
   // ===== RENDER CONTENT =====
   const renderContent = () => {
     switch (activeMenu) {
-      case 'Dashboard':
+      case 'Dashboard': {
+        const totalPenerima = students.length + teachers.length + beneficiaries3b.length;
+        const totalAlergi = [...students.filter(s=>s.hasAllergy), ...teachers.filter(t=>t.hasAllergy), ...beneficiaries3b.filter(b=>b.hasAllergy)].length;
+        const siswaL = students.filter(s => s.jk === 'L').length;
+        const siswaP = students.filter(s => s.jk === 'P').length;
+        const guruL = teachers.filter(t => t.jk === 'L').length;
+        const guruP = teachers.filter(t => t.jk === 'P').length;
+        const b3bL = beneficiaries3b.filter(b => b.gender === 'L').length;
+        const b3bP = beneficiaries3b.filter(b => b.gender === 'P').length;
+        const totalL = siswaL + guruL + b3bL;
+        const totalP = siswaP + guruP + b3bP;
+        const bumil = beneficiaries3b.filter(b => b.subCategory === 'Bumil').length;
+        const busui = beneficiaries3b.filter(b => b.subCategory === 'Busui').length;
+        const balita = beneficiaries3b.filter(b => b.subCategory === 'Balita').length;
+        // Sekolah distribution
+        const schoolMap: Record<string, number> = {};
+        students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1 });
+        const topSchools = Object.entries(schoolMap).sort((a,b) => b[1]-a[1]);
+        const maxSchoolCount = topSchools.length > 0 ? topSchools[0][1] : 1;
+        // Kelas distribution
+        const kelasMap: Record<string, number> = {};
+        students.forEach(s => { const k = s.kelas && s.kelas !== '-' ? s.kelas : 'Lainnya'; kelasMap[k] = (kelasMap[k] || 0) + 1 });
+        const kelasEntries = Object.entries(kelasMap).sort((a,b) => a[0].localeCompare(b[0], undefined, {numeric:true}));
+        const maxKelas = kelasEntries.length > 0 ? Math.max(...kelasEntries.map(e=>e[1])) : 1;
+        // Guru distribution
+        const guruMap: Record<string, number> = {};
+        teachers.forEach(t => { guruMap[t.schoolName] = (guruMap[t.schoolName] || 0) + 1 });
+        const topGuruSchools = Object.entries(guruMap).sort((a,b) => b[1]-a[1]);
+        // Status gizi siswa (BMI sederhana)
+        const giziNormal = students.filter(s => s.beratBadan > 0 && s.tinggiBadan > 0).length;
+        const giziDataAvailable = giziNormal;
+        const giziCounts = { normal: 0, kurang: 0, lebih: 0 };
+        students.forEach(s => {
+          if (s.beratBadan > 0 && s.tinggiBadan > 0) {
+            const tbm = s.tinggiBadan / 100;
+            if (tbm > 0) {
+              const bmi = s.beratBadan / (tbm * tbm);
+              if (bmi < 18.5) giziCounts.kurang++;
+              else if (bmi > 25) giziCounts.lebih++;
+              else giziCounts.normal++;
+            }
+          }
+        });
+        // Posyandu distribution for 3B
+        const posyanduMap: Record<string, number> = {};
+        beneficiaries3b.forEach(b => { posyanduMap[b.posyanduName] = (posyanduMap[b.posyanduName] || 0) + 1 });
+        const topPosyandu = Object.entries(posyanduMap).sort((a,b) => b[1]-a[1]);
+
         return (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200">
+            {/* ===== SUMMARY CARDS ===== */}
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 p-3 sm:p-4 rounded-2xl shadow-lg shadow-emerald-200/50 text-white">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase opacity-80">Total Penerima</span>
+                  <div className="p-1.5 bg-white/20 rounded-lg"><Users className="w-4 h-4" /></div>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold">{totalPenerima}</h2>
+                <p className="text-[10px] mt-1 opacity-75">Siswa + Guru + 3B</p>
+              </div>
+              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Siswa</span>
                   <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><GraduationCap className="w-4 h-4" /></div>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800">{students.length}</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800">{students.length}</h2>
+                <p className="text-[10px] mt-1 text-slate-400">L: {siswaL} | P: {siswaP}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200">
+              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Guru/Tendik</span>
                   <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><UserCheck className="w-4 h-4" /></div>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800">{teachers.length}</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800">{teachers.length}</h2>
+                <p className="text-[10px] mt-1 text-slate-400">L: {guruL} | P: {guruP}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200">
+              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Penerima 3B</span>
                   <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><Baby className="w-4 h-4" /></div>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-800">{beneficiaries3b.length}</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800">{beneficiaries3b.length}</h2>
+                <p className="text-[10px] mt-1 text-slate-400">L: {b3bL} | P: {b3bP}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200">
+              <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 col-span-2 lg:col-span-1">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Peringatan Alergi</span>
                   <div className="p-1.5 bg-rose-50 text-rose-600 rounded-lg"><AlertCircle className="w-4 h-4" /></div>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold text-rose-600">{[...students.filter(s=>s.hasAllergy), ...teachers.filter(t=>t.hasAllergy), ...beneficiaries3b.filter(b=>b.hasAllergy)].length}</h2>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-rose-600">{totalAlergi}</h2>
+                <p className="text-[10px] mt-1 text-slate-400">{totalPenerima > 0 ? ((totalAlergi/totalPenerima)*100).toFixed(1) : 0}% dari total</p>
+              </div>
+            </div>
+
+            {/* ===== GENDER RATIO + 3B CATEGORY ===== */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {/* Gender Distribution */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg"><PieChart className="w-4 h-4" /></div>
+                  <h3 className="text-sm font-bold text-slate-700">Distribusi Jenis Kelamin</h3>
+                </div>
+                {/* Overall */}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-slate-500">Seluruh Penerima</span>
+                      <span className="text-xs text-slate-400">{totalL} L | {totalP} P</span>
+                    </div>
+                    <div className="flex h-5 rounded-full overflow-hidden bg-slate-100">
+                      {totalL + totalP > 0 ? (<>
+                        <div className="bg-blue-500 transition-all duration-500" style={{width: `${(totalL/(totalL+totalP))*100}%`}} />
+                        <div className="bg-pink-400 transition-all duration-500" style={{width: `${(totalP/(totalL+totalP))*100}%`}} />
+                      </>) : null}
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[10px] text-blue-500 font-semibold">Laki-laki {totalL + totalP > 0 ? ((totalL/(totalL+totalP))*100).toFixed(0) : 0}%</span>
+                      <span className="text-[10px] text-pink-400 font-semibold">Perempuan {totalL + totalP > 0 ? ((totalP/(totalL+totalP))*100).toFixed(0) : 0}%</span>
+                    </div>
+                  </div>
+                  {/* Siswa */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-emerald-600">Siswa</span>
+                      <span className="text-xs text-slate-400">{siswaL} L | {siswaP} P</span>
+                    </div>
+                    <div className="flex h-3 rounded-full overflow-hidden bg-slate-100">
+                      {siswaL + siswaP > 0 ? (<>
+                        <div className="bg-blue-400 transition-all duration-500" style={{width: `${(siswaL/(siswaL+siswaP))*100}%`}} />
+                        <div className="bg-pink-300 transition-all duration-500" style={{width: `${(siswaP/(siswaL+siswaP))*100}%`}} />
+                      </>) : null}
+                    </div>
+                  </div>
+                  {/* Guru */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-blue-600">Guru/Tendik</span>
+                      <span className="text-xs text-slate-400">{guruL} L | {guruP} P</span>
+                    </div>
+                    <div className="flex h-3 rounded-full overflow-hidden bg-slate-100">
+                      {guruL + guruP > 0 ? (<>
+                        <div className="bg-blue-400 transition-all duration-500" style={{width: `${(guruL/(guruL+guruP))*100}%`}} />
+                        <div className="bg-pink-300 transition-all duration-500" style={{width: `${(guruP/(guruL+guruP))*100}%`}} />
+                      </>) : null}
+                    </div>
+                  </div>
+                  {/* 3B */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-amber-600">Penerima 3B</span>
+                      <span className="text-xs text-slate-400">{b3bL} L | {b3bP} P</span>
+                    </div>
+                    <div className="flex h-3 rounded-full overflow-hidden bg-slate-100">
+                      {b3bL + b3bP > 0 ? (<>
+                        <div className="bg-blue-400 transition-all duration-500" style={{width: `${(b3bL/(b3bL+b3bP))*100}%`}} />
+                        <div className="bg-pink-300 transition-all duration-500" style={{width: `${(b3bP/(b3bL+b3bP))*100}%`}} />
+                      </>) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3B Category + Posyandu */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><BarChart3 className="w-4 h-4" /></div>
+                  <h3 className="text-sm font-bold text-slate-700">Kategori Penerima 3B</h3>
+                </div>
+                <div className="space-y-3 mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 text-xs font-bold text-slate-500">Bumil</div>
+                    <div className="flex-1 h-7 bg-slate-100 rounded-lg overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-rose-400 to-rose-500 rounded-lg transition-all duration-500 flex items-center pl-2" style={{width: `${beneficiaries3b.length > 0 ? (bumil/beneficiaries3b.length)*100 : 0}%`, minWidth: bumil > 0 ? '2rem' : '0'}}>
+                        {bumil > 0 && <span className="text-[10px] font-bold text-white">{bumil}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 text-xs font-bold text-slate-500">Busui</div>
+                    <div className="flex-1 h-7 bg-slate-100 rounded-lg overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-violet-400 to-violet-500 rounded-lg transition-all duration-500 flex items-center pl-2" style={{width: `${beneficiaries3b.length > 0 ? (busui/beneficiaries3b.length)*100 : 0}%`, minWidth: busui > 0 ? '2rem' : '0'}}>
+                        {busui > 0 && <span className="text-[10px] font-bold text-white">{busui}</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 text-xs font-bold text-slate-500">Balita</div>
+                    <div className="flex-1 h-7 bg-slate-100 rounded-lg overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-cyan-400 to-cyan-500 rounded-lg transition-all duration-500 flex items-center pl-2" style={{width: `${beneficiaries3b.length > 0 ? (balita/beneficiaries3b.length)*100 : 0}%`, minWidth: balita > 0 ? '2rem' : '0'}}>
+                        {balita > 0 && <span className="text-[10px] font-bold text-white">{balita}</span>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Posyandu distribution */}
+                {topPosyandu.length > 0 && (<>
+                  <div className="flex items-center gap-2 mb-2 pt-3 border-t border-slate-100">
+                    <span className="text-xs font-bold text-slate-600">Per Posyandu</span>
+                  </div>
+                  <div className="space-y-1.5 max-h-28 overflow-y-auto">
+                    {topPosyandu.slice(0, 5).map(([name, count]) => (
+                      <div key={name} className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500 w-28 truncate" title={name}>{name}</span>
+                        <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{width: `${(count/topPosyandu[0][1])*100}%`}} />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-600 w-6 text-right">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>)}
+              </div>
+            </div>
+
+            {/* ===== SEKOLAH + KELAS DISTRIBUTION ===== */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+              {/* Per Sekolah */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg"><School className="w-4 h-4" /></div>
+                  <h3 className="text-sm font-bold text-slate-700">Distribusi Per Sekolah</h3>
+                </div>
+                {topSchools.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic py-4 text-center">Belum ada data sekolah</p>
+                ) : (
+                  <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                    {topSchools.map(([name, count]) => (
+                      <div key={name} className="flex items-center gap-3">
+                        <span className="text-[11px] text-slate-600 w-36 truncate font-medium" title={name}>{name}</span>
+                        <div className="flex-1 h-6 bg-slate-100 rounded-lg overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-lg transition-all duration-500 flex items-center pl-2" style={{width: `${(count/maxSchoolCount)*100}%`, minWidth: count > 0 ? '1.8rem' : '0'}}>
+                            <span className="text-[10px] font-bold text-white">{count}</span>
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-slate-400 w-10 text-right">siswa</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {topGuruSchools.length > 0 && (<>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                    <UserCheck className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="text-xs font-bold text-slate-600">Guru Per Sekolah</span>
+                  </div>
+                  <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
+                    {topGuruSchools.map(([name, count]) => (
+                      <div key={name} className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-500 w-36 truncate" title={name}>{name}</span>
+                        <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-400 rounded-full transition-all duration-500" style={{width: `${(count/topGuruSchools[0][1])*100}%`}} />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-600 w-6 text-right">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>)}
+              </div>
+
+              {/* Per Kelas + Status Gizi */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg"><BarChart3 className="w-4 h-4" /></div>
+                  <h3 className="text-sm font-bold text-slate-700">Distribusi Per Kelas</h3>
+                </div>
+                {kelasEntries.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic py-4 text-center">Belum ada data kelas</p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                    {kelasEntries.map(([kelas, count]) => (
+                      <div key={kelas} className="flex items-center gap-3">
+                        <span className="text-[11px] text-slate-600 w-14 font-bold">Kls {kelas}</span>
+                        <div className="flex-1 h-5 bg-slate-100 rounded-lg overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-lg transition-all duration-500 flex items-center pl-2" style={{width: `${(count/maxKelas)*100}%`, minWidth: count > 0 ? '1.5rem' : '0'}}>
+                            <span className="text-[10px] font-bold text-white">{count}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Status Gizi */}
+                <div className="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100">
+                  <div className="p-1.5 bg-teal-50 text-teal-600 rounded-lg"><Activity className="w-4 h-4" /></div>
+                  <span className="text-xs font-bold text-slate-700">Status Gizi Siswa (BMI)</span>
+                </div>
+                {giziDataAvailable === 0 ? (
+                  <p className="text-[10px] text-slate-400 italic mt-2">Data BB/TB belum tersedia</p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 mt-2">
+                    <div className="bg-orange-50 border border-orange-200/60 rounded-xl p-2.5 text-center">
+                      <div className="text-lg font-extrabold text-orange-600">{giziCounts.kurang}</div>
+                      <div className="text-[10px] font-semibold text-orange-500">Kurus</div>
+                      <div className="text-[9px] text-orange-400">{'>'}18.5</div>
+                    </div>
+                    <div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-2.5 text-center">
+                      <div className="text-lg font-extrabold text-emerald-600">{giziCounts.normal}</div>
+                      <div className="text-[10px] font-semibold text-emerald-500">Normal</div>
+                      <div className="text-[9px] text-emerald-400">18.5-25</div>
+                    </div>
+                    <div className="bg-rose-50 border border-rose-200/60 rounded-xl p-2.5 text-center">
+                      <div className="text-lg font-extrabold text-rose-600">{giziCounts.lebih}</div>
+                      <div className="text-[10px] font-semibold text-rose-500">Gemuk</div>
+                      <div className="text-[9px] text-rose-400">{'>'}25</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ===== QUICK STATS BOTTOM ===== */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200/50 p-3 rounded-2xl">
+                <div className="flex items-center gap-2 mb-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-blue-500" />
+                  <span className="text-[10px] font-bold text-blue-600 uppercase">Sekolah</span>
+                </div>
+                <h3 className="text-xl font-extrabold text-blue-700">{topSchools.length}</h3>
+                <p className="text-[10px] text-blue-400">terdaftar</p>
+              </div>
+              <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/50 p-3 rounded-2xl">
+                <div className="flex items-center gap-2 mb-1">
+                  <Heart className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[10px] font-bold text-amber-600 uppercase">Posyandu</span>
+                </div>
+                <h3 className="text-xl font-extrabold text-amber-700">{topPosyandu.length}</h3>
+                <p className="text-[10px] text-amber-400">aktif melayani 3B</p>
+              </div>
+              <div className="bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200/50 p-3 rounded-2xl">
+                <div className="flex items-center gap-2 mb-1">
+                  <Milk className="w-3.5 h-3.5 text-violet-500" />
+                  <span className="text-[10px] font-bold text-violet-600 uppercase">Busui</span>
+                </div>
+                <h3 className="text-xl font-extrabold text-violet-700">{busui}</h3>
+                <p className="text-[10px] text-violet-400">ibu menyusui</p>
+              </div>
+              <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200/50 p-3 rounded-2xl">
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-teal-500" />
+                  <span className="text-[10px] font-bold text-teal-600 uppercase">Data Gizi</span>
+                </div>
+                <h3 className="text-xl font-extrabold text-teal-700">{giziDataAvailable}</h3>
+                <p className="text-[10px] text-teal-400">siswa dengan BB/TB</p>
               </div>
             </div>
           </div>
         );
+      }
 
       case 'Penerima Manfaat':
         return (
