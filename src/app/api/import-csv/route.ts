@@ -1,6 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
+function parseDate(dateStr: string | null): string | null {
+  if (!dateStr) return null
+  const cleaned = dateStr.trim()
+  // dd/mm/yyyy (format CSV Indonesia)
+  const dmySlash = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (dmySlash) {
+    const [, d, m, y] = dmySlash
+    // Validasi: hari 1-31, bulan 1-12
+    const day = parseInt(d), month = parseInt(m)
+    if (day > 12) {
+      // Pasti dd/mm/yyyy karena hari > 12
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+    } else if (month > 12) {
+      // Pasti mm/dd/yyyy karena bulan > 12, tapi masuk akal sebagai hari
+      return `${y}-${d.padStart(2, '0')}-${m.padStart(2, '0')}`
+    } else {
+      // Ambigu (misal 01/05/2024), default ke dd/mm/yyyy (format Indonesia)
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+    }
+  }
+  // dd-mm-yyyy
+  const dmyDash = cleaned.match(/^(\d{1,2})\-(\d{1,2})\-(\d{4})$/)
+  if (dmyDash) {
+    const [, d, m, y] = dmyDash
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+  }
+  // yyyy-mm-dd (sudah benar)
+  const ymdDash = cleaned.match(/^(\d{4})\-(\d{1,2})\-(\d{1,2})$/)
+  if (ymdDash) {
+    const [, y, m, d] = ymdDash
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+  }
+  // Fallback: coba JS Date parse
+  const parsed = new Date(cleaned)
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0]
+  }
+  return null
+}
+
 function parseCSV(text: string): string[][] {
   const lines = text.trim().split('\n')
   return lines.map(line => {
@@ -51,7 +91,7 @@ export async function POST(req: NextRequest) {
           jk: (obj.jk || obj.jenis_kelamin || 'L').charAt(0).toUpperCase(),
           nisn: obj.nisn || null,
           tempat_lahir: obj.tempat_lahir || obj.tempat || null,
-          tanggal_lahir: obj.tanggal_lahir || obj.ttl || null,
+          tanggal_lahir: parseDate(obj.tanggal_lahir || obj.ttl || null),
           nik: obj.nik || null,
           agama: obj.agama || 'Islam',
           alamat: obj.alamat || null,
@@ -80,7 +120,7 @@ export async function POST(req: NextRequest) {
           nip: obj.nip || null,
           jk: (obj.jk || obj.jenis_kelamin || 'L').charAt(0).toUpperCase(),
           tempat_lahir: obj.tempat_lahir || obj.tempat || null,
-          tanggal_lahir: obj.tanggal_lahir || obj.ttl || null,
+          tanggal_lahir: parseDate(obj.tanggal_lahir || obj.ttl || null),
           nik: obj.nik || null,
           jenis_tendik: obj.jenis_tendik || obj.jabatan || 'Guru',
           alamat: obj.alamat || null,
@@ -105,7 +145,7 @@ export async function POST(req: NextRequest) {
           nik: obj.nik || null,
           full_name: obj.full_name || obj.nama || '-',
           gender: (obj.gender || obj.jk || obj.jenis_kelamin || 'P').charAt(0).toUpperCase(),
-          birth_date: obj.birth_date || obj.tanggal_lahir || null,
+          birth_date: parseDate(obj.birth_date || obj.tanggal_lahir || null),
           detail_info: obj.detail_info || obj.info || null,
           pic_name: obj.pic_name || obj.kader || '-',
           phone: obj.phone || obj.wa || obj.no_hp || null,
