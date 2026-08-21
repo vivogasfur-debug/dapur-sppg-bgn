@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
         }
       })
       const { error } = await supabase.from('students').insert(records)
-      if (error) { console.error(error); errors = dataRows.length }
+      if (error) { console.error(error); return NextResponse.json({ error: `Gagal import siswa: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
       else { inserted = records.length }
     }
 
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
         }
       })
       const { error } = await supabase.from('teachers').insert(records)
-      if (error) { console.error(error); errors = dataRows.length }
+      if (error) { console.error(error); return NextResponse.json({ error: `Gagal import guru: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
       else { inserted = records.length }
     }
 
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
         }
       })
       const { error } = await supabase.from('beneficiaries_3b').insert(records)
-      if (error) { console.error(error); errors = dataRows.length }
+      if (error) { console.error(error); return NextResponse.json({ error: `Gagal import penerima 3B: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
       else { inserted = records.length }
     }
 
