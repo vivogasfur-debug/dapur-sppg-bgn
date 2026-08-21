@@ -8,6 +8,7 @@ import AhliGiziModule from './AhliGiziModule';
 import AkuntanModule from './AkuntanModule';
 import DistribusiModule from './DistribusiModule';
 import UserModule from './UserModule';
+import LaporanModule from './LaporanModule';
 import Image from 'next/image';
 import * as ExcelJS from 'exceljs';
 import { 
@@ -1084,6 +1085,9 @@ export default function MainApp() {
 
       case 'Manajemen User':
         return <UserModule />;
+
+      case 'Laporan Ringkas':
+        return <LaporanModule />;
 
       default:
         return <div className="p-4 bg-white rounded-xl border border-slate-200">Modul {activeMenu} — segera hadir</div>;
