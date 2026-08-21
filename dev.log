@@ -1,6 +1,6 @@
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.7.34:3000
+- Network:       http://21.0.4.20:3000
 - Environments: .env
 
 ✓ Starting...
@@ -9,12 +9,12 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-✓ Ready in 702ms
+✓ Ready in 715ms
 ○ Compiling / ...
- GET / 200 in 3.0s (compile: 2.9s, render: 63ms)
- GET / 200 in 4.6s (compile: 3.8s, render: 843ms)
- GET / 200 in 287ms (compile: 255ms, render: 33ms)
- GET / 200 in 315ms (compile: 285ms, render: 30ms)
- GET / 200 in 222ms (compile: 195ms, render: 27ms)
- GET / 200 in 309ms (compile: 277ms, render: 32ms)
- GET / 200 in 221ms (compile: 194ms, render: 27ms)
+ GET / 200 in 3.2s (compile: 3.2s, render: 54ms)
+ GET / 200 in 3.5s (compile: 2.8s, render: 780ms)
+ GET / 200 in 216ms (compile: 190ms, render: 26ms)
+ GET / 200 in 370ms (compile: 337ms, render: 33ms)
+ GET / 200 in 225ms (compile: 195ms, render: 30ms)
+⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
