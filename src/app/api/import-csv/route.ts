@@ -80,28 +80,45 @@ export async function POST(req: NextRequest) {
     let inserted = 0
     let errors = 0
 
+    // Buat lookup fleksibel: cari header yang mengandung keyword (bukan exact match)
+    const findVal = (obj: Record<string, any>, keywords: string[]): string | null => {
+      for (const key of Object.keys(obj)) {
+        const lowered = key.toLowerCase()
+        for (const kw of keywords) {
+          if (lowered === kw || lowered.includes(kw)) {
+            const val = obj[key]
+            if (val && val.toString().trim() !== '' && val.toString().trim() !== '-') return val.toString().trim()
+          }
+        }
+      }
+      return null
+    }
+
+    // Log header yang terdeteksi untuk debugging
+    console.log('[CSV Import] type:', type, 'headers:', headers)
+
     if (type === 'students') {
       const records = dataRows.map(row => {
         const obj: Record<string, any> = {}
         headers.forEach((h, i) => { obj[h] = row[i] || null })
         return {
-          nama: obj.nama || obj.name || '-',
-          school_name: obj.school_name || obj.sekolah || obj.nama_sekolah || '-',
-          nipd: obj.nipd || null,
-          jk: (obj.jk || obj.jenis_kelamin || 'L').charAt(0).toUpperCase(),
-          nisn: obj.nisn || null,
-          tempat_lahir: obj.tempat_lahir || obj.tempat || null,
-          tanggal_lahir: parseDate(obj.tanggal_lahir || obj.ttl || null),
-          nik: obj.nik || null,
-          agama: obj.agama || 'Islam',
-          alamat: obj.alamat || null,
-          kelas: obj.kelas || null,
-          berat_badan: parseInt(obj.berat_badan || obj.bb || obj.berat || '0') || 0,
-          tinggi_badan: parseInt(obj.tinggi_badan || obj.tb || obj.tinggi || '0') || 0,
-          nama_ayah: obj.nama_ayah || obj.ayah || null,
-          nama_ibu: obj.nama_ibu || obj.ibu || null,
-          has_allergy: (obj.alergi || obj.has_allergy || '').toString().toLowerCase() !== '-' && (obj.alergi || obj.has_allergy || '').toString().length > 0,
-          allergy_type: (obj.alergi || obj.has_allergy || obj.allergy_type || '').toString().toLowerCase() === '-' ? null : (obj.alergi || obj.allergy_type || null),
+          nama: findVal(obj, ['nama', 'name', 'nama_siswa', 'nama_peserta', 'peserta_didik']) || '-',
+          school_name: findVal(obj, ['school_name', 'sekolah', 'nama_sekolah', 'school']) || '-',
+          nipd: findVal(obj, ['nipd']) || null,
+          jk: (findVal(obj, ['jk', 'jenis_kelamin', 'jenis_kel']) || 'L').charAt(0).toUpperCase(),
+          nisn: findVal(obj, ['nisn']) || null,
+          tempat_lahir: findVal(obj, ['tempat_lahir', 'tempat']) || null,
+          tanggal_lahir: parseDate(findVal(obj, ['tanggal_lahir', 'ttl', 'birth_date', 'tgl_lahir'])),
+          nik: findVal(obj, ['nik', 'no_nik', 'nik_ktp']) || null,
+          agama: findVal(obj, ['agama']) || 'Islam',
+          alamat: findVal(obj, ['alamat', 'address']) || null,
+          kelas: findVal(obj, ['kelas', 'class', 'tingkat']) || null,
+          berat_badan: parseInt(findVal(obj, ['berat_badan', 'bb', 'berat', 'weight']) || '0') || 0,
+          tinggi_badan: parseInt(findVal(obj, ['tinggi_badan', 'tb', 'tinggi', 'height']) || '0') || 0,
+          nama_ayah: findVal(obj, ['nama_ayah', 'ayah', 'father']) || null,
+          nama_ibu: findVal(obj, ['nama_ibu', 'ibu', 'mother']) || null,
+          has_allergy: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy']); return v !== null && v !== '' })(),
+          allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
         }
       })
       const { error } = await supabase.from('students').insert(records)
@@ -114,18 +131,18 @@ export async function POST(req: NextRequest) {
         const obj: Record<string, any> = {}
         headers.forEach((h, i) => { obj[h] = row[i] || null })
         return {
-          full_name: obj.full_name || obj.nama || obj.nama_guru || '-',
-          school_name: obj.school_name || obj.sekolah || obj.nama_sekolah || '-',
-          nuptk: obj.nuptk || null,
-          nip: obj.nip || null,
-          jk: (obj.jk || obj.jenis_kelamin || 'L').charAt(0).toUpperCase(),
-          tempat_lahir: obj.tempat_lahir || obj.tempat || null,
-          tanggal_lahir: parseDate(obj.tanggal_lahir || obj.ttl || null),
-          nik: obj.nik || null,
-          jenis_tendik: obj.jenis_tendik || obj.jabatan || 'Guru',
-          alamat: obj.alamat || null,
-          has_allergy: (obj.alergi || obj.has_allergy || '').toString().toLowerCase() !== '-' && (obj.alergi || obj.has_allergy || '').toString().length > 0,
-          allergy_type: (obj.alergi || obj.has_allergy || obj.allergy_type || '').toString().toLowerCase() === '-' ? null : (obj.alergi || obj.allergy_type || null),
+          full_name: findVal(obj, ['full_name', 'nama_guru', 'nama', 'name']) || '-',
+          school_name: findVal(obj, ['school_name', 'sekolah', 'nama_sekolah', 'school']) || '-',
+          nuptk: findVal(obj, ['nuptk']) || null,
+          nip: findVal(obj, ['nip']) || null,
+          jk: (findVal(obj, ['jk', 'jenis_kelamin', 'jenis_kel']) || 'L').charAt(0).toUpperCase(),
+          tempat_lahir: findVal(obj, ['tempat_lahir', 'tempat']) || null,
+          tanggal_lahir: parseDate(findVal(obj, ['tanggal_lahir', 'ttl', 'birth_date', 'tgl_lahir'])),
+          nik: findVal(obj, ['nik', 'no_nik']) || null,
+          jenis_tendik: findVal(obj, ['jenis_tendik', 'jabatan', 'status_tendik']) || 'Guru',
+          alamat: findVal(obj, ['alamat', 'address']) || null,
+          has_allergy: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy']); return v !== null && v !== '' })(),
+          allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
           status: 'Aktif',
         }
       })
@@ -139,18 +156,18 @@ export async function POST(req: NextRequest) {
         const obj: Record<string, any> = {}
         headers.forEach((h, i) => { obj[h] = row[i] || null })
         return {
-          sppg_code: obj.sppg_code || 'SPPG-SMB-01',
-          posyandu_name: obj.posyandu_name || obj.posyandu || '-',
-          sub_category: obj.sub_category || obj.kategori || obj.sub_kategori || 'Bumil',
-          nik: obj.nik || null,
-          full_name: obj.full_name || obj.nama || '-',
-          gender: (obj.gender || obj.jk || obj.jenis_kelamin || 'P').charAt(0).toUpperCase(),
-          birth_date: parseDate(obj.birth_date || obj.tanggal_lahir || null),
-          detail_info: obj.detail_info || obj.info || null,
-          pic_name: obj.pic_name || obj.kader || '-',
-          phone: obj.phone || obj.wa || obj.no_hp || null,
-          has_allergy: (obj.alergi || obj.has_allergy || '').toString().toLowerCase() !== '-' && (obj.alergi || obj.has_allergy || '').toString().length > 0,
-          allergy_type: (obj.alergi || obj.has_allergy || obj.allergy_type || '').toString().toLowerCase() === '-' ? null : (obj.alergi || obj.allergy_type || null),
+          sppg_code: findVal(obj, ['sppg_code', 'sppg', 'kode_sppg']) || 'SPPG-SMB-01',
+          posyandu_name: findVal(obj, ['posyandu_name', 'posyandu', 'nama_posyandu']) || '-',
+          sub_category: findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Bumil',
+          nik: findVal(obj, ['nik', 'no_nik']) || null,
+          full_name: findVal(obj, ['full_name', 'nama', 'name', 'nama_ibu', 'nama_anak']) || '-',
+          gender: (findVal(obj, ['gender', 'jk', 'jenis_kelamin', 'jenis_kel']) || 'P').charAt(0).toUpperCase(),
+          birth_date: parseDate(findVal(obj, ['birth_date', 'tanggal_lahir', 'ttl', 'tgl_lahir'])),
+          detail_info: findVal(obj, ['detail_info', 'info', 'keterangan', 'detail']) || null,
+          pic_name: findVal(obj, ['pic_name', 'kader', 'nama_kader', 'petugas']) || '-',
+          phone: findVal(obj, ['phone', 'wa', 'no_hp', 'telepon', 'no_telp', 'whatsapp']) || null,
+          has_allergy: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy']); return v !== null && v !== '' })(),
+          allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
           status: 'Aktif',
         }
       })
@@ -163,7 +180,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Tipe tidak valid' }, { status: 400 })
     }
 
-    return NextResponse.json({ inserted, errors, total: dataRows.length })
+    return NextResponse.json({ inserted, errors, total: dataRows.length, detected_headers: headers })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal import CSV'
     return NextResponse.json({ error: msg }, { status: 500 })
