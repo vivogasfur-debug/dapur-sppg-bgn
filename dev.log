@@ -1335,3 +1335,11 @@ Import traces:
   Reload env: .env
 ✓ Compiled in 1417ms
 ✓ Compiled in 2ms
+ GET / 200 in 815ms (compile: 349ms, render: 466ms)
+ GET / 200 in 232ms (compile: 200ms, render: 32ms)
+ GET / 200 in 241ms (compile: 205ms, render: 35ms)
+ GET / 200 in 219ms (compile: 189ms, render: 30ms)
+ GET / 200 in 237ms (compile: 213ms, render: 24ms)
+✓ Compiled in 648ms
+ GET / 200 in 745ms (compile: 254ms, render: 491ms)
+ GET / 200 in 254ms (compile: 225ms, render: 29ms)
