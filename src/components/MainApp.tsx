@@ -852,7 +852,7 @@ export default function MainApp() {
                 <h3 className="text-xl font-extrabold text-teal-700">{giziDataAvailable}</h3>
                 <p className="text-[10px] text-teal-400">siswa dengan BB/TB</p>
               </div>
-) : null}
+            </div>
           </div>
         );
       }
@@ -1182,7 +1182,7 @@ export default function MainApp() {
                   </table>
                 )}
               </div>
-            ) : null}
+            </div>}
 
             {/* MOBILE: CARD VIEW (hidden on desktop) */}
             {pmMainTab !== 'Rekapitulasi' && <div className="md:hidden space-y-3">
