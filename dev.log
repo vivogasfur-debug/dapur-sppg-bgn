@@ -30,3 +30,1308 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
 ✓ Compiled in 284ms
 ✓ Compiled in 266ms
 ✓ Compiled in 244ms
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 1295ms (compile: 1185ms, render: 110ms)
+ GET / 500 in 1574ms (compile: 1555ms, render: 19ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 117ms (compile: 108ms, render: 10ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 110ms (compile: 101ms, render: 9ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 109ms (compile: 100ms, render: 8ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 233ms (compile: 133ms, render: 100ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 107ms (compile: 98ms, render: 9ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 116ms (compile: 107ms, render: 9ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 115ms (compile: 106ms, render: 9ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 109ms (compile: 100ms, render: 10ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 107ms (compile: 99ms, render: 8ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 99ms (compile: 92ms, render: 7ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 125ms (compile: 118ms, render: 8ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 112ms (compile: 103ms, render: 8ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 105ms (compile: 96ms, render: 9ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 109ms (compile: 101ms, render: 7ms)
+⨯ ./src/components/MainApp.tsx:855:9
+Parsing ecmascript source code failed
+[0m [90m 853 |[39m                 [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] text-teal-400"[39m[33m>[39msiswa dengan [33mBB[39m[33m/[39m[33mTB[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m
+ [90m 854 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 855 |[39m ) [33m:[39m [36mnull[39m}
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+ [90m 858 |[39m       }[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:858:7
+Parsing ecmascript source code failed
+[0m [90m 856 |[39m           [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+ [90m 857 |[39m         )[33m;[39m
+[31m[1m>[22m[39m[90m 858 |[39m       }
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 859 |[39m
+ [90m 860 |[39m       [36mcase[39m [32m'Penerima Manfaat'[39m[33m:[39m
+ [90m 861 |[39m         [36mreturn[39m ([0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+
+./src/components/MainApp.tsx:1185:21
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             ) [33m:[39m [36mnull[39m}
+ [90m      |[39m                     [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 107ms (compile: 99ms, render: 7ms)
+⨯ ./src/components/MainApp.tsx:1185:13
+Parsing ecmascript source code failed
+[0m [90m 1183 |[39m                 )}
+ [90m 1184 |[39m               [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1185 |[39m             }
+ [90m      |[39m             [31m[1m^[22m[39m
+ [90m 1186 |[39m
+ [90m 1187 |[39m             {[90m/* MOBILE: CARD VIEW (hidden on desktop) */[39m}
+ [90m 1188 |[39m             {pmMainTab [33m!==[39m [32m'Rekapitulasi'[39m [33m&&[39m [33m<[39m[33mdiv[39m className[33m=[39m[32m"md:hidden space-y-3"[39m[33m>[39m[0m
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 71ms (compile: 63ms, render: 7ms)
+✓ Compiled in 375ms
+ GET / 200 in 565ms (compile: 308ms, render: 257ms)
+  Reload env: .env
+✓ Compiled in 1417ms
+✓ Compiled in 2ms
