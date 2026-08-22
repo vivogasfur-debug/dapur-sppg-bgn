@@ -4,7 +4,7 @@ bun install v1.3.14 (0d9b296a)
 + @types/node@22.20.1
 + socket.io@4.8.3
 
-22 packages installed [75.00ms]
+22 packages installed [81.00ms]
 [ws-service] Running bun run dev...
 $ bun --hot index.ts
 WebSocket service running on port 3003

@@ -55,7 +55,7 @@ const calculateAge = (birthDateString: string) => {
 
 export default function MainApp() {
   const [activeMenu, setActiveMenu] = useState('Penerima Manfaat');
-  const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B'>('Sekolah');
+  const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B' | 'Rekapitulasi'>('Sekolah');
   const [pmSubTab, setPmSubTab] = useState<'Siswa' | 'Guru' | 'Bumil' | 'Busui' | 'Balita'>('Siswa');
   const [loading, setLoading] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -125,8 +125,8 @@ export default function MainApp() {
     hasAllergy: false, allergyType: '',
   });
 
-  const handleMainTabChange = (tab: 'Sekolah' | '3B') => {
-    setPmMainTab(tab); setPmSubTab(tab === 'Sekolah' ? 'Siswa' : 'Bumil');
+  const handleMainTabChange = (tab: 'Sekolah' | '3B' | 'Rekapitulasi') => {
+    setPmMainTab(tab); if (tab === 'Sekolah') setPmSubTab('Siswa'); else if (tab === '3B') setPmSubTab('Bumil');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -868,6 +868,9 @@ export default function MainApp() {
                 </button>
                 <button onClick={() => handleMainTabChange('3B')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex-1 justify-center ${pmMainTab === '3B' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}>
                   <Baby className="w-3.5 h-3.5" /><span>3B</span>
+                </button>
+                <button onClick={() => handleMainTabChange('Rekapitulasi')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex-1 justify-center ${pmMainTab === 'Rekapitulasi' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500'}`}>
+                  <BarChart3 className="w-3.5 h-3.5" /><span>Rekapitulasi</span>
                 </button>
               </div>
               {pmMainTab === 'Sekolah' ? (
