@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { fetchAll, supabase } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const { data, error } = await supabase
-      .from('teachers')
-      .select('*')
-      .order('created_at', { ascending: true })
-
-    if (error) throw error
+    const data = await fetchAll('teachers', {
+      order: { column: 'created_at', ascending: true },
+    })
     return NextResponse.json(data)
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal memuat data'

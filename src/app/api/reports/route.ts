@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { fetchAll, supabase } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {
   try {
@@ -14,18 +14,15 @@ export async function GET(req: NextRequest) {
 
     // === SUMMARY ===
     if (type === 'summary') {
-      const [sRes, tRes, bRes, dRes] = await Promise.all([
-        supabase.from('students').select('id, jk, kelas, school_name, has_allergy, berat_badan, tinggi_badan'),
-        supabase.from('teachers').select('id, jk, school_name, jenis_tendik, has_allergy'),
-        supabase.from('beneficiaries_3b').select('id, gender, sub_category, posyandu_name, has_allergy, status'),
+      const [students, teachers, b3b, dRes] = await Promise.all([
+        fetchAll('students', { select: 'id, jk, kelas, school_name, has_allergy, berat_badan, tinggi_badan' }),
+        fetchAll('teachers', { select: 'id, jk, school_name, jenis_tendik, has_allergy' }),
+        fetchAll('beneficiaries_3b', { select: 'id, gender, sub_category, posyandu_name, has_allergy, status' }),
         dateFilter
           ? supabase.from('distributions').select('id, distribution_date, destination_type, destination_name, status, pic_name, distribution_items(jumlah_porsi, menu_name)').ilike('distribution_date', `${dateFilter}%`)
           : supabase.from('distributions').select('id, distribution_date, destination_type, destination_name, status, pic_name, distribution_items(jumlah_porsi, menu_name)'),
       ])
 
-      const students = sRes.data || []
-      const teachers = tRes.data || []
-      const b3b = bRes.data || []
       const distributions = dRes.data || []
 
       // Distribusi stats
@@ -67,13 +64,13 @@ export async function GET(req: NextRequest) {
 
     // === PENERIMA DETAIL ===
     if (type === 'penerima') {
-      const [sRes, tRes, bRes] = await Promise.all([
-        supabase.from('students').select('id, nama, school_name, jk, kelas, tanggal_lahir, berat_badan, tinggi_badan, has_allergy, alamat'),
-        supabase.from('teachers').select('id, full_name, school_name, jk, jenis_tendik, has_allergy, alamat'),
-        supabase.from('beneficiaries_3b').select('id, full_name, sub_category, posyandu_name, gender, birth_date, has_allergy, status'),
+      const [students, teachers, b3b] = await Promise.all([
+        fetchAll('students', { select: 'id, nama, school_name, jk, kelas, tanggal_lahir, berat_badan, tinggi_badan, has_allergy, alamat' }),
+        fetchAll('teachers', { select: 'id, full_name, school_name, jk, jenis_tendik, has_allergy, alamat' }),
+        fetchAll('beneficiaries_3b', { select: 'id, full_name, sub_category, posyandu_name, gender, birth_date, has_allergy, status' }),
       ])
       return NextResponse.json({
-        students: sRes.data || [], teachers: tRes.data || [], beneficiaries3b: bRes.data || []
+        students, teachers, beneficiaries3b: b3b
       })
     }
 
