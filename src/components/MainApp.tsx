@@ -521,9 +521,11 @@ export default function MainApp() {
     } finally { setExporting(false); }
   };
 
-  const filteredStudents = students.filter(s => s.nama.toLowerCase().includes(searchTerm.toLowerCase()) || s.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm) || s.nik.includes(searchTerm));
-  const filteredTeachers = teachers.filter(t => t.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || t.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) || t.nik.includes(searchTerm) || t.nip.includes(searchTerm));
-  const filtered3b = beneficiaries3b.filter(b => b.subCategory === pmSubTab);
+  const isNumericSearch = /^\d+$/.test(searchTerm.trim());
+  const st = searchTerm.toLowerCase();
+  const filteredStudents = students.filter(s => s.nama.toLowerCase().includes(st) || s.schoolName.toLowerCase().includes(st) || (isNumericSearch && s.nisn.includes(searchTerm.trim())) || (isNumericSearch && s.nik.includes(searchTerm.trim())));
+  const filteredTeachers = teachers.filter(t => t.fullName.toLowerCase().includes(st) || t.schoolName.toLowerCase().includes(st) || (isNumericSearch && t.nik.includes(searchTerm.trim())) || (isNumericSearch && t.nip.includes(searchTerm.trim())));
+  const filtered3b = beneficiaries3b.filter(b => b.subCategory === pmSubTab && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim()))));
 
   // ===== MOBILE CARD COMPONENTS =====
   const StudentCard = ({ s, idx }: { s: StudentBeneficiary; idx: number }) => (
