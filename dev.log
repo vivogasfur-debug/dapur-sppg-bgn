@@ -93,3 +93,7 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
   page: '/api/login'
 }
  POST /api/login 500 in 84ms (compile: 70ms, render: 13ms)
+ GET / 200 in 482ms (compile: 210ms, render: 271ms)
+ GET / 200 in 248ms (compile: 193ms, render: 55ms)
+ GET / 200 in 367ms (compile: 337ms, render: 30ms)
+ GET /? 200 in 215ms (compile: 189ms, render: 25ms)
