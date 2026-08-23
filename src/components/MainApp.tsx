@@ -211,6 +211,139 @@ export default function MainApp() {
   // Run duplicate check when form data changes (only when modal open)
   useEffect(() => { if (isModalOpen && !editingId) checkDuplicates(); else setDuplicateWarnings([]); }, [checkDuplicates, isModalOpen, editingId]);
 
+  // === SISTEM SCAN DETEKSI DATA GANDA DATABASE ===
+  const [dupModalOpen, setDupModalOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [dupResults, setDupResults] = useState<Array<{
+    type: 'students' | 'teachers' | '3b'; reason: string; severity: 'exact' | 'similar';
+    items: Array<{ id: string; nama: string; lokasi: string; nik: string; detail: string }>;
+  }>>([]);
+
+  const levenshtein = (a: string, b: string): number => {
+    const m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
+      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    }
+    return dp[m][n];
+  };
+
+  const scanAllDuplicates = useCallback(() => {
+    setScanning(true);
+    setTimeout(() => {
+      const groups: typeof dupResults = [];
+      const seen = new Set<string>();
+
+      // --- SCAN SISWA ---
+      for (let i = 0; i < students.length; i++) {
+        const a = students[i]; const keyA = `s-${a.id}`; if (seen.has(keyA)) continue;
+        const normA = normalizeStr(a.nama);
+        for (let j = i + 1; j < students.length; j++) {
+          const b = students[j]; const keyB = `s-${b.id}`; if (seen.has(keyB)) continue;
+          let match = false; let reason = ''; let severity: 'exact' | 'similar' = 'similar';
+          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; severity = 'exact'; }
+          else if (a.nisn && b.nisn && a.nisn !== '-' && b.nisn !== '-' && a.nisn === b.nisn) { match = true; reason = 'NISN Sama'; severity = 'exact'; }
+          else if (normA === normalizeStr(b.nama) && a.schoolName === b.schoolName) { match = true; reason = `Nama Identik + Sekolah Sama (${a.schoolName})`; severity = 'exact'; }
+          else if (normA.length >= 4 && normalizeStr(b.nama).length >= 4 && levenshtein(normA, normalizeStr(b.nama)) <= 2 && a.schoolName === b.schoolName) { match = true; reason = `Nama Mirip (beda 1-2 huruf) + Sekolah Sama (${a.schoolName})`; }
+          if (match) {
+            seen.add(keyA); seen.add(keyB);
+            groups.push({ type: 'students', reason, severity, items: [
+              { id: a.id, nama: a.nama, lokasi: a.schoolName, nik: a.nik, detail: `Kelas ${a.kelas}` },
+              { id: b.id, nama: b.nama, lokasi: b.schoolName, nik: b.nik, detail: `Kelas ${b.kelas}` },
+            ]});
+          }
+        }
+      }
+
+      // --- SCAN GURU ---
+      for (let i = 0; i < teachers.length; i++) {
+        const a = teachers[i]; const keyA = `t-${a.id}`; if (seen.has(keyA)) continue;
+        const normA = normalizeStr(a.fullName);
+        for (let j = i + 1; j < teachers.length; j++) {
+          const b = teachers[j]; const keyB = `t-${b.id}`; if (seen.has(keyB)) continue;
+          let match = false; let reason = ''; let severity: 'exact' | 'similar' = 'similar';
+          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; severity = 'exact'; }
+          else if (a.nip && b.nip && a.nip !== '-' && b.nip !== '-' && a.nip === b.nip) { match = true; reason = 'NIP Sama'; severity = 'exact'; }
+          else if (a.nuptk && b.nuptk && a.nuptk !== '-' && b.nuptk !== '-' && a.nuptk === b.nuptk) { match = true; reason = 'NUPTK Sama'; severity = 'exact'; }
+          else if (normA === normalizeStr(b.fullName) && a.schoolName === b.schoolName) { match = true; reason = `Nama Identik + Sekolah Sama (${a.schoolName})`; severity = 'exact'; }
+          else if (normA.length >= 4 && normalizeStr(b.fullName).length >= 4 && levenshtein(normA, normalizeStr(b.fullName)) <= 2 && a.schoolName === b.schoolName) { match = true; reason = `Nama Mirip (beda 1-2 huruf) + Sekolah Sama (${a.schoolName})`; }
+          if (match) {
+            seen.add(keyA); seen.add(keyB);
+            groups.push({ type: 'teachers', reason, severity, items: [
+              { id: a.id, nama: a.fullName, lokasi: a.schoolName, nik: a.nik, detail: a.jenisTendik },
+              { id: b.id, nama: b.fullName, lokasi: b.schoolName, nik: b.nik, detail: b.jenisTendik },
+            ]});
+          }
+        }
+      }
+
+      // --- SCAN 3B ---
+      for (let i = 0; i < beneficiaries3b.length; i++) {
+        const a = beneficiaries3b[i]; const keyA = `b-${a.id}`; if (seen.has(keyA)) continue;
+        const normA = normalizeStr(a.fullName);
+        for (let j = i + 1; j < beneficiaries3b.length; j++) {
+          const b = beneficiaries3b[j]; const keyB = `b-${b.id}`; if (seen.has(keyB)) continue;
+          let match = false; let reason = ''; let severity: 'exact' | 'similar' = 'similar';
+          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; severity = 'exact'; }
+          else if (normA === normalizeStr(b.fullName) && a.posyanduName === b.posyanduName) { match = true; reason = `Nama Identik + Posyandu Sama (${a.posyanduName})`; severity = 'exact'; }
+          else if (normA.length >= 4 && normalizeStr(b.fullName).length >= 4 && levenshtein(normA, normalizeStr(b.fullName)) <= 2 && a.posyanduName === b.posyanduName) { match = true; reason = `Nama Mirip (beda 1-2 huruf) + Posyandu Sama (${a.posyanduName})`; }
+          if (match) {
+            seen.add(keyA); seen.add(keyB);
+            groups.push({ type: '3b', reason, severity, items: [
+              { id: a.id, nama: a.fullName, lokasi: a.posyanduName, nik: a.nik, detail: a.subCategory },
+              { id: b.id, nama: b.fullName, lokasi: b.posyanduName, nik: b.nik, detail: b.subCategory },
+            ]});
+          }
+        }
+      }
+
+      setDupResults(groups);
+      setScanning(false);
+      setDupModalOpen(true);
+      if (groups.length === 0) toast.success('Tidak ditemukan data ganda atau mirip!');
+      else toast.warning(`Ditemukan ${groups.length} pasang data ganda/mirip`);
+    }, 100);
+  }, [students, teachers, beneficiaries3b]);
+
+  const [dupFilter, setDupFilter] = useState<'all' | 'students' | 'teachers' | '3b'>('all');
+  const filteredDup = dupResults.filter(g => dupFilter === 'all' || g.type === dupFilter);
+  const dupExactCount = dupResults.filter(g => g.severity === 'exact').length;
+  const dupSimilarCount = dupResults.filter(g => g.severity === 'similar').length;
+
+  const handleDeleteDupItem = async (type: string, id: string) => {
+    try {
+      const endpoint = type === 'students' ? '/api/students' : type === 'teachers' ? '/api/teachers' : '/api/beneficiaries-3b';
+      const res = await fetch(`${endpoint}?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
+      setDupResults(prev => prev.map(g => ({
+        ...g, items: g.items.length <= 2 ? [] : g.items.filter(it => it.id !== id),
+      })).filter(g => g.items.length >= 2));
+      toast.success('Data duplikat dihapus');
+      fetchData();
+    } catch { toast.error('Gagal menghapus data duplikat'); }
+  };
+
+  const handleDeleteAllDup = async () => {
+    if (!confirm(`Hapus ${dupResults.length} pasang data duplikat? Data yang dipertahankan adalah baris pertama dari setiap pasangan.`)) return;
+    try {
+      let deleted = 0;
+      for (const g of dupResults) {
+        for (let i = 1; i < g.items.length; i++) {
+          const endpoint = g.type === 'students' ? '/api/students' : g.type === 'teachers' ? '/api/teachers' : '/api/beneficiaries-3b';
+          const res = await fetch(`${endpoint}?id=${g.items[i].id}`, { method: 'DELETE' });
+          if (res.ok) deleted++;
+        }
+      }
+      toast.success(`${deleted} data duplikat dihapus`);
+      setDupResults([]);
+      setDupModalOpen(false);
+      fetchData();
+    } catch { toast.error('Gagal menghapus beberapa data'); }
+  };
+
   const handleMainTabChange = (tab: 'Sekolah' | '3B' | 'Rekapitulasi') => {
     setPmMainTab(tab); if (tab === 'Sekolah') setPmSubTab('Siswa'); else if (tab === '3B') setPmSubTab('Bumil');
   };
@@ -1040,6 +1173,10 @@ export default function MainApp() {
                     {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     <span className="sm:inline hidden">Semua</span>
                   </button>
+                  <button onClick={scanAllDuplicates} disabled={scanning} className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Deteksi Data Ganda/Mirip">
+                    {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertCircle className="w-4 h-4" />}
+                    <span className="sm:inline hidden">Deteksi Duplikat</span>
+                  </button>
                   <button onClick={handleDeleteAll} disabled={deletingAll} className="flex items-center gap-1 bg-rose-500 hover:bg-rose-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Hapus Semua Data">
                     {deletingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                     <span className="sm:inline hidden">Hapus Semua</span>
@@ -1592,6 +1729,61 @@ export default function MainApp() {
                 <button type="submit" className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold active:scale-95 transition-all">Simpan Data</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* === MODAL DETEKSI DUPLIKAT DATABASE === */}
+      {dupModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center">
+          <div className="bg-white w-full sm:max-w-2xl sm:rounded-2xl shadow-2xl border border-slate-100 overflow-hidden max-h-[95vh] sm:max-h-[90vh] flex flex-col rounded-t-2xl">
+            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+              <div>
+                <h3 className="text-base font-bold text-slate-800 flex items-center gap-2"><AlertCircle className="w-5 h-5 text-amber-500" />Hasil Deteksi Data Ganda</h3>
+                <p className="text-xs text-slate-500 mt-0.5">{dupResults.length} pasang ditemukan &mdash; {dupExactCount} ganda pasti, {dupSimilarCount} mirip</p>
+              </div>
+              <button onClick={() => setDupModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl"><X className="w-5 h-5" /></button>
+            </div>
+            {/* Filter tabs */}
+            <div className="flex items-center gap-1 p-3 bg-slate-50/50 border-b border-slate-100">
+              {[['all','Semua'],['students','Siswa'],['teachers','Guru'],['3b','3B']].map(([k,l]) => (
+                <button key={k} onClick={() => setDupFilter(k as any)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dupFilter===k ? 'bg-amber-500 text-white shadow-sm' : 'bg-white text-slate-500 border border-slate-200 hover:bg-slate-50'}`}>{l}</button>
+              ))}
+              {dupResults.length > 0 && (
+                <button onClick={handleDeleteAllDup} className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-500 text-white hover:bg-rose-600 active:scale-95 transition-all"><Trash2 className="w-3.5 h-3.5" />Hapus Semua Duplikat</button>
+              )}
+            </div>
+            {/* Results */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {filteredDup.length === 0 ? (
+                <div className="text-center py-12"><AlertCircle className="w-12 h-12 text-emerald-300 mx-auto mb-3" /><p className="text-sm font-semibold text-slate-500">Tidak ada data ganda</p><p className="text-xs text-slate-400 mt-1">Semua data unik dan bersih</p></div>
+              ) : filteredDup.map((g, gi) => (
+                <div key={gi} className={`rounded-xl border p-3 space-y-2 ${g.severity === 'exact' ? 'bg-rose-50/70 border-rose-200' : 'bg-amber-50/70 border-amber-200'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${g.severity === 'exact' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{g.severity === 'exact' ? 'GANDA PASTI' : 'MIRIP'}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold">{g.type === 'students' ? 'Siswa' : g.type === 'teachers' ? 'Guru' : '3B'}</span>
+                      <span className="text-xs text-slate-600 font-semibold">{g.reason}</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    {g.items.map((item, ii) => (
+                      <div key={item.id} className={`flex items-center justify-between gap-2 p-2 rounded-lg ${ii === 0 ? 'bg-white border border-emerald-200' : 'bg-white border border-rose-200'}`}>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            {ii === 0 && <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[9px] font-bold shrink-0">DIPEPERTAHANKAN</span>}
+                            <span className="text-xs font-bold text-slate-800 truncate">{item.nama}</span>
+                          </div>
+                          <div className="text-[10px] text-slate-500 mt-0.5">{item.lokasi} &middot; {item.detail} {item.nik && item.nik !== '-' ? `&middot; NIK: ${item.nik}` : ''}</div>
+                        </div>
+                        {ii > 0 && (
+                          <button onClick={() => handleDeleteDupItem(g.type, item.id)} className="shrink-0 flex items-center gap-1 px-2 py-1 rounded-lg bg-rose-500 text-white text-[10px] font-bold hover:bg-rose-600 active:scale-95 transition-all"><Trash2 className="w-3 h-3" />Hapus</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}

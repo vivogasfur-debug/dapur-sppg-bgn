@@ -1,6 +1,6 @@
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.9.244:3000
+- Network:       http://21.0.19.218:3000
 - Environments: .env
 
 ✓ Starting...
@@ -9,95 +9,13 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-✓ Ready in 745ms
+✓ Ready in 725ms
 ○ Compiling / ...
- GET / 200 in 3.6s (compile: 3.5s, render: 47ms)
- GET / 200 in 230ms (compile: 200ms, render: 30ms)
- GET / 200 in 509ms (compile: 195ms, render: 314ms)
- GET / 200 in 509ms (compile: 469ms, render: 41ms)
- GET / 200 in 222ms (compile: 195ms, render: 27ms)
- GET / 200 in 310ms (compile: 282ms, render: 28ms)
- GET / 200 in 324ms (compile: 294ms, render: 30ms)
-⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
-Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
- GET / 200 in 316ms (compile: 285ms, render: 31ms)
- GET / 200 in 231ms (compile: 202ms, render: 29ms)
- GET / 200 in 635ms (compile: 335ms, render: 300ms)
- GET / 200 in 270ms (compile: 239ms, render: 32ms)
- GET / 200 in 284ms (compile: 246ms, render: 38ms)
- GET / 200 in 341ms (compile: 280ms, render: 60ms)
- GET / 200 in 234ms (compile: 201ms, render: 33ms)
- GET / 200 in 327ms (compile: 299ms, render: 28ms)
- GET / 200 in 250ms (compile: 219ms, render: 31ms)
- GET / 200 in 321ms (compile: 286ms, render: 35ms)
- GET / 200 in 226ms (compile: 198ms, render: 27ms)
-✓ Compiled in 405ms
-✓ Compiled in 7ms
-✓ Compiled in 490ms
-✓ Compiled in 476ms
- GET / 200 in 396ms (compile: 367ms, render: 29ms)
- GET / 200 in 714ms (compile: 195ms, render: 520ms)
- GET / 200 in 246ms (compile: 215ms, render: 31ms)
-✓ Compiled in 472ms
-✓ Compiled in 393ms
-✓ Compiled in 430ms
-✓ Compiled in 0ms
- GET / 200 in 845ms (compile: 366ms, render: 479ms)
- GET / 200 in 228ms (compile: 200ms, render: 28ms)
- GET / 200 in 329ms (compile: 301ms, render: 29ms)
- GET / 200 in 225ms (compile: 196ms, render: 29ms)
- GET / 200 in 261ms (compile: 195ms, render: 65ms)
- GET / 200 in 235ms (compile: 203ms, render: 31ms)
- GET / 200 in 217ms (compile: 186ms, render: 31ms)
- GET / 200 in 318ms (compile: 289ms, render: 30ms)
- GET / 200 in 252ms (compile: 224ms, render: 28ms)
- GET / 200 in 294ms (compile: 260ms, render: 34ms)
- GET / 200 in 229ms (compile: 200ms, render: 30ms)
-  Reload env: .env
-✓ Compiled in 1194ms
-✓ Compiled in 0ms
- GET / 200 in 308ms (compile: 281ms, render: 27ms)
-  Reload env: .env
- GET / 200 in 270ms (compile: 239ms, render: 31ms)
- GET / 200 in 644ms (compile: 241ms, render: 402ms)
- GET / 200 in 223ms (compile: 192ms, render: 31ms)
- GET / 200 in 234ms (compile: 200ms, render: 34ms)
- GET / 200 in 229ms (compile: 198ms, render: 31ms)
- GET / 200 in 230ms (compile: 198ms, render: 32ms)
- GET / 200 in 227ms (compile: 202ms, render: 25ms)
-⨯ Error: supabaseUrl is required.
-    at module evaluation (src/lib/supabase.ts:6:37)
-    at module evaluation (src/app/api/login/route.ts:2:1)
-    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    |                                     ^
-  7 |
-  8 | /**
-  9 |  * Fetch ALL rows from a Supabase table, bypassing the 1000-row default limit. {
-  page: '/api/login'
-}
- POST /api/login 500 in 2.3s (compile: 2.2s, render: 112ms)
-⨯ Error: supabaseUrl is required.
-    at module evaluation (src/lib/supabase.ts:6:37)
-    at module evaluation (src/app/api/login/route.ts:2:1)
-    at Object.<anonymous> (.next/dev/server/app/api/login/route.js:7:3)
-  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  5 |
-> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
-    |                                     ^
-  7 |
-  8 | /**
-  9 |  * Fetch ALL rows from a Supabase table, bypassing the 1000-row default limit. {
-  page: '/api/login'
-}
- POST /api/login 500 in 84ms (compile: 70ms, render: 13ms)
- GET / 200 in 482ms (compile: 210ms, render: 271ms)
- GET / 200 in 248ms (compile: 193ms, render: 55ms)
- GET / 200 in 367ms (compile: 337ms, render: 30ms)
- GET /? 200 in 215ms (compile: 189ms, render: 25ms)
- GET / 200 in 468ms (compile: 209ms, render: 258ms)
- GET / 200 in 467ms (compile: 419ms, render: 48ms)
- GET / 200 in 250ms (compile: 222ms, render: 28ms)
-✓ Compiled in 445ms
+ GET / 200 in 3.6s (compile: 3.5s, render: 55ms)
+ GET / 200 in 3.9s (compile: 3.1s, render: 777ms)
+ GET / 200 in 227ms (compile: 199ms, render: 28ms)
+✓ Compiled in 453ms
+✓ Compiled in 345ms
+✓ Compiled in 468ms
+ GET / 200 in 915ms (compile: 370ms, render: 546ms)
+ GET / 200 in 254ms (compile: 221ms, render: 33ms)
