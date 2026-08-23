@@ -874,6 +874,7 @@ export default function MainApp() {
                   <BarChart3 className="w-3.5 h-3.5" /><span>Rekapitulasi</span>
                 </button>
               </div>
+              {pmMainTab !== 'Rekapitulasi' && <>
               {pmMainTab === 'Sekolah' ? (
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1">
                   <button onClick={() => setPmSubTab('Siswa')} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Siswa' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80 font-bold' : 'text-slate-500 hover:bg-slate-50'}`}>
@@ -924,6 +925,7 @@ export default function MainApp() {
                   </button>
                 </div>
               </div>
+              </>}
             </div>
 
             {pmMainTab === 'Rekapitulasi' ? (() => {
