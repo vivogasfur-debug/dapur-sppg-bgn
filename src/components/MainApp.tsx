@@ -1044,7 +1044,29 @@ export default function MainApp() {
   const alergiTotal = alergiSekolah + alergi3b;
   const schoolMap: Record<string,number> = {};
   students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1; });
-  const topSchools = Object.entries(schoolMap).sort((a,b) => b[1]-a[1]);
+  const getJenjangPriority = (name: string): number => {
+    const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim();
+    const m1 = u.match(/^(TK|RA|RAUDHATUL)(?: |$)/);
+    if (m1) return 1;
+    const m2 = u.match(/^(SD|MI|SDLB|MIN)(?: |$)/);
+    if (m2) return 2;
+    const m3 = u.match(/^(SMP|MTS|SMPLB)(?: |$)/);
+    if (m3) return 3;
+    const m4 = u.match(/^(SMA|SMK|MA|MAK)(?: |$)/);
+    if (m4) return 4;
+    const first = u.split(/\s+/)[0];
+    if (['TK','RA','RAUDHATUL'].includes(first)) return 1;
+    if (['SD','MI','SDLB','MIN'].includes(first)) return 2;
+    if (['SMP','MTS','SMPLB'].includes(first)) return 3;
+    if (['SMA','SMK','MA','MAK'].includes(first)) return 4;
+    return 5;
+  };
+  const topSchools = Object.entries(schoolMap).sort((a, b) => {
+    const pa = getJenjangPriority(a[0]);
+    const pb = getJenjangPriority(b[0]);
+    if (pa !== pb) return pa - pb;
+    return a[0].localeCompare(b[0]);
+  });
   const kelasMap: Record<string,number> = {};
   students.forEach(s => { const k = s.kelas && s.kelas !== '-' ? s.kelas : '-'; kelasMap[k] = (kelasMap[k] || 0) + 1; });
   const kelasEntries = Object.entries(kelasMap).sort((a,b) => a[0].localeCompare(b[0], undefined, {numeric:true}));
