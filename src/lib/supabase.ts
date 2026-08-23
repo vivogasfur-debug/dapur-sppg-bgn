@@ -18,12 +18,11 @@ export async function fetchAll<T = any>(
     ilike?: { column: string; value: string };
   }
 ): Promise<T[]> {
-  const pageSize = 1000
+  const pageSize = 500
   let allData: T[] = []
   let from = 0
-  let hasMore = true
 
-  while (hasMore) {
+  while (true) {
     let query = supabase.from(table).select(options?.select || '*')
 
     if (options?.filter) {
@@ -48,8 +47,10 @@ export async function fetchAll<T = any>(
     if (!data || data.length === 0) break
 
     allData = allData.concat(data as T[])
-    hasMore = data.length === pageSize
-    from += pageSize
+    // Gunakan data.length (jumlah aktual yang diterima), bukan pageSize.
+    // Ini penting karena Supabase bisa membatasi max_rows per request
+    // (misalnya 100), sehingga data.length bisa lebih kecil dari pageSize.
+    from += data.length
   }
 
   return allData
