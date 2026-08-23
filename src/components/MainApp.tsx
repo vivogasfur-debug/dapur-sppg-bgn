@@ -231,20 +231,27 @@ export default function MainApp() {
       }
     }
     try {
+      let ok = false;
       if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
         const url = editingId ? `/api/students?id=${editingId}` : '/api/students';
         const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formSiswa) });
-        if (!res.ok) throw new Error(); toast.success(editingId ? 'Data siswa diperbarui' : 'Data siswa tersimpan');
+        if (!res.ok) throw new Error();
+        toast.success(editingId ? 'Data siswa diperbarui' : 'Data siswa tersimpan');
+        ok = true;
       } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
         const url = editingId ? `/api/teachers?id=${editingId}` : '/api/teachers';
         const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formGuru) });
-        if (!res.ok) throw new Error(); toast.success(editingId ? 'Data guru diperbarui' : 'Data guru tersimpan');
+        if (!res.ok) throw new Error();
+        toast.success(editingId ? 'Data guru diperbarui' : 'Data guru tersimpan');
+        ok = true;
       } else {
         const url = editingId ? `/api/beneficiaries-3b?id=${editingId}` : '/api/beneficiaries-3b';
         const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form3B, subCategory: pmSubTab }) });
-        if (!res.ok) throw new Error(); toast.success(editingId ? 'Data 3B diperbarui' : 'Data 3B tersimpan');
+        if (!res.ok) throw new Error();
+        toast.success(editingId ? 'Data 3B diperbarui' : 'Data 3B tersimpan');
+        ok = true;
       }
-      setIsModalOpen(false); setEditingId(null); fetchData();
+      if (ok) { setIsModalOpen(false); setEditingId(null); fetchData(); }
     } catch { toast.error('Gagal menyimpan data'); }
   };
 
