@@ -308,14 +308,28 @@ export default function MainApp() {
   };
 
   const handleImportCSV = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     setImporting(true);
+    const total = files.length;
+    let totalInserted = 0;
+    const importType = getImportType();
     try {
-      const formData = new FormData(); formData.append('file', file); formData.append('type', getImportType());
-      const res = await fetch('/api/import-csv', { method: 'POST', body: formData });
-      const result = await res.json();
-      if (res.ok && result.inserted > 0) { toast.success(`${result.inserted} data berhasil diimport dari CSV`); fetchData(); }
-      else toast.error(result.error || 'Gagal import CSV');
+      for (let i = 0; i < total; i++) {
+        const file = files[i];
+        toast.info(`Mengimport file ${i+1}/${total}: ${file.name}`);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('type', importType);
+        const res = await fetch('/api/import-csv', { method: 'POST', body: formData });
+        const result = await res.json();
+        if (res.ok && result.inserted > 0) totalInserted += result.inserted;
+        else if (!res.ok) toast.error(`${file.name}: ${result.error || 'Gagal import'}`);
+      }
+      if (totalInserted > 0) {
+        toast.success(`${totalInserted} data berhasil diimport dari ${total} file CSV`);
+        fetchData();
+      }
     } catch { toast.error('Gagal membaca file CSV'); }
     finally { setImporting(false); if (csvInputRef.current) csvInputRef.current.value = ''; }
   };
@@ -1004,7 +1018,7 @@ export default function MainApp() {
                   <button onClick={openAddModal} className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm">
                     <Plus className="w-4 h-4" /><span className="sm:inline hidden">Tambah</span>
                   </button>
-                  <input ref={csvInputRef} type="file" accept=".csv" onChange={handleImportCSV} className="hidden" />
+                  <input ref={csvInputRef} type="file" accept=".csv" multiple onChange={handleImportCSV} className="hidden" />
                   <button onClick={() => csvInputRef.current?.click()} disabled={importing} className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Import CSV">
                     {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     <span className="sm:inline hidden">Import</span>
