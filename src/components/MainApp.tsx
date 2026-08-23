@@ -126,12 +126,110 @@ export default function MainApp() {
     hasAllergy: false, allergyType: '',
   });
 
+  // === DETEKSI DATA GANDA ===
+  const [duplicateWarnings, setDuplicateWarnings] = useState<Array<{type:string; field:string; label:string; detail:string}>>([]);
+
+  const normalizeStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  const checkDuplicates = useCallback(() => {
+    if (editingId) { setDuplicateWarnings([]); return; }
+    const warnings: Array<{type:string; field:string; label:string; detail:string}> = [];
+
+    if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
+      const f = formSiswa;
+      if (f.nik && f.nik.length >= 10) {
+        const dup = students.find(s => s.nik === f.nik);
+        if (dup) warnings.push({type:'exact', field:'NIK', label:'NIK Sama', detail:`${dup.nama} (${dup.schoolName}, Kelas ${dup.kelas})`});
+      }
+      if (f.nisn && f.nisn.length >= 8) {
+        const dup = students.find(s => s.nisn === f.nisn);
+        if (dup) warnings.push({type:'exact', field:'NISN', label:'NISN Sama', detail:`${dup.nama} (${dup.schoolName}, Kelas ${dup.kelas})`});
+      }
+      if (f.nama && f.nama.length >= 3) {
+        const norm = normalizeStr(f.nama);
+        const similar = students.filter(s => {
+          if (normalizeStr(s.nama) === norm && s.schoolName === f.schoolName) return true;
+          if (normalizeStr(s.nama) === norm && f.tanggalLahir && s.tanggalLahir === f.tanggalLahir) return true;
+          return false;
+        });
+        similar.forEach(s => {
+          if (!warnings.some(w => w.detail.includes(s.nama) && w.detail.includes(s.schoolName))) {
+            warnings.push({type:'similar', field:'Nama+Sekolah/TTL', label:'Nama Mirip', detail:`${s.nama} (${s.schoolName}${s.tanggalLahir ? ', TTL: '+s.tanggalLahir : ''})`});
+          }
+        });
+      }
+    } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
+      const f = formGuru;
+      if (f.nik && f.nik.length >= 10) {
+        const dup = teachers.find(t => t.nik === f.nik);
+        if (dup) warnings.push({type:'exact', field:'NIK', label:'NIK Sama', detail:`${dup.fullName} (${dup.schoolName}, ${dup.jenisTendik})`});
+      }
+      if (f.nip && f.nip.length >= 10) {
+        const dup = teachers.find(t => t.nip === f.nip);
+        if (dup) warnings.push({type:'exact', field:'NIP', label:'NIP Sama', detail:`${dup.fullName} (${dup.schoolName})`});
+      }
+      if (f.nuptk && f.nuptk.length >= 10) {
+        const dup = teachers.find(t => t.nuptk === f.nuptk);
+        if (dup) warnings.push({type:'exact', field:'NUPTK', label:'NUPTK Sama', detail:`${dup.fullName} (${dup.schoolName})`});
+      }
+      if (f.fullName && f.fullName.length >= 3) {
+        const norm = normalizeStr(f.fullName);
+        const similar = teachers.filter(t => {
+          if (normalizeStr(t.fullName) === norm && t.schoolName === f.schoolName) return true;
+          if (normalizeStr(t.fullName) === norm && f.tanggalLahir && t.tanggalLahir === f.tanggalLahir) return true;
+          return false;
+        });
+        similar.forEach(t => {
+          if (!warnings.some(w => w.detail.includes(t.fullName) && w.detail.includes(t.schoolName))) {
+            warnings.push({type:'similar', field:'Nama+Sekolah/TTL', label:'Nama Mirip', detail:`${t.fullName} (${t.schoolName})`});
+          }
+        });
+      }
+    } else if (pmMainTab === '3B') {
+      const f = form3B;
+      if (f.nik && f.nik.length >= 10) {
+        const dup = beneficiaries3b.find(b => b.nik === f.nik);
+        if (dup) warnings.push({type:'exact', field:'NIK', label:'NIK Sama', detail:`${dup.fullName} (${dup.posyanduName}, ${dup.subCategory})`});
+      }
+      if (f.fullName && f.fullName.length >= 3) {
+        const norm = normalizeStr(f.fullName);
+        const similar = beneficiaries3b.filter(b => {
+          if (normalizeStr(b.fullName) === norm && b.posyanduName === f.posyanduName) return true;
+          if (normalizeStr(b.fullName) === norm && f.birthDate && b.birthDate === f.birthDate) return true;
+          return false;
+        });
+        similar.forEach(b => {
+          if (!warnings.some(w => w.detail.includes(b.fullName) && w.detail.includes(b.posyanduName))) {
+            warnings.push({type:'similar', field:'Nama+Posyandu/TTL', label:'Nama Mirip', detail:`${b.fullName} (${b.posyanduName}, ${b.subCategory})`});
+          }
+        });
+      }
+    }
+    setDuplicateWarnings(warnings);
+  }, [pmMainTab, pmSubTab, formSiswa, formGuru, form3B, editingId, students, teachers, beneficiaries3b]);
+
+  // Run duplicate check when form data changes (only when modal open)
+  useEffect(() => { if (isModalOpen && !editingId) checkDuplicates(); else setDuplicateWarnings([]); }, [checkDuplicates, isModalOpen, editingId]);
+
   const handleMainTabChange = (tab: 'Sekolah' | '3B' | 'Rekapitulasi') => {
     setPmMainTab(tab); if (tab === 'Sekolah') setPmSubTab('Siswa'); else if (tab === '3B') setPmSubTab('Bumil');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Cek duplikat sebelum simpan (hanya saat tambah baru)
+    if (!editingId && duplicateWarnings.length > 0) {
+      const exactWarnings = duplicateWarnings.filter(w => w.type === 'exact');
+      if (exactWarnings.length > 0) {
+        toast.error(`Data ganda terdeteksi! ${exactWarnings.map(w => w.field + ': ' + w.detail).join('; ')}`, { duration: 5000 });
+        return;
+      }
+      const simWarnings = duplicateWarnings.filter(w => w.type === 'similar');
+      if (simWarnings.length > 0) {
+        const msg = `Data mirip ditemukan:\n${simWarnings.map(w => '- ' + w.label + ': ' + w.detail).join('\n')}\n\nLanjutkan menyimpan?`;
+        if (!confirm(msg)) return;
+      }
+    }
     try {
       if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
         const url = editingId ? `/api/students?id=${editingId}` : '/api/students';
@@ -1349,6 +1447,26 @@ export default function MainApp() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="p-4 sm:p-5 space-y-3 overflow-y-auto flex-1">
+              {/* BANNER DETEKSI DATA GANDA */}
+              {duplicateWarnings.length > 0 && !editingId && (
+                <div className={`p-3 rounded-xl border space-y-1.5 ${duplicateWarnings.some(w => w.type === 'exact') ? 'bg-rose-50 border-rose-300' : 'bg-amber-50 border-amber-300'}`}>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className={`w-4 h-4 shrink-0 ${duplicateWarnings.some(w => w.type === 'exact') ? 'text-rose-500' : 'text-amber-500'}`} />
+                    <span className={`text-xs font-bold ${duplicateWarnings.some(w => w.type === 'exact') ? 'text-rose-700' : 'text-amber-700'}`}>
+                      {duplicateWarnings.some(w => w.type === 'exact') ? 'Data Ganda Terdeteksi - Penyimpanan Diblokir' : 'Data Mirip Ditemukan - Perhatian'}
+                    </span>
+                  </div>
+                  {duplicateWarnings.map((w, i) => (
+                    <div key={i} className={`flex items-start gap-1.5 text-[11px] ${w.type === 'exact' ? 'text-rose-600' : 'text-amber-600'}`}>
+                      <span className="font-bold mt-px">{w.type === 'exact' ? '✕' : '⚠'}</span>
+                      <span><b>{w.label}</b> ({w.field}): {w.detail}</span>
+                    </div>
+                  ))}
+                  {duplicateWarnings.some(w => w.type === 'similar') && (
+                    <p className="text-[10px] text-amber-500 italic">Data mirip masih bisa disimpan dengan konfirmasi.</p>
+                  )}
+                </div>
+              )}
               {pmMainTab === 'Sekolah' && pmSubTab === 'Siswa' && (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
