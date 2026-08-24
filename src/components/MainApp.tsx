@@ -1312,13 +1312,15 @@ export default function MainApp() {
   // Porsi Kecil: TK/RA + SD Kelas 1-3 + Balita 6-59 Bln
   const siswaTKRA = students.filter(s => getJenjang(s.schoolName) === 'TK').length;
   const siswaSDKelas123 = students.filter(s => {
-    if (getJenjang(s.schoolName) !== 'SD') return false;
+    const j = getJenjang(s.schoolName);
+    if (j !== 'SD' && j !== 'Lainnya') return false;
     const k = extractKelasNum(s.kelas);
     return k >= 1 && k <= 3;
   }).length;
   // Porsi Besar: Guru + SD Kelas 4-6 + SMP (semua) + SMA (semua) + Bumil + Busui
   const siswaSDKelas456 = students.filter(s => {
-    if (getJenjang(s.schoolName) !== 'SD') return false;
+    const j = getJenjang(s.schoolName);
+    if (j !== 'SD' && j !== 'Lainnya') return false;
     const k = extractKelasNum(s.kelas);
     return k >= 4 && k <= 6;
   }).length;
@@ -1327,6 +1329,9 @@ export default function MainApp() {
   const balita6_59 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && (classifyBalita(b.birthDate) === '6-12 Bln' || classifyBalita(b.birthDate) === '12-59 Bln')).length;
   const porsiKecil = siswaTKRA + siswaSDKelas123 + balita6_59;
   const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui;
+  const totalPorsi = porsiKecil + porsiBesar;
+  const totalPenerimaAll = students.length + teachers.length + beneficiaries3b.length;
+  const tidakKategori = totalPenerimaAll - totalPorsi;
   const schoolMap: Record<string,number> = {};
   students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1; });
   const getJenjangPriority = (name: string): number => {
@@ -1407,16 +1412,23 @@ export default function MainApp() {
         </div>
       </div>
       <div className="mt-3 flex h-2.5 rounded-full overflow-hidden bg-white/10">
-        {porsiKecil + porsiBesar > 0 && <>
-          <div className="bg-gradient-to-r from-sky-400 to-sky-500 transition-all" style={{width: `${(porsiKecil/(porsiKecil+porsiBesar))*100}%`}} />
-          <div className="bg-gradient-to-r from-orange-400 to-orange-500 transition-all" style={{width: `${(porsiBesar/(porsiKecil+porsiBesar))*100}%`}} />
+        {totalPenerimaAll > 0 && <>
+          <div className="bg-gradient-to-r from-sky-400 to-sky-500 transition-all" style={{width: `${(porsiKecil/totalPenerimaAll)*100}%`}} />
+          <div className="bg-gradient-to-r from-orange-400 to-orange-500 transition-all" style={{width: `${(porsiBesar/totalPenerimaAll)*100}%`}} />
+          {tidakKategori > 0 && <div className="bg-gradient-to-r from-slate-500 to-slate-600 transition-all" style={{width: `${(tidakKategori/totalPenerimaAll)*100}%`}} />}
         </>}
       </div>
       <div className="mt-1.5 flex justify-between text-[9px] text-slate-400">
-        <span>Kecil {porsiKecil+porsiBesar>0?((porsiKecil/(porsiKecil+porsiBesar))*100).toFixed(0):0}%</span>
-        <span className="font-bold text-white">Total: {porsiKecil + porsiBesar} penerima</span>
-        <span>Besar {porsiKecil+porsiBesar>0?((porsiBesar/(porsiKecil+porsiBesar))*100).toFixed(0):0}%</span>
+        <span>Kecil {totalPenerimaAll>0?((porsiKecil/totalPenerimaAll)*100).toFixed(0):0}%</span>
+        <span className="font-bold text-white">Total: {totalPenerimaAll} penerima</span>
+        <span>Besar {totalPenerimaAll>0?((porsiBesar/totalPenerimaAll)*100).toFixed(0):0}%</span>
       </div>
+      {tidakKategori > 0 && (
+        <div className="mt-2 bg-white/5 rounded-lg px-3 py-1.5 flex items-center justify-between">
+          <span className="text-[10px] text-amber-300">Tidak Dikategorikan (Balita &lt;6 Bln, kelas tidak terbaca, dll)</span>
+          <span className="text-[10px] font-extrabold text-amber-300">{tidakKategori}</span>
+        </div>
+      )}
     </div>
 
     {/* Sub-tab toggle */}
