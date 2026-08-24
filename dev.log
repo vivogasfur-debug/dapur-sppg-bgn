@@ -184,3 +184,18 @@ Import traces:
 ✓ Compiled in 376ms
 ✓ Compiled in 471ms
 ✓ Compiled in 451ms
+✓ Compiled in 0ms
+ GET / 200 in 891ms (compile: 459ms, render: 431ms)
+ GET / 200 in 229ms (compile: 201ms, render: 28ms)
+ GET / 200 in 631ms (compile: 219ms, render: 413ms)
+ GET / 200 in 360ms (compile: 330ms, render: 30ms)
+ GET / 200 in 236ms (compile: 209ms, render: 27ms)
+✓ Compiled in 1185ms
+✓ Compiled in 534ms
+✓ Compiled in 6ms
+✓ Compiled in 627ms
+✓ Compiled in 424ms
+✓ Compiled in 2ms
+✓ Compiled in 402ms
+✓ Compiled in 353ms
+✓ Compiled in 420ms
