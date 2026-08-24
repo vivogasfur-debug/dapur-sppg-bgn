@@ -1182,13 +1182,13 @@ export default function MainApp() {
               ) : (
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 -mx-1 px-1">
                   <button onClick={() => setPmSubTab('Bumil')} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Bumil' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold' : 'text-slate-500'}`}>
-                    <Heart className="w-3.5 h-3.5 text-rose-500" /><span>Bumil</span>
+                    <Heart className="w-3.5 h-3.5 text-rose-500" /><span>Bumil ({beneficiaries3b.filter(b => b.subCategory === 'Bumil').length})</span>
                   </button>
                   <button onClick={() => setPmSubTab('Busui')} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Busui' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold' : 'text-slate-500'}`}>
-                    <Milk className="w-3.5 h-3.5 text-blue-500" /><span>Busui</span>
+                    <Milk className="w-3.5 h-3.5 text-blue-500" /><span>Busui ({beneficiaries3b.filter(b => b.subCategory === 'Busui').length})</span>
                   </button>
                   <button onClick={() => setPmSubTab('Balita')} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Balita' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold' : 'text-slate-500'}`}>
-                    <Baby className="w-3.5 h-3.5 text-amber-500" /><span>Balita</span>
+                    <Baby className="w-3.5 h-3.5 text-amber-500" /><span>Balita ({beneficiaries3b.filter(b => b.subCategory === 'Balita').length})</span>
                   </button>
                 </div>
               )}
