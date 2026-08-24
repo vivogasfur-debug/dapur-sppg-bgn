@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData()
     const file = formData.get('file') as File
     const type = formData.get('type') as string // 'students' | 'teachers' | 'beneficiaries-3b'
+    const subCategory = formData.get('sub_category') as string | null // 'Bumil' | 'Busui' | 'Balita'
 
     if (!file || !type) {
       return NextResponse.json({ error: 'File dan tipe diperlukan' }, { status: 400 })
@@ -155,7 +156,7 @@ export async function POST(req: NextRequest) {
       const records = dataRows.map(row => {
         const obj: Record<string, any> = {}
         headers.forEach((h, i) => { obj[h] = row[i] || null })
-        const detectedCat = (findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Balita').trim()
+        const detectedCat = subCategory || findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Balita'
         const isBalita = detectedCat.toLowerCase() === 'balita'
         const record: Record<string, any> = {
           posyandu_name: findVal(obj, ['posyandu_name', 'posyandu', 'nama_posyandu']) || '-',

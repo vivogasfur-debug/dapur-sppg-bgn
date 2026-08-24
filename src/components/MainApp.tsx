@@ -471,6 +471,7 @@ export default function MainApp() {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('type', importType);
+        if (importType === 'beneficiaries-3b') formData.append('sub_category', pmSubTab);
         const res = await fetch('/api/import-csv', { method: 'POST', body: formData });
         const result = await res.json();
         if (res.ok && result.inserted > 0) totalInserted += result.inserted;
