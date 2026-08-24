@@ -1326,8 +1326,9 @@ export default function MainApp() {
   }).length;
   const siswaSMP = students.filter(s => getJenjang(s.schoolName) === 'SMP').length;
   const siswaSMA = students.filter(s => getJenjang(s.schoolName) === 'SMA').length;
+  const balita0_6 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '< 6 Bln').length;
   const balita6_59 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && (classifyBalita(b.birthDate) === '6-12 Bln' || classifyBalita(b.birthDate) === '12-59 Bln')).length;
-  const porsiKecil = siswaTKRA + siswaSDKelas123 + balita6_59;
+  const porsiKecil = siswaTKRA + siswaSDKelas123 + balita0_6 + balita6_59;
   const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui;
   const totalPorsi = porsiKecil + porsiBesar;
   const totalPenerimaAll = students.length + teachers.length + beneficiaries3b.length;
@@ -1393,6 +1394,7 @@ export default function MainApp() {
           <div className="space-y-1.5">
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">TK/RA</span><span className="text-[10px] font-bold text-white">{siswaTKRA}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SD Kelas 1-3</span><span className="text-[10px] font-bold text-white">{siswaSDKelas123}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 0-6 Bln</span><span className="text-[10px] font-bold text-white">{balita0_6}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 6-59 Bln</span><span className="text-[10px] font-bold text-white">{balita6_59}</span></div>
           </div>
         </div>
