@@ -1294,11 +1294,10 @@ export default function MainApp() {
   // === HITUNG PORSI ===
   const getJenjang = (name: string): string => {
     const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim();
-    const first = u.split(/\s+/)[0];
-    if (['TK','RA','RAUDHATUL'].includes(first)) return 'TK';
-    if (['SD','MI','SDLB','MIN'].includes(first)) return 'SD';
-    if (['SMP','MTS','SMPLB'].includes(first)) return 'SMP';
-    if (['SMA','SMK','MA','MAK'].includes(first)) return 'SMA';
+    if (/^(TK|RA|RAUDHATUL)/.test(u)) return 'TK';
+    if (/^(SD|MI|SDLB|MIN)/.test(u)) return 'SD';
+    if (/^(SMP|MTS|SMPLB)/.test(u)) return 'SMP';
+    if (/^(SMA|SMK|MA|MAK|SMAS|SMAN|SMKN|SMKS)/.test(u)) return 'SMA';
     return 'Lainnya';
   };
   const extractKelasNum = (kelas: string): number => {
