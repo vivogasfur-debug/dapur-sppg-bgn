@@ -15,7 +15,7 @@ import {
   Utensils, Plus, Search, X, Trash2,
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
   AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
-  Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity
+  Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity, UtensilsCrossed
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -1291,6 +1291,18 @@ export default function MainApp() {
   const alergiSekolah = [...students.filter(s=>s.hasAllergy), ...teachers.filter(t=>t.hasAllergy)].length;
   const alergi3b = beneficiaries3b.filter(b=>b.hasAllergy).length;
   const alergiTotal = alergiSekolah + alergi3b;
+  // === HITUNG PORSI ===
+  const isTKRA = (name: string) => {
+    const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim();
+    const first = u.split(/\s+/)[0];
+    return ['TK','RA','RAUDHATUL'].includes(first);
+  };
+  const siswaTKRA = students.filter(s => isTKRA(s.schoolName)).length;
+  const siswaKelas123 = students.filter(s => !isTKRA(s.schoolName) && (() => { const k = parseInt(s.kelas); return !isNaN(k) && k >= 1 && k <= 3; })()).length;
+  const siswaKelas456 = students.filter(s => !isTKRA(s.schoolName) && (() => { const k = parseInt(s.kelas); return !isNaN(k) && k >= 4 && k <= 6; })()).length;
+  const balita6_59 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && (classifyBalita(b.birthDate) === '6-12 Bln' || classifyBalita(b.birthDate) === '12-59 Bln')).length;
+  const porsiKecil = siswaTKRA + siswaKelas123 + balita6_59;
+  const porsiBesar = teachers.length + siswaKelas456 + bumil + busui;
   const schoolMap: Record<string,number> = {};
   students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1; });
   const getJenjangPriority = (name: string): number => {
@@ -1340,6 +1352,47 @@ export default function MainApp() {
   });
   return (
   <div className="space-y-3">
+    {/* === HITUNG PORSI === */}
+    <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-4 rounded-2xl shadow-lg text-white">
+      <div className="flex items-center gap-2 mb-3"><UtensilsCrossed className="w-4 h-4 text-amber-400" /><h4 className="text-xs font-bold uppercase tracking-wider text-amber-400">Hitung Porsi</h4></div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="bg-white/10 backdrop-blur rounded-xl p-3 border border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-sky-300">Porsi Kecil</span>
+            <span className="text-2xl font-extrabold text-sky-300">{porsiKecil}</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">TK/RA</span><span className="text-[10px] font-bold text-white">{siswaTKRA}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Kelas 1-3</span><span className="text-[10px] font-bold text-white">{siswaKelas123}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 6-59 Bln</span><span className="text-[10px] font-bold text-white">{balita6_59}</span></div>
+          </div>
+        </div>
+        <div className="bg-white/10 backdrop-blur rounded-xl p-3 border border-white/10">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-300">Porsi Besar</span>
+            <span className="text-2xl font-extrabold text-orange-300">{porsiBesar}</span>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Guru/Tendik</span><span className="text-[10px] font-bold text-white">{teachers.length}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Kelas 4-6</span><span className="text-[10px] font-bold text-white">{siswaKelas456}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Bumil</span><span className="text-[10px] font-bold text-white">{bumil}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Busui</span><span className="text-[10px] font-bold text-white">{busui}</span></div>
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 flex h-2.5 rounded-full overflow-hidden bg-white/10">
+        {porsiKecil + porsiBesar > 0 && <>
+          <div className="bg-gradient-to-r from-sky-400 to-sky-500 transition-all" style={{width: `${(porsiKecil/(porsiKecil+porsiBesar))*100}%`}} />
+          <div className="bg-gradient-to-r from-orange-400 to-orange-500 transition-all" style={{width: `${(porsiBesar/(porsiKecil+porsiBesar))*100}%`}} />
+        </>}
+      </div>
+      <div className="mt-1.5 flex justify-between text-[9px] text-slate-400">
+        <span>Kecil {porsiKecil+porsiBesar>0?((porsiKecil/(porsiKecil+porsiBesar))*100).toFixed(0):0}%</span>
+        <span className="font-bold text-white">Total: {porsiKecil + porsiBesar} penerima</span>
+        <span>Besar {porsiKecil+porsiBesar>0?((porsiBesar/(porsiKecil+porsiBesar))*100).toFixed(0):0}%</span>
+      </div>
+    </div>
+
     {/* Sub-tab toggle */}
     <div className="flex items-center bg-slate-100 p-1 rounded-xl">
       <button onClick={() => setRekapSubTab('Sekolah')} className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all flex-1 justify-center ${rekapSubTab === 'Sekolah' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
