@@ -58,3 +58,4 @@ auto-sync.log
 bun.lockb
 .github-config
 auto-sync.log
+.env*
