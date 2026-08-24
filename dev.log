@@ -1,6 +1,6 @@
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.19.218:3000
+- Network:       http://21.0.22.20:3000
 - Environments: .env
 
 ✓ Starting...
@@ -9,13 +9,80 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-✓ Ready in 725ms
+✓ Ready in 724ms
 ○ Compiling / ...
- GET / 200 in 3.6s (compile: 3.5s, render: 55ms)
- GET / 200 in 3.9s (compile: 3.1s, render: 777ms)
- GET / 200 in 227ms (compile: 199ms, render: 28ms)
-✓ Compiled in 453ms
-✓ Compiled in 345ms
-✓ Compiled in 468ms
- GET / 200 in 915ms (compile: 370ms, render: 546ms)
- GET / 200 in 254ms (compile: 221ms, render: 33ms)
+ GET / 200 in 2.9s (compile: 2.7s, render: 276ms)
+ GET / 200 in 3.7s (compile: 3.6s, render: 86ms)
+ GET / 200 in 212ms (compile: 182ms, render: 30ms)
+ GET / 200 in 369ms (compile: 314ms, render: 54ms)
+ GET / 200 in 238ms (compile: 205ms, render: 33ms)
+⚠ Cross origin request detected from preview-chat-9eae378b-ca64-4b80-8df4-f033af87d88e.space-z.ai to /_next/* resource. In a future major version of Next.js, you will need to explicitly configure "allowedDevOrigins" in next.config to allow this.
+Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+✓ Compiled in 280ms
+✓ Compiled in 0ms
+ GET / 200 in 301ms (compile: 273ms, render: 28ms)
+ GET / 200 in 205ms (compile: 190ms, render: 14ms)
+ GET / 200 in 196ms (compile: 180ms, render: 15ms)
+ GET / 200 in 255ms (compile: 239ms, render: 15ms)
+ GET / 200 in 273ms (compile: 249ms, render: 24ms)
+ GET / 200 in 262ms (compile: 239ms, render: 23ms)
+ GET / 200 in 271ms (compile: 255ms, render: 16ms)
+ GET / 200 in 201ms (compile: 185ms, render: 16ms)
+ GET / 200 in 288ms (compile: 244ms, render: 44ms)
+ GET / 200 in 256ms (compile: 242ms, render: 14ms)
+ GET / 200 in 198ms (compile: 184ms, render: 14ms)
+ GET / 200 in 219ms (compile: 188ms, render: 30ms)
+ GET / 200 in 202ms (compile: 188ms, render: 14ms)
+ GET / 200 in 208ms (compile: 194ms, render: 13ms)
+ GET / 200 in 199ms (compile: 185ms, render: 14ms)
+ GET / 200 in 210ms (compile: 197ms, render: 13ms)
+ GET / 200 in 205ms (compile: 189ms, render: 17ms)
+ GET / 200 in 204ms (compile: 188ms, render: 15ms)
+ GET / 200 in 209ms (compile: 195ms, render: 14ms)
+ GET / 200 in 203ms (compile: 188ms, render: 14ms)
+ GET / 200 in 203ms (compile: 188ms, render: 14ms)
+ GET / 200 in 193ms (compile: 178ms, render: 15ms)
+ GET / 200 in 327ms (compile: 305ms, render: 22ms)
+ GET / 200 in 209ms (compile: 194ms, render: 15ms)
+ GET / 200 in 209ms (compile: 195ms, render: 14ms)
+ GET / 200 in 240ms (compile: 206ms, render: 34ms)
+ GET / 200 in 210ms (compile: 196ms, render: 14ms)
+ GET / 200 in 202ms (compile: 190ms, render: 13ms)
+ GET / 200 in 202ms (compile: 189ms, render: 14ms)
+ GET / 200 in 202ms (compile: 190ms, render: 12ms)
+ GET / 200 in 201ms (compile: 186ms, render: 14ms)
+ GET / 200 in 200ms (compile: 186ms, render: 14ms)
+ GET / 200 in 210ms (compile: 196ms, render: 14ms)
+ GET / 200 in 238ms (compile: 215ms, render: 23ms)
+ GET / 200 in 260ms (compile: 243ms, render: 17ms)
+ GET / 200 in 219ms (compile: 205ms, render: 14ms)
+ GET / 200 in 233ms (compile: 215ms, render: 18ms)
+ GET / 200 in 256ms (compile: 235ms, render: 21ms)
+ GET / 200 in 265ms (compile: 237ms, render: 28ms)
+ GET / 200 in 204ms (compile: 190ms, render: 14ms)
+ GET / 200 in 201ms (compile: 188ms, render: 13ms)
+ GET / 200 in 245ms (compile: 224ms, render: 22ms)
+ GET / 200 in 256ms (compile: 242ms, render: 14ms)
+ GET / 200 in 249ms (compile: 236ms, render: 13ms)
+ GET / 200 in 208ms (compile: 193ms, render: 15ms)
+ GET / 200 in 213ms (compile: 199ms, render: 14ms)
+ GET / 200 in 196ms (compile: 182ms, render: 13ms)
+ GET / 200 in 199ms (compile: 187ms, render: 12ms)
+ GET / 200 in 511ms (compile: 270ms, render: 241ms)
+✓ Compiled in 0ms
+ GET / 200 in 262ms (compile: 237ms, render: 25ms)
+ GET / 200 in 208ms (compile: 194ms, render: 14ms)
+ GET / 200 in 203ms (compile: 183ms, render: 20ms)
+ GET / 200 in 324ms (compile: 302ms, render: 22ms)
+ GET / 200 in 221ms (compile: 207ms, render: 14ms)
+ GET / 200 in 259ms (compile: 237ms, render: 22ms)
+ GET / 200 in 230ms (compile: 217ms, render: 13ms)
+✓ Compiled in 442ms
+✓ Compiled in 395ms
+✓ Compiled in 369ms
+✓ Compiled in 342ms
+✓ Compiled in 220ms
+✓ Compiled in 355ms
+✓ Compiled in 339ms
+✓ Compiled in 555ms
+✓ Compiled in 12ms

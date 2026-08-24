@@ -36,7 +36,10 @@ interface TeacherBeneficiary {
 interface Beneficiary3B {
   id: string; sppgCode: string; posyanduName: string;
   subCategory: 'Bumil' | 'Busui' | 'Balita'; nik: string; fullName: string;
-  gender: 'L' | 'P'; birthDate: string; detailInfo: string;
+  gender: 'L' | 'P'; birthDate: string; tempatLahir: string;
+  alamat: string; namaOrtu: string;
+  beratBadan: number; tinggiBadan: number;
+  lingkarKepala: number; lingkarLengan: number;
   picName: string; phone: string; hasAllergy: boolean; allergyType: string;
   status: 'Aktif' | 'Lulus 3B';
 }
@@ -92,7 +95,10 @@ export default function MainApp() {
       if (Array.isArray(bRes)) setBeneficiaries3b(bRes.map((b: any) => ({
         id: b.id, sppgCode: b.sppg_code || '-', posyanduName: b.posyandu_name,
         subCategory: b.sub_category, nik: b.nik || '-', fullName: b.full_name,
-        gender: b.gender, birthDate: b.birth_date || '-', detailInfo: b.detail_info || '-',
+        gender: b.gender, birthDate: b.birth_date || '-', tempatLahir: b.tempat_lahir || '-',
+        alamat: b.alamat || '-', namaOrtu: b.nama_orang_tua || '-',
+        beratBadan: b.berat_badan || 0, tinggiBadan: b.tinggi_badan || 0,
+        lingkarKepala: b.lingkar_kepala || 0, lingkarLengan: b.lingkar_lengan || 0,
         picName: b.pic_name, phone: b.phone, hasAllergy: b.has_allergy,
         allergyType: b.allergy_type || '-', status: b.status || 'Aktif',
       })));
@@ -122,8 +128,10 @@ export default function MainApp() {
   });
   const [form3B, setForm3B] = useState({
     posyanduName: '', fullName: '', nik: '', gender: 'P' as 'L' | 'P',
-    birthDate: '', detailInfo: '', picName: '', phone: '',
-    hasAllergy: false, allergyType: '',
+    birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '',
+    beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '',
+    picName: '', phone: '', hasAllergy: false, allergyType: '',
+    detailInfo: '',
   });
 
   // === DETEKSI DATA GANDA ===
@@ -398,7 +406,7 @@ export default function MainApp() {
       setFormGuru({ schoolName: item.schoolName, fullName: item.fullName, nuptk: item.nuptk || '', nip: item.nip || '', jk: item.jk, tempatLahir: item.tempatLahir || '', tanggalLahir: item.tanggalLahir || '', nik: item.nik || '', jenisTendik: item.jenisTendik || 'Guru', alamat: item.alamat || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     } else {
       setPmSubTab(item.subCategory); setPmMainTab('3B');
-      setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', detailInfo: item.detailInfo || '', picName: item.picName, phone: item.phone, hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
+      setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), picName: item.picName, phone: item.phone, hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '', detailInfo: item.detailInfo || '' });
     }
     setIsModalOpen(true);
   };
@@ -437,7 +445,7 @@ export default function MainApp() {
     setEditingId(null);
     if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') setFormSiswa({ schoolName: 'SDN 01 Sambas', nama: '', nipd: '', jk: 'L', nisn: '', tempatLahir: '', tanggalLahir: '', nik: '', agama: 'Islam', alamat: '', kelas: '', beratBadan: '', tinggiBadan: '', namaAyah: '', namaIbu: '', hasAllergy: false, allergyType: '' });
     else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') setFormGuru({ schoolName: 'SDN 01 Sambas', fullName: '', nuptk: '', nip: '', jk: 'L', tempatLahir: '', tanggalLahir: '', nik: '', jenisTendik: 'Guru', alamat: '', hasAllergy: false, allergyType: '' });
-    else setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', detailInfo: '', picName: '', phone: '', hasAllergy: false, allergyType: '' });
+    else setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '', beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '', picName: '', phone: '', hasAllergy: false, allergyType: '', detailInfo: '' });
     setIsModalOpen(true);
   };
 
@@ -740,13 +748,24 @@ export default function MainApp() {
             <p className="text-[11px] text-slate-400">NIK: {b.nik}</p>
           </div>
         </div>
-        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[11px] font-bold">{b.status}</span>
+        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-[11px] font-bold">{b.gender}</span>
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
         <div className="col-span-2"><span className="text-slate-400">Posyandu:</span> <span className="font-medium text-slate-700">{b.posyanduName}</span></div>
+        <div><span className="text-slate-400">TTL:</span> <span className="font-medium">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.birthDate}</span></div>
         <div><span className="text-slate-400">Umur:</span> <span className="font-bold text-blue-600">{calculateAge(b.birthDate)}</span></div>
-        <div><span className="text-slate-400">Info Gizi:</span> <span className="font-medium text-amber-700">{b.detailInfo}</span></div>
-        <div className="col-span-2"><span className="text-slate-400">Kader:</span> <span className="font-medium text-slate-700">{b.picName}</span> {b.phone && <a href={`tel:${b.phone}`} className="text-blue-500 ml-1">{b.phone}</a>}</div>
+        {b.subCategory === 'Balita' ? (<>
+          <div className="col-span-2"><span className="text-slate-400">Orang Tua:</span> <span className="font-medium text-slate-700">{b.namaOrtu}</span></div>
+          <div className="col-span-2"><span className="text-slate-400">Alamat:</span> <span className="font-medium text-slate-700">{b.alamat}</span></div>
+          <div className="grid grid-cols-4 gap-1 text-center">
+            <div className="bg-emerald-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">BB</div><div className="font-bold text-emerald-700">{b.beratBadan || '-'}</div></div>
+            <div className="bg-blue-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">TB</div><div className="font-bold text-blue-700">{b.tinggiBadan || '-'}</div></div>
+            <div className="bg-violet-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">LK</div><div className="font-bold text-violet-700">{b.lingkarKepala || '-'}</div></div>
+            <div className="bg-amber-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">LL</div><div className="font-bold text-amber-700">{b.lingkarLengan || '-'}</div></div>
+          </div>
+        </>) : (<>
+          <div className="col-span-2"><span className="text-slate-400">Info Gizi:</span> <span className="font-medium text-amber-700">{b.detailInfo}</span></div>
+        </>)}
       </div>
       <div className="flex items-center justify-between pt-2 border-t border-slate-100">
         {b.hasAllergy ? (
@@ -1492,13 +1511,22 @@ export default function MainApp() {
                     <thead className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500 uppercase tracking-wider text-[11px]">
                       <tr>
                         <th className="py-2.5 px-3 text-center border-r border-slate-200">No</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">Nama Penerima / NIK</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">Titik Posyandu</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Nama {pmSubTab === 'Balita' ? 'Anak' : 'Penerima'} / NIK</th>
+                        <th className="py-2.5 px-3 text-center border-r border-slate-200">JK</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Tempat, Tgl Lahir</th>
                         <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-blue-50/50 text-blue-800">Umur</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">Detail Info Gizi</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">PJ Kader / WA</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">Alergi Makanan</th>
-                        <th className="py-2.5 px-3 border-r border-slate-200">Status</th>
+                        {pmSubTab === 'Balita' ? (<>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Nama Orang Tua</th>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Alamat</th>
+                          <th className="py-2.5 px-3 text-center border-r border-slate-200">BB (kg)</th>
+                          <th className="py-2.5 px-3 text-center border-r border-slate-200">TB (cm)</th>
+                          <th className="py-2.5 px-3 text-center border-r border-slate-200">LK (cm)</th>
+                          <th className="py-2.5 px-3 text-center border-r border-slate-200">LL (cm)</th>
+                        </>) : (<>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Detail Info Gizi</th>
+                        </>)}
+                        <th className="py-2.5 px-3 border-r border-slate-200">Posyandu</th>
+                        <th className="py-2.5 px-3 border-r border-slate-200">Alergi</th>
                         <th className="py-2.5 px-3 text-center">Aksi</th>
                       </tr>
                     </thead>
@@ -1507,15 +1535,24 @@ export default function MainApp() {
                         <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx+1}</td>
                           <td className="py-2.5 px-3 border-r border-slate-100"><p className="font-semibold text-slate-800">{b.fullName}</p><p className="text-slate-400 text-[11px]">NIK: {b.nik}</p></td>
-                          <td className="py-2.5 px-3 border-r border-slate-100 font-medium text-slate-800">{b.posyanduName}</td>
+                          <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold">{b.gender}</td>
+                          <td className="py-2.5 px-3 border-r border-slate-100">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.birthDate}</td>
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-blue-700">{calculateAge(b.birthDate)}</td>
-                          <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.detailInfo}</span></td>
-                          <td className="py-2.5 px-3 border-r border-slate-100"><p className="font-semibold text-slate-800">{b.picName}</p><p className="text-slate-500">{b.phone}</p></td>
+                          {pmSubTab === 'Balita' ? (<>
+                            <td className="py-2.5 px-3 border-r border-slate-100 font-medium">{b.namaOrtu}</td>
+                            <td className="py-2.5 px-3 border-r border-slate-100 max-w-[150px] truncate">{b.alamat}</td>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-emerald-700">{b.beratBadan || '-'}</td>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-blue-700">{b.tinggiBadan || '-'}</td>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-violet-700">{b.lingkarKepala || '-'}</td>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-amber-700">{b.lingkarLengan || '-'}</td>
+                          </>) : (<>
+                            <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.detailInfo}</span></td>
+                          </>)}
+                          <td className="py-2.5 px-3 border-r border-slate-100 font-medium text-slate-800">{b.posyanduName}</td>
                           <td className="py-2.5 px-3 border-r border-slate-100">{b.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold">{b.allergyType}</span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}</td>
-                          <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-full font-semibold">{b.status}</span></td>
                           <td className="py-2.5 px-3 text-center"><div className="flex items-center justify-center space-x-1"><button onClick={() => handleEdit('beneficiaries-3b', b)} className="text-blue-400 hover:text-blue-600 p-1" title="Edit"><Pencil className="w-3.5 h-3.5" /></button><button onClick={() => handleDelete('beneficiaries-3b', b.id)} className="text-slate-400 hover:text-rose-500 p-1" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                         </tr>
-                      )) : (<tr><td colSpan={9} className="py-8 text-center text-slate-400 italic">Data {pmSubTab} tidak ditemukan...</td></tr>)}
+                      )) : (<tr><td colSpan={pmSubTab === 'Balita' ? 14 : 9} className="py-8 text-center text-slate-400 italic">Data {pmSubTab} tidak ditemukan...</td></tr>)}
                     </tbody>
                   </table>
                 )}
@@ -1706,11 +1743,23 @@ export default function MainApp() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Posyandu *</label><input type="text" required placeholder="Posyandu Melati 01" value={form3B.posyanduName} onChange={(e) => setForm3B({...form3B, posyanduName: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
-                    <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Penerima ({pmSubTab}) *</label><input type="text" required placeholder="Nama Ibu / Anak" value={form3B.fullName} onChange={(e) => setForm3B({...form3B, fullName: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                    <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama {pmSubTab === 'Balita' ? 'Anak' : 'Penerima'} ({pmSubTab}) *</label><input type="text" required placeholder={pmSubTab === 'Balita' ? 'Nama Anak Balita' : 'Nama Ibu'} value={form3B.fullName} onChange={(e) => setForm3B({...form3B, fullName: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                     <div><label className="block text-xs font-semibold text-slate-700 mb-1">NIK</label><input type="text" placeholder="610102..." value={form3B.nik} onChange={(e) => setForm3B({...form3B, nik: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                     <div><label className="block text-xs font-semibold text-slate-700 mb-1">Jenis Kelamin</label><select value={form3B.gender} onChange={(e) => setForm3B({...form3B, gender: e.target.value as 'L'|'P'})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm"><option value="P">Perempuan (P)</option><option value="L">Laki-laki (L)</option></select></div>
+                    <div><label className="block text-xs font-semibold text-slate-700 mb-1">Tempat Lahir</label><input type="text" placeholder="Kab. Buton" value={form3B.tempatLahir} onChange={(e) => setForm3B({...form3B, tempatLahir: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                     <div><label className="block text-xs font-semibold text-slate-700 mb-1">Tanggal Lahir</label><input type="date" value={form3B.birthDate} onChange={(e) => setForm3B({...form3B, birthDate: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />{form3B.birthDate && <p className="text-[11px] text-blue-600 font-semibold mt-1 flex items-center gap-1"><Calendar className="w-3 h-3" /><span>Umur: {calculateAge(form3B.birthDate)}</span></p>}</div>
-                    <div><label className="block text-xs font-semibold text-slate-700 mb-1">Detail Info Gizi</label><input type="text" placeholder="Usia Hamil: 24 Minggu" value={form3B.detailInfo} onChange={(e) => setForm3B({...form3B, detailInfo: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                    {pmSubTab === 'Balita' ? (<>
+                      <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Orang Tua *</label><input type="text" required placeholder="Nama Ibu / Ayah" value={form3B.namaOrtu} onChange={(e) => setForm3B({...form3B, namaOrtu: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                      <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label><input type="text" placeholder="Desa/Kelurahan, Kecamatan" value={form3B.alamat} onChange={(e) => setForm3B({...form3B, alamat: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">BB (kg)</label><input type="number" step="0.1" placeholder="10.5" value={form3B.beratBadan} onChange={(e) => setForm3B({...form3B, beratBadan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">TB (cm)</label><input type="number" step="0.1" placeholder="85.0" value={form3B.tinggiBadan} onChange={(e) => setForm3B({...form3B, tinggiBadan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">LK (cm)</label><input type="number" step="0.1" placeholder="48.5" value={form3B.lingkarKepala} onChange={(e) => setForm3B({...form3B, lingkarKepala: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">LL (cm)</label><input type="number" step="0.1" placeholder="14.5" value={form3B.lingkarLengan} onChange={(e) => setForm3B({...form3B, lingkarLengan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                      </div>
+                    </>) : (<>
+                      <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Detail Info Gizi</label><input type="text" placeholder="Usia Hamil: 24 Minggu" value={form3B.detailInfo} onChange={(e) => setForm3B({...form3B, detailInfo: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                    </>)}
                     <div><label className="block text-xs font-semibold text-slate-700 mb-1">PJ Kader</label><input type="text" placeholder="Ibu Dewi (Kader)" value={form3B.picName} onChange={(e) => setForm3B({...form3B, picName: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                     <div><label className="block text-xs font-semibold text-slate-700 mb-1">No. Telepon Kader</label><div className="flex items-center gap-1.5"><Phone className="w-4 h-4 text-slate-400 shrink-0" /><input type="tel" placeholder="085211223344" value={form3B.phone} onChange={(e) => setForm3B({...form3B, phone: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div></div>
                   </div>
