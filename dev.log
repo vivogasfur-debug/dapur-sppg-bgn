@@ -93,3 +93,60 @@ Read more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allow
  GET / 200 in 247ms (compile: 219ms, render: 28ms)
 ✓ Compiled in 507ms
 ✓ Compiled in 3ms
+ GET / 200 in 753ms (compile: 332ms, render: 422ms)
+ GET / 200 in 226ms (compile: 194ms, render: 32ms)
+ GET / 200 in 363ms (compile: 330ms, render: 32ms)
+ GET / 200 in 233ms (compile: 203ms, render: 30ms)
+ GET / 200 in 238ms (compile: 212ms, render: 26ms)
+✓ Compiled in 665ms
+⨯ ./src/components/MainApp.tsx:104:72
+Parsing ecmascript source code failed
+[0m [90m 102 |[39m         lingkarKepala[33m:[39m b[33m.[39mlingkar_kepala [33m||[39m [35m0[39m[33m,[39m lingkarLengan[33m:[39m b[33m.[39mlingkar_lengan [33m||[39m [35m0[39m[33m,[39m
+ [90m 103 |[39m         usiaKandungan[33m:[39m b[33m.[39musia_kandungan [33m||[39m [32m'-'[39m[33m,[39m
+[31m[1m>[22m[39m[90m 104 |[39m         picName[33m:[39m b[33m.[39mpic_name[33m,[39m phone[33m:[39m b[33m.[39mphone[33m,[39m hasAllergy[33m:[39m b[33m.[39mhas_allergy[33m,[39m[32m'[39m
+ [90m     |[39m                                                                        [31m[1m^[22m[39m
+ [90m 105 |[39m         allergyType[33m:[39m b[33m.[39mallergy_type [33m||[39m [32m'-'[39m[33m,[39m status[33m:[39m b[33m.[39mstatus [33m||[39m [32m'Aktif'[39m[33m,[39m
+ [90m 106 |[39m       })))[33m;[39m
+ [90m 107 |[39m     } [36mcatch[39m { toast[33m.[39merror([32m'Gagal memuat data dari database'[39m)[33m;[39m }[0m
+
+Unterminated string constant
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 1481ms (compile: 1328ms, render: 153ms)
+⨯ ./src/components/MainApp.tsx:104:72
+Parsing ecmascript source code failed
+[0m [90m 102 |[39m         lingkarKepala[33m:[39m b[33m.[39mlingkar_kepala [33m||[39m [35m0[39m[33m,[39m lingkarLengan[33m:[39m b[33m.[39mlingkar_lengan [33m||[39m [35m0[39m[33m,[39m
+ [90m 103 |[39m         usiaKandungan[33m:[39m b[33m.[39musia_kandungan [33m||[39m [32m'-'[39m[33m,[39m
+[31m[1m>[22m[39m[90m 104 |[39m         picName[33m:[39m b[33m.[39mpic_name[33m,[39m phone[33m:[39m b[33m.[39mphone[33m,[39m hasAllergy[33m:[39m b[33m.[39mhas_allergy[33m,[39m[32m'[39m
+ [90m     |[39m                                                                        [31m[1m^[22m[39m
+ [90m 105 |[39m         allergyType[33m:[39m b[33m.[39mallergy_type [33m||[39m [32m'-'[39m[33m,[39m status[33m:[39m b[33m.[39mstatus [33m||[39m [32m'Aktif'[39m[33m,[39m
+ [90m 106 |[39m       })))[33m;[39m
+ [90m 107 |[39m     } [36mcatch[39m { toast[33m.[39merror([32m'Gagal memuat data dari database'[39m)[33m;[39m }[0m
+
+Unterminated string constant
+
+Import traces:
+  Client Component Browser:
+    ./src/components/MainApp.tsx [Client Component Browser]
+    ./src/app/page.tsx [Client Component Browser]
+    ./src/app/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/components/MainApp.tsx [Client Component SSR]
+    ./src/app/page.tsx [Client Component SSR]
+    ./src/app/page.tsx [Server Component]
+
+
+ GET / 500 in 153ms (compile: 140ms, render: 13ms)
+✓ Compiled in 509ms

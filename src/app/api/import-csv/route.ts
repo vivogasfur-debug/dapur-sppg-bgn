@@ -170,6 +170,7 @@ export async function POST(req: NextRequest) {
           tinggi_badan: parseFloat(findVal(obj, ['tinggi_badan', 'tb', 'tinggi', 'height']) || '0') || 0,
           lingkar_kepala: parseFloat(findVal(obj, ['lingkar_kepala', 'lk', 'lingkar_kpala']) || '0') || 0,
           lingkar_lengan: parseFloat(findVal(obj, ['lingkar_lengan', 'll', 'lingkar_lgkn']) || '0') || 0,
+          usia_kandungan: findVal(obj, ['usia_kandungan', 'usia_kandungan', 'usia', 'hamil', 'usia_hamil']) || null,
           detail_info: findVal(obj, ['detail_info', 'info', 'keterangan', 'detail']) || null,
           pic_name: findVal(obj, ['pic_name', 'kader', 'nama_kader', 'petugas']) || '-',
           phone: findVal(obj, ['phone', 'wa', 'no_hp', 'telepon', 'no_telp', 'whatsapp']) || null,

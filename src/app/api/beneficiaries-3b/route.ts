@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       pic_name: body.picName,
       phone: body.phone,
       has_allergy: body.hasAllergy || false,
+      usia_kandungan: body.usiaKandungan || null,
       allergy_type: body.hasAllergy ? body.allergyType : null,
       status: 'Aktif',
     }]).select()
@@ -72,6 +73,7 @@ export async function PUT(req: NextRequest) {
       pic_name: body.picName,
       phone: body.phone,
       has_allergy: body.hasAllergy || false,
+      usia_kandungan: body.usiaKandungan || null,
       allergy_type: body.hasAllergy ? body.allergyType : null,
     }).eq('id', id)
 
