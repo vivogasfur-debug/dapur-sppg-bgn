@@ -94,10 +94,19 @@ export default function AslapModule() {
       if (json.needsSetup) {
         setNeedsSetup(true);
         setSetupSql(json.sql || SETUP_SQL);
+        setLoading(false);
         return;
       }
-      if (json.error && !Array.isArray(json)) {
-        toast.error(json.error);
+      if (json.error) {
+        // If error but no needsSetup flag, check if it looks like missing table
+        const errMsg = (json.error || '').toLowerCase();
+        if (errMsg.includes('aslap') || errMsg.includes('schema') || errMsg.includes('does not exist')) {
+          setNeedsSetup(true);
+          setSetupSql(SETUP_SQL);
+        } else {
+          toast.error(json.error);
+        }
+        setLoading(false);
         return;
       }
       setActivities(Array.isArray(json) ? json : []);
