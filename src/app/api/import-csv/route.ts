@@ -177,9 +177,6 @@ export async function POST(req: NextRequest) {
         }
         if (isBalita) {
           record.nama_orang_tua = findVal(obj, ['nama_orang_tua', 'nama_ortu', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null
-        } else {
-          const uk = findVal(obj, ['usia_kandungan', 'usia', 'hamil', 'usia_hamil'])
-          if (uk) record.usia_kandungan = uk
         }
         return record
       })
