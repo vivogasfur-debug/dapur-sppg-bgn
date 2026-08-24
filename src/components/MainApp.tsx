@@ -1338,7 +1338,7 @@ export default function MainApp() {
   const balita60plus = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '>= 60 Bln').length;
   const balitaNoDate = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '-').length;
   const porsiKecil = siswaTKRA + siswaSDKelas123 + balita0_6 + balita6_59;
-  const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui + balita60plus;
+  const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui;
   const totalPorsi = porsiKecil + porsiBesar;
   const totalPenerimaAll = students.length + teachers.length + beneficiaries3b.length;
   const tidakKategori = totalPenerimaAll - totalPorsi;
@@ -1419,7 +1419,7 @@ export default function MainApp() {
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SMA/SMK</span><span className="text-[10px] font-bold text-white">{siswaSMA}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Bumil</span><span className="text-[10px] font-bold text-white">{bumil}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Busui</span><span className="text-[10px] font-bold text-white">{busui}</span></div>
-            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">{'Balita >= 60 Bln'}</span><span className="text-[10px] font-bold text-white">{balita60plus}</span></div>
+
           </div>
         </div>
       </div>
@@ -1437,7 +1437,7 @@ export default function MainApp() {
       </div>
       {tidakKategori > 0 && (
         <div className="mt-2 bg-white/5 rounded-lg px-3 py-1.5 flex items-center justify-between">
-          <span className="text-[10px] text-amber-300">Tidak Dikategorikan: Balita tanpa tanggal lahir ({balitaNoDate})</span>
+          <span className="text-[10px] text-amber-300">Tidak Dikategorikan: Balita {'>= 60 Bln'} ({balita60plus}) + tanpa tanggal lahir ({balitaNoDate})</span>
           <span className="text-[10px] font-extrabold text-amber-300">{tidakKategori}</span>
         </div>
       )}
