@@ -13,6 +13,7 @@ import {
   HeartHandshake,
   Users,
   Users2,
+  ClipboardCheck,
   ChevronLeft,
   ChevronRight,
   X,
@@ -29,6 +30,7 @@ interface SidebarProps {
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard },
   { name: 'Penerima Manfaat', icon: Users2 },
+  { name: 'ASLAP', icon: ClipboardCheck },
   { name: 'Gudang & Stok', icon: Boxes },
   { name: 'Ahli Gizi & Menu', icon: UtensilsCrossed },
   { name: 'Akuntan & Keuangan', icon: Receipt },

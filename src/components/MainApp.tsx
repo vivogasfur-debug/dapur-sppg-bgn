@@ -9,6 +9,7 @@ import AkuntanModule from './AkuntanModule';
 import DistribusiModule from './DistribusiModule';
 import UserModule from './UserModule';
 import LaporanModule from './LaporanModule';
+import AslapModule from './AslapModule';
 import Image from 'next/image';
 import * as ExcelJS from 'exceljs';
 import { 
@@ -1764,6 +1765,9 @@ export default function MainApp() {
             </div>}
           </div>
         );
+
+      case 'ASLAP':
+        return <AslapModule />;
 
       case 'Gudang & Stok':
         return <StockModule />;
