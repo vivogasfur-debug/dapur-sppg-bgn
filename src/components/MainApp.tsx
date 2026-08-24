@@ -57,6 +57,21 @@ const calculateAge = (birthDateString: string) => {
   return months > 0 ? `${years} Thn ${months} Bln` : `${years} Thn`;
 };
 
+const classifyBalita = (birthDateString: string): string => {
+  if (!birthDateString || birthDateString === '-') return '-';
+  const birthDate = new Date(birthDateString);
+  const today = new Date();
+  if (isNaN(birthDate.getTime())) return '-';
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  if (months < 0 || (months === 0 && today.getDate() < birthDate.getDate())) { years--; months += 12; }
+  const totalMonths = years * 12 + months;
+  if (totalMonths < 6) return '< 6 Bln';
+  if (totalMonths <= 12) return '6-12 Bln';
+  if (totalMonths <= 59) return '12-59 Bln';
+  return '>= 60 Bln';
+};
+
 export default function MainApp() {
   const [activeMenu, setActiveMenu] = useState('Penerima Manfaat');
   const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B' | 'Rekapitulasi'>('Sekolah');
@@ -629,10 +644,10 @@ export default function MainApp() {
       if (scope === 'all' || pmSubTab === 'Balita') {
         const balitaData = scope === 'all' ? beneficiaries3b.filter(b => b.subCategory === 'Balita') : filtered3b.filter(b => b.subCategory === 'Balita');
         if (balitaData.length > 0) {
-          const headers = ['No', 'Nama Anak', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Nama Orang Tua', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
-          const rows = balitaData.map((b, i) => [safeStr(i+1), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+          const headers = ['No', 'Nama Anak', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Klasifikasi', 'Nama Orang Tua', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
+          const rows = balitaData.map((b, i) => [safeStr(i+1), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), classifyBalita(b.birthDate), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
           const ws = workbook.addWorksheet('Balita');
-          addKop(ws, 'DATA PENERIMA MANFAAT - BALITA', headers, rows, [5, 25, 20, 5, 15, 15, 12, 25, 20, 8, 8, 8, 8, 20, 12]);
+          addKop(ws, 'DATA PENERIMA MANFAAT - BALITA', headers, rows, [5, 25, 20, 5, 15, 15, 12, 12, 25, 20, 8, 8, 8, 8, 20, 12]);
         }
       }
       // 3B - Bumil & Busui
@@ -770,6 +785,7 @@ export default function MainApp() {
         <div><span className="text-slate-400">TTL:</span> <span className="font-medium">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.birthDate}</span></div>
         <div><span className="text-slate-400">Umur:</span> <span className="font-bold text-blue-600">{calculateAge(b.birthDate)}</span></div>
         {b.subCategory === 'Balita' ? (<>
+          <div><span className="text-slate-400">Klasifikasi:</span> <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${classifyBalita(b.birthDate) === '6-12 Bln' ? 'bg-amber-50 text-amber-700' : classifyBalita(b.birthDate) === '12-59 Bln' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{classifyBalita(b.birthDate)}</span></div>
           <div className="col-span-2"><span className="text-slate-400">Orang Tua:</span> <span className="font-medium text-slate-700">{b.namaOrtu}</span></div>
           <div className="col-span-2"><span className="text-slate-400">Alamat:</span> <span className="font-medium text-slate-700">{b.alamat}</span></div>
           <div className="grid grid-cols-4 gap-1 text-center">
@@ -1538,6 +1554,7 @@ export default function MainApp() {
                         <th className="py-2.5 px-3 border-r border-slate-200">Tempat, Tgl Lahir</th>
                         <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-blue-50/50 text-blue-800">Umur</th>
                         {pmSubTab === 'Balita' ? (<>
+                          <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-amber-50/50 text-amber-800">Klasifikasi</th>
                           <th className="py-2.5 px-3 border-r border-slate-200">Nama Orang Tua</th>
                           <th className="py-2.5 px-3 border-r border-slate-200">Alamat</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">BB (kg)</th>
@@ -1566,6 +1583,7 @@ export default function MainApp() {
                           <td className="py-2.5 px-3 border-r border-slate-100">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.birthDate}</td>
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-blue-700">{calculateAge(b.birthDate)}</td>
                           {pmSubTab === 'Balita' ? (<>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${classifyBalita(b.birthDate) === '6-12 Bln' ? 'bg-amber-50 text-amber-700' : classifyBalita(b.birthDate) === '12-59 Bln' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{classifyBalita(b.birthDate)}</span></td>
                             <td className="py-2.5 px-3 border-r border-slate-100 font-medium">{b.namaOrtu}</td>
                             <td className="py-2.5 px-3 border-r border-slate-100 max-w-[150px] truncate">{b.alamat}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-emerald-700">{b.beratBadan || '-'}</td>
@@ -1584,7 +1602,7 @@ export default function MainApp() {
                           <td className="py-2.5 px-3 border-r border-slate-100">{b.hasAllergy ? <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded font-bold">{b.allergyType}</span> : <span className="px-2 py-0.5 bg-slate-100 text-slate-400 rounded">Aman</span>}</td>
                           <td className="py-2.5 px-3 text-center"><div className="flex items-center justify-center space-x-1"><button onClick={() => handleEdit('beneficiaries-3b', b)} className="text-blue-400 hover:text-blue-600 p-1" title="Edit"><Pencil className="w-3.5 h-3.5" /></button><button onClick={() => handleDelete('beneficiaries-3b', b.id)} className="text-slate-400 hover:text-rose-500 p-1" title="Hapus"><Trash2 className="w-3.5 h-3.5" /></button></div></td>
                         </tr>
-                      )) : (<tr><td colSpan={pmSubTab === 'Balita' ? 14 : 14} className="py-8 text-center text-slate-400 italic">Data {pmSubTab} tidak ditemukan...</td></tr>)}
+                      )) : (<tr><td colSpan={15} className="py-8 text-center text-slate-400 italic">Data {pmSubTab} tidak ditemukan...</td></tr>)}
                     </tbody>
                   </table>
                 )}
