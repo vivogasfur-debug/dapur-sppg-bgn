@@ -12,7 +12,7 @@ import LaporanModule from './LaporanModule';
 import Image from 'next/image';
 import * as ExcelJS from 'exceljs';
 import { 
-  Utensils, Plus, Search, X, Trash2, Phone,
+  Utensils, Plus, Search, X, Trash2,
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
   AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
   Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity
@@ -34,14 +34,14 @@ interface TeacherBeneficiary {
 }
 
 interface Beneficiary3B {
-  id: string; sppgCode: string; posyanduName: string;
+  id: string; posyanduName: string;
   subCategory: 'Bumil' | 'Busui' | 'Balita'; nik: string; fullName: string;
   gender: 'L' | 'P'; birthDate: string; tempatLahir: string;
   alamat: string; namaOrtu: string;
   beratBadan: number; tinggiBadan: number;
   lingkarKepala: number; lingkarLengan: number;
   usiaKandungan: string;
-  picName: string; phone: string; hasAllergy: boolean; allergyType: string;
+  hasAllergy: boolean; allergyType: string;
   status: 'Aktif' | 'Lulus 3B';
 }
 
@@ -94,14 +94,14 @@ export default function MainApp() {
         allergyType: t.allergy_type || '-', status: t.status || 'Aktif',
       })));
       if (Array.isArray(bRes)) setBeneficiaries3b(bRes.map((b: any) => ({
-        id: b.id, sppgCode: b.sppg_code || '-', posyanduName: b.posyandu_name,
+        id: b.id, posyanduName: b.posyandu_name,
         subCategory: b.sub_category, nik: b.nik || '-', fullName: b.full_name,
         gender: b.gender, birthDate: b.birth_date || '-', tempatLahir: b.tempat_lahir || '-',
         alamat: b.alamat || '-', namaOrtu: b.nama_orang_tua || '-',
         beratBadan: b.berat_badan || 0, tinggiBadan: b.tinggi_badan || 0,
         lingkarKepala: b.lingkar_kepala || 0, lingkarLengan: b.lingkar_lengan || 0,
         usiaKandungan: b.usia_kandungan || '-',
-        picName: b.pic_name, phone: b.phone, hasAllergy: b.has_allergy,
+        hasAllergy: b.has_allergy,
         allergyType: b.allergy_type || '-', status: b.status || 'Aktif',
       })));
     } catch { toast.error('Gagal memuat data dari database'); }
@@ -133,8 +133,7 @@ export default function MainApp() {
     birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '',
     beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '',
     usiaKandungan: '',
-    picName: '', phone: '', hasAllergy: false, allergyType: '',
-    detailInfo: '',
+    hasAllergy: false, allergyType: '',
   });
 
   // === DETEKSI DATA GANDA ===
@@ -409,7 +408,7 @@ export default function MainApp() {
       setFormGuru({ schoolName: item.schoolName, fullName: item.fullName, nuptk: item.nuptk || '', nip: item.nip || '', jk: item.jk, tempatLahir: item.tempatLahir || '', tanggalLahir: item.tanggalLahir || '', nik: item.nik || '', jenisTendik: item.jenisTendik || 'Guru', alamat: item.alamat || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     } else {
       setPmSubTab(item.subCategory); setPmMainTab('3B');
-      setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), usiaKandungan: item.usiaKandungan || '', picName: item.picName, phone: item.phone, hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '', detailInfo: item.detailInfo || '' });
+      setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), usiaKandungan: item.usiaKandungan || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     }
     setIsModalOpen(true);
   };
@@ -448,7 +447,7 @@ export default function MainApp() {
     setEditingId(null);
     if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') setFormSiswa({ schoolName: 'SDN 01 Sambas', nama: '', nipd: '', jk: 'L', nisn: '', tempatLahir: '', tanggalLahir: '', nik: '', agama: 'Islam', alamat: '', kelas: '', beratBadan: '', tinggiBadan: '', namaAyah: '', namaIbu: '', hasAllergy: false, allergyType: '' });
     else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') setFormGuru({ schoolName: 'SDN 01 Sambas', fullName: '', nuptk: '', nip: '', jk: 'L', tempatLahir: '', tanggalLahir: '', nik: '', jenisTendik: 'Guru', alamat: '', hasAllergy: false, allergyType: '' });
-    else setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '', beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '', usiaKandungan: '', picName: '', phone: '', hasAllergy: false, allergyType: '', detailInfo: '' });
+    else setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '', beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '', usiaKandungan: '', hasAllergy: false, allergyType: '' });
     setIsModalOpen(true);
   };
 
@@ -1803,8 +1802,7 @@ export default function MainApp() {
                         </div>
                       </>
                     )}
-                    <div><label className="block text-xs font-semibold text-slate-700 mb-1">PJ Kader</label><input type="text" placeholder="Ibu Dewi (Kader)" value={form3B.picName} onChange={(e) => setForm3B({...form3B, picName: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
-                    <div><label className="block text-xs font-semibold text-slate-700 mb-1">No. Telepon Kader</label><div className="flex items-center gap-1.5"><Phone className="w-4 h-4 text-slate-400 shrink-0" /><input type="tel" placeholder="085211223344" value={form3B.phone} onChange={(e) => setForm3B({...form3B, phone: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div></div>
+
                   </div>
                   <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
                     <label className="flex items-center space-x-2 text-xs font-bold text-rose-800 cursor-pointer">

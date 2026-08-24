@@ -155,25 +155,23 @@ export async function POST(req: NextRequest) {
       const records = dataRows.map(row => {
         const obj: Record<string, any> = {}
         headers.forEach((h, i) => { obj[h] = row[i] || null })
+        const detectedCat = (findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Balita').trim()
+        const isBalita = detectedCat.toLowerCase() === 'balita'
         return {
-          sppg_code: findVal(obj, ['sppg_code', 'sppg', 'kode_sppg']) || 'SPPG-SMB-01',
           posyandu_name: findVal(obj, ['posyandu_name', 'posyandu', 'nama_posyandu']) || '-',
-          sub_category: findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Bumil',
+          sub_category: detectedCat.charAt(0).toUpperCase() + detectedCat.slice(1).toLowerCase(),
           nik: findVal(obj, ['nik', 'no_nik']) || null,
           full_name: findVal(obj, ['full_name', 'nama', 'name', 'nama_ibu', 'nama_anak']) || '-',
           gender: (findVal(obj, ['gender', 'jk', 'jenis_kelamin', 'jenis_kel']) || 'P').charAt(0).toUpperCase(),
           tempat_lahir: findVal(obj, ['tempat_lahir', 'tempat', 'tmpt_lahir', 'tmp_lahir']) || null,
           birth_date: parseDate(findVal(obj, ['birth_date', 'tanggal_lahir', 'ttl', 'tgl_lahir'])),
           alamat: findVal(obj, ['alamat', 'address']) || null,
-          nama_orang_tua: findVal(obj, ['nama_orang_tua', 'nama_ortu', 'nama_orang_tua', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null,
+          nama_orang_tua: isBalita ? (findVal(obj, ['nama_orang_tua', 'nama_ortu', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null) : null,
           berat_badan: parseFloat(findVal(obj, ['berat_badan', 'bb', 'berat', 'weight']) || '0') || 0,
           tinggi_badan: parseFloat(findVal(obj, ['tinggi_badan', 'tb', 'tinggi', 'height']) || '0') || 0,
           lingkar_kepala: parseFloat(findVal(obj, ['lingkar_kepala', 'lk', 'lingkar_kpala']) || '0') || 0,
           lingkar_lengan: parseFloat(findVal(obj, ['lingkar_lengan', 'll', 'lingkar_lgkn']) || '0') || 0,
-          usia_kandungan: findVal(obj, ['usia_kandungan', 'usia_kandungan', 'usia', 'hamil', 'usia_hamil']) || null,
-          detail_info: findVal(obj, ['detail_info', 'info', 'keterangan', 'detail']) || null,
-          pic_name: findVal(obj, ['pic_name', 'kader', 'nama_kader', 'petugas']) || '-',
-          phone: findVal(obj, ['phone', 'wa', 'no_hp', 'telepon', 'no_telp', 'whatsapp']) || null,
+          usia_kandungan: !isBalita ? (findVal(obj, ['usia_kandungan', 'usia', 'hamil', 'usia_hamil']) || null) : null,
           has_allergy: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy']); return v !== null && v !== '' })(),
           allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
           status: 'Aktif',

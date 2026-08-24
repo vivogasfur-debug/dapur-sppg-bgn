@@ -17,7 +17,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const { data, error } = await supabase.from('beneficiaries_3b').insert([{
-      sppg_code: body.sppgCode || 'SPPG-SMB-01',
       posyandu_name: body.posyanduName,
       sub_category: body.subCategory,
       nik: body.nik || null,
@@ -31,11 +30,8 @@ export async function POST(req: NextRequest) {
       tinggi_badan: body.tinggiBadan || 0,
       lingkar_kepala: body.lingkarKepala || 0,
       lingkar_lengan: body.lingkarLengan || 0,
-      detail_info: body.detailInfo || null,
-      pic_name: body.picName,
-      phone: body.phone,
-      has_allergy: body.hasAllergy || false,
       usia_kandungan: body.usiaKandungan || null,
+      has_allergy: body.hasAllergy || false,
       allergy_type: body.hasAllergy ? body.allergyType : null,
       status: 'Aktif',
     }]).select()
@@ -69,11 +65,8 @@ export async function PUT(req: NextRequest) {
       tinggi_badan: body.tinggiBadan || 0,
       lingkar_kepala: body.lingkarKepala || 0,
       lingkar_lengan: body.lingkarLengan || 0,
-      detail_info: body.detailInfo || null,
-      pic_name: body.picName,
-      phone: body.phone,
-      has_allergy: body.hasAllergy || false,
       usia_kandungan: body.usiaKandungan || null,
+      has_allergy: body.hasAllergy || false,
       allergy_type: body.hasAllergy ? body.allergyType : null,
     }).eq('id', id)
 
