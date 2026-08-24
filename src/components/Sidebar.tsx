@@ -4,11 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { 
   LayoutDashboard, 
-  Boxes, 
-  UtensilsCrossed, 
-  Receipt, 
-  Truck, 
-  FileBarChart,
   UserCheck,
   HeartHandshake,
   Users,
@@ -31,13 +26,8 @@ const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard },
   { name: 'Penerima Manfaat', icon: Users2 },
   { name: 'ASLAP', icon: ClipboardCheck },
-  { name: 'Gudang & Stok', icon: Boxes },
-  { name: 'Ahli Gizi & Menu', icon: UtensilsCrossed },
-  { name: 'Akuntan & Keuangan', icon: Receipt },
-  { name: 'Distribusi Lapangan', icon: Truck },
   { name: 'Relawan', icon: HeartHandshake },
   { name: 'Manajemen User', icon: Users },
-  { name: 'Laporan Ringkas', icon: FileBarChart },
 ];
 
 const MenuNav = ({ activeMenu, setActiveMenu, isOpen, onNavigate }: {
