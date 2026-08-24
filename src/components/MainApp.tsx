@@ -1411,7 +1411,7 @@ export default function MainApp() {
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SMA/SMK</span><span className="text-[10px] font-bold text-white">{siswaSMA}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Bumil</span><span className="text-[10px] font-bold text-white">{bumil}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Busui</span><span className="text-[10px] font-bold text-white">{busui}</span></div>
-            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita >= 60 Bln</span><span className="text-[10px] font-bold text-white">{balita60plus}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">{'Balita >= 60 Bln'}</span><span className="text-[10px] font-bold text-white">{balita60plus}</span></div>
           </div>
         </div>
       </div>
