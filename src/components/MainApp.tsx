@@ -622,13 +622,25 @@ export default function MainApp() {
         addKop(ws, 'DATA PENERIMA MANFAAT - GURU/TENDIK', headers, rows, [5, 25, 25, 18, 18, 5, 15, 15, 20, 15, 20, 10, 12]);
       }
 
-      // 3B
-      if (scope === 'all' || ['Bumil', 'Busui', 'Balita'].includes(pmSubTab)) {
-        const data = scope === 'all' ? beneficiaries3b : filtered3b;
-        const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tanggal Lahir', 'Posyandu', 'Detail Info Gizi', 'PJ Kader', 'No. Telp Kader', 'Status', 'Alergi'];
-        const rows = data.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.birthDate), safeStr(b.posyanduName), safeStr(b.detailInfo), safeStr(b.picName), safeStr(b.phone), safeStr(b.status), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
-        const ws = workbook.addWorksheet(scope === 'all' ? 'Penerima 3B' : pmSubTab);
-        addKop(ws, `DATA PENERIMA MANFAAT - ${pmSubTab.toUpperCase()}`, headers, rows, [5, 10, 25, 20, 5, 15, 20, 18, 18, 15, 10, 12]);
+      // 3B - Balita
+      if (scope === 'all' || pmSubTab === 'Balita') {
+        const balitaData = scope === 'all' ? beneficiaries3b.filter(b => b.subCategory === 'Balita') : filtered3b.filter(b => b.subCategory === 'Balita');
+        if (balitaData.length > 0) {
+          const headers = ['No', 'Nama Anak', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Nama Orang Tua', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
+          const rows = balitaData.map((b, i) => [safeStr(i+1), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+          const ws = workbook.addWorksheet('Balita');
+          addKop(ws, 'DATA PENERIMA MANFAAT - BALITA', headers, rows, [5, 25, 20, 5, 15, 15, 12, 25, 20, 8, 8, 8, 8, 20, 12]);
+        }
+      }
+      // 3B - Bumil & Busui
+      if (scope === 'all' || pmSubTab === 'Bumil' || pmSubTab === 'Busui') {
+        const nonBalitaData = scope === 'all' ? beneficiaries3b.filter(b => b.subCategory !== 'Balita') : filtered3b.filter(b => b.subCategory !== 'Balita');
+        if (nonBalitaData.length > 0) {
+          const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tanggal Lahir', 'Posyandu', 'Detail Info Gizi', 'PJ Kader', 'No. Telp Kader', 'Status', 'Alergi'];
+          const rows = nonBalitaData.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.birthDate), safeStr(b.posyanduName), safeStr(b.detailInfo), safeStr(b.picName), safeStr(b.phone), safeStr(b.status), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+          const ws = workbook.addWorksheet(scope === 'all' ? 'Bumil-Busui' : pmSubTab);
+          addKop(ws, `DATA PENERIMA MANFAAT - ${scope === 'all' ? 'BUMIL & BUSUI' : pmSubTab.toUpperCase()}`, headers, rows, [5, 10, 25, 20, 5, 15, 20, 18, 18, 15, 10, 12]);
+        }
       }
 
       let filename: string;
