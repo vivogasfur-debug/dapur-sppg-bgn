@@ -1292,17 +1292,41 @@ export default function MainApp() {
   const alergi3b = beneficiaries3b.filter(b=>b.hasAllergy).length;
   const alergiTotal = alergiSekolah + alergi3b;
   // === HITUNG PORSI ===
-  const isTKRA = (name: string) => {
+  const getJenjang = (name: string): string => {
     const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim();
     const first = u.split(/\s+/)[0];
-    return ['TK','RA','RAUDHATUL'].includes(first);
+    if (['TK','RA','RAUDHATUL'].includes(first)) return 'TK';
+    if (['SD','MI','SDLB','MIN'].includes(first)) return 'SD';
+    if (['SMP','MTS','SMPLB'].includes(first)) return 'SMP';
+    if (['SMA','SMK','MA','MAK'].includes(first)) return 'SMA';
+    return 'Lainnya';
   };
-  const siswaTKRA = students.filter(s => isTKRA(s.schoolName)).length;
-  const siswaKelas123 = students.filter(s => !isTKRA(s.schoolName) && (() => { const k = parseInt(s.kelas); return !isNaN(k) && k >= 1 && k <= 3; })()).length;
-  const siswaKelas456 = students.filter(s => !isTKRA(s.schoolName) && (() => { const k = parseInt(s.kelas); return !isNaN(k) && k >= 4 && k <= 6; })()).length;
+  const extractKelasNum = (kelas: string): number => {
+    if (!kelas || kelas === '-') return -1;
+    const cleaned = kelas.replace(/[^0-9]/g, '');
+    if (cleaned) return parseInt(cleaned);
+    const roman: Record<string,number> = {'I':1,'II':2,'III':3,'IV':4,'V':5,'VI':6,'VII':7,'VIII':8,'IX':9,'X':10,'XI':11,'XII':12};
+    const upper = kelas.toUpperCase().trim();
+    return roman[upper] ?? -1;
+  };
+  // Porsi Kecil: TK/RA + SD Kelas 1-3 + Balita 6-59 Bln
+  const siswaTKRA = students.filter(s => getJenjang(s.schoolName) === 'TK').length;
+  const siswaSDKelas123 = students.filter(s => {
+    if (getJenjang(s.schoolName) !== 'SD') return false;
+    const k = extractKelasNum(s.kelas);
+    return k >= 1 && k <= 3;
+  }).length;
+  // Porsi Besar: Guru + SD Kelas 4-6 + SMP (semua) + SMA (semua) + Bumil + Busui
+  const siswaSDKelas456 = students.filter(s => {
+    if (getJenjang(s.schoolName) !== 'SD') return false;
+    const k = extractKelasNum(s.kelas);
+    return k >= 4 && k <= 6;
+  }).length;
+  const siswaSMP = students.filter(s => getJenjang(s.schoolName) === 'SMP').length;
+  const siswaSMA = students.filter(s => getJenjang(s.schoolName) === 'SMA').length;
   const balita6_59 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && (classifyBalita(b.birthDate) === '6-12 Bln' || classifyBalita(b.birthDate) === '12-59 Bln')).length;
-  const porsiKecil = siswaTKRA + siswaKelas123 + balita6_59;
-  const porsiBesar = teachers.length + siswaKelas456 + bumil + busui;
+  const porsiKecil = siswaTKRA + siswaSDKelas123 + balita6_59;
+  const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui;
   const schoolMap: Record<string,number> = {};
   students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1; });
   const getJenjangPriority = (name: string): number => {
@@ -1363,7 +1387,7 @@ export default function MainApp() {
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">TK/RA</span><span className="text-[10px] font-bold text-white">{siswaTKRA}</span></div>
-            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Kelas 1-3</span><span className="text-[10px] font-bold text-white">{siswaKelas123}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SD Kelas 1-3</span><span className="text-[10px] font-bold text-white">{siswaSDKelas123}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 6-59 Bln</span><span className="text-[10px] font-bold text-white">{balita6_59}</span></div>
           </div>
         </div>
@@ -1374,7 +1398,9 @@ export default function MainApp() {
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Guru/Tendik</span><span className="text-[10px] font-bold text-white">{teachers.length}</span></div>
-            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Kelas 4-6</span><span className="text-[10px] font-bold text-white">{siswaKelas456}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SD Kelas 4-6</span><span className="text-[10px] font-bold text-white">{siswaSDKelas456}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SMP</span><span className="text-[10px] font-bold text-white">{siswaSMP}</span></div>
+            <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SMA/SMK</span><span className="text-[10px] font-bold text-white">{siswaSMA}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Bumil</span><span className="text-[10px] font-bold text-white">{bumil}</span></div>
             <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Busui</span><span className="text-[10px] font-bold text-white">{busui}</span></div>
           </div>
