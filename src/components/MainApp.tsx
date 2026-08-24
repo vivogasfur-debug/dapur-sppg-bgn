@@ -75,9 +75,9 @@ const classifyBalita = (birthDateString: string): string => {
 export default function MainApp() {
   const [activeMenu, setActiveMenu] = useState('Penerima Manfaat');
   const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B' | 'Rekapitulasi'>('Sekolah');
-  const [pmSubTab, setPmSubTab] = useState<'Siswa' | 'Guru' | 'Bumil' | 'Busui' | 'Balita 0-6 Bln' | 'Balita 6-59 Bln'>('Siswa');
-  const isBalitaTab = (tab?: string) => (tab || pmSubTab) === 'Balita 0-6 Bln' || (tab || pmSubTab) === 'Balita 6-59 Bln';
-  const getDbSubCat = (tab?: string) => { const t = tab || pmSubTab; return (t === 'Balita 0-6 Bln' || t === 'Balita 6-59 Bln') ? 'Balita' : t; };
+  const [pmSubTab, setPmSubTab] = useState<'Siswa' | 'Guru' | 'Bumil' | 'Busui' | 'Balita 0-6 Bln' | 'Balita 6-59 Bln' | 'Balita >= 60 Bln' | 'Balita Tdk Dikategorikan'>('Siswa');
+  const isBalitaTab = (tab?: string) => { const t = tab || pmSubTab; return t === 'Balita 0-6 Bln' || t === 'Balita 6-59 Bln' || t === 'Balita >= 60 Bln' || t === 'Balita Tdk Dikategorikan'; };
+  const getDbSubCat = (tab?: string) => { const t = tab || pmSubTab; return isBalitaTab(t) ? 'Balita' : t; };
   const getAgeMonths = (birthDateString: string): number => {
     if (!birthDateString || birthDateString === '-') return 999;
     const bd = new Date(birthDateString); const today = new Date();
@@ -432,7 +432,7 @@ export default function MainApp() {
       setPmSubTab('Guru'); setPmMainTab('Sekolah');
       setFormGuru({ schoolName: item.schoolName, fullName: item.fullName, nuptk: item.nuptk || '', nip: item.nip || '', jk: item.jk, tempatLahir: item.tempatLahir || '', tanggalLahir: item.tanggalLahir || '', nik: item.nik || '', jenisTendik: item.jenisTendik || 'Guru', alamat: item.alamat || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     } else {
-      setPmSubTab(item.subCategory === 'Balita' ? (getAgeMonths(item.birthDate) < 6 ? 'Balita 0-6 Bln' : 'Balita 6-59 Bln') : item.subCategory as any); setPmMainTab('3B');
+      setPmSubTab(item.subCategory === 'Balita' ? (getAgeMonths(item.birthDate) < 6 ? 'Balita 0-6 Bln' : getAgeMonths(item.birthDate) < 60 ? 'Balita 6-59 Bln' : getAgeMonths(item.birthDate) >= 999 ? 'Balita Tdk Dikategorikan' : 'Balita >= 60 Bln') : item.subCategory as any); setPmMainTab('3B');
       setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), usiaKandungan: item.usiaKandungan || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     }
     setIsModalOpen(true);
@@ -460,7 +460,7 @@ export default function MainApp() {
     try {
       let url = '/api/students?all=true';
       if (pmSubTab === 'Guru') url = '/api/teachers?all=true';
-      else if (['Bumil', 'Busui', 'Balita 0-6 Bln', 'Balita 6-59 Bln'].includes(pmSubTab)) url = `/api/beneficiaries-3b?all=true&sub_category=Balita`;
+      else if (isBalitaTab()) url = `/api/beneficiaries-3b?all=true&sub_category=Balita`;
       const res = await fetch(url, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       toast.success(`Semua data ${pmSubTab} berhasil dihapus`); fetchData();
@@ -724,6 +724,8 @@ export default function MainApp() {
   const filtered3b = beneficiaries3b.filter(b => {
     if (pmSubTab === 'Balita 0-6 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) < 6 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
     if (pmSubTab === 'Balita 6-59 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 6 && getAgeMonths(b.birthDate) < 60 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
+    if (pmSubTab === 'Balita >= 60 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 60 && getAgeMonths(b.birthDate) < 999 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
+    if (pmSubTab === 'Balita Tdk Dikategorikan') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 999 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
     return b.subCategory === pmSubTab && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
   });
 
@@ -1237,6 +1239,12 @@ export default function MainApp() {
                   </button>
                   <button onClick={() => setPmSubTab('Balita 6-59 Bln')} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Balita 6-59 Bln' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold' : 'text-slate-500'}`}>
                     <Baby className="w-3.5 h-3.5 text-emerald-500" /><span>Balita 6-59 Bln ({beneficiaries3b.filter(b => b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 6 && getAgeMonths(b.birthDate) < 60).length})</span>
+                  </button>
+                  <button onClick={() => setPmSubTab('Balita >= 60 Bln')} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Balita >= 60 Bln' ? 'bg-red-50 text-red-700 border border-red-200 font-bold' : 'text-slate-500'}`}>
+                    <Baby className="w-3.5 h-3.5 text-red-500" /><span>{'Balita >= 60 Bln'} ({beneficiaries3b.filter(b => b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 60 && getAgeMonths(b.birthDate) < 999).length})</span>
+                  </button>
+                  <button onClick={() => setPmSubTab('Balita Tdk Dikategorikan')} className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${pmSubTab === 'Balita Tdk Dikategorikan' ? 'bg-slate-100 text-slate-700 border border-slate-300 font-bold' : 'text-slate-500'}`}>
+                    <AlertCircle className="w-3.5 h-3.5 text-slate-400" /><span>Balita Tdk Dikategorikan ({beneficiaries3b.filter(b => b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 999).length})</span>
                   </button>
                 </div>
               )}
