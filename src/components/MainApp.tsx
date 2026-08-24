@@ -848,7 +848,44 @@ export default function MainApp() {
   const renderContent = () => {
     switch (activeMenu) {
       case 'Dashboard': {
-        const totalPenerima = students.length + teachers.length + beneficiaries3b.length;
+        const getJenjangDash = (name: string): string => {
+          const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim();
+          if (/^(TK|RA|RAUDHATUL)/.test(u)) return 'TK';
+          if (/^(SD|MI|SDLB|MIN)/.test(u)) return 'SD';
+          if (/^(SMP|MTS|SMPLB)/.test(u)) return 'SMP';
+          if (/^(SMA|SMK|MA|MAK|SMAS|SMAN|SMKN|SMKS)/.test(u)) return 'SMA';
+          return 'Lainnya';
+        };
+        const extractKelasDash = (kelas: string): number => {
+          if (!kelas || kelas === '-') return -1;
+          const cleaned = kelas.replace(/[^0-9]/g, '');
+          if (cleaned) return parseInt(cleaned);
+          const roman: Record<string,number> = {'I':1,'II':2,'III':3,'IV':4,'V':5,'VI':6,'VII':7,'VIII':8,'IX':9,'X':10,'XI':11,'XII':12};
+          return roman[kelas.toUpperCase().trim()] ?? -1;
+        };
+        const siswaTKRA_dash = students.filter(s => getJenjangDash(s.schoolName) === 'TK').length;
+        const siswaSD123_dash = students.filter(s => {
+          const j = getJenjangDash(s.schoolName);
+          if (j !== 'SD' && j !== 'Lainnya') return false;
+          const k = extractKelasDash(s.kelas);
+          return k >= 1 && k <= 3;
+        }).length;
+        const siswaSD456_dash = students.filter(s => {
+          const j = getJenjangDash(s.schoolName);
+          if (j !== 'SD' && j !== 'Lainnya') return false;
+          const k = extractKelasDash(s.kelas);
+          return k >= 4 && k <= 6;
+        }).length;
+        const siswaSMP_dash = students.filter(s => getJenjangDash(s.schoolName) === 'SMP').length;
+        const siswaSMA_dash = students.filter(s => getJenjangDash(s.schoolName) === 'SMA').length;
+        const bumil_dash = beneficiaries3b.filter(b => b.subCategory === 'Bumil').length;
+        const busui_dash = beneficiaries3b.filter(b => b.subCategory === 'Busui').length;
+        const balita0_6_dash = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '< 6 Bln').length;
+        const balita6_59_dash = beneficiaries3b.filter(b => b.subCategory === 'Balita' && (classifyBalita(b.birthDate) === '6-12 Bln' || classifyBalita(b.birthDate) === '12-59 Bln')).length;
+        const porsiKecil_dash = siswaTKRA_dash + siswaSD123_dash + balita0_6_dash + balita6_59_dash;
+        const porsiBesar_dash = teachers.length + siswaSD456_dash + siswaSMP_dash + siswaSMA_dash + bumil_dash + busui_dash;
+        const totalPorsi_dash = porsiKecil_dash + porsiBesar_dash;
+        const totalPenerima = totalPorsi_dash;
         const totalAlergi = [...students.filter(s=>s.hasAllergy), ...teachers.filter(t=>t.hasAllergy), ...beneficiaries3b.filter(b=>b.hasAllergy)].length;
         const siswaL = students.filter(s => s.jk === 'L').length;
         const siswaP = students.filter(s => s.jk === 'P').length;
@@ -858,9 +895,10 @@ export default function MainApp() {
         const b3bP = beneficiaries3b.filter(b => b.gender === 'P').length;
         const totalL = siswaL + guruL + b3bL;
         const totalP = siswaP + guruP + b3bP;
-        const bumil = beneficiaries3b.filter(b => b.subCategory === 'Bumil').length;
-        const busui = beneficiaries3b.filter(b => b.subCategory === 'Busui').length;
+        const bumil = bumil_dash;
+        const busui = busui_dash;
         const balita = beneficiaries3b.filter(b => b.subCategory === 'Balita').length;
+        const penerima3bPorsi = bumil + busui + balita0_6_dash + balita6_59_dash;
         // Sekolah distribution
         const schoolMap: Record<string, number> = {};
         students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1 });
@@ -905,7 +943,7 @@ export default function MainApp() {
                   <div className="p-1.5 bg-white/20 rounded-lg"><Users className="w-4 h-4" /></div>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-extrabold">{totalPenerima}</h2>
-                <p className="text-[10px] mt-1 opacity-75">Siswa + Guru + 3B</p>
+                <p className="text-[10px] mt-1 opacity-75">Porsi Kecil {porsiKecil_dash} + Besar {porsiBesar_dash}</p>
               </div>
               <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex items-center justify-between mb-2">
@@ -928,8 +966,8 @@ export default function MainApp() {
                   <span className="text-[10px] font-bold text-slate-400 uppercase">Penerima 3B</span>
                   <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg"><Baby className="w-4 h-4" /></div>
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800">{beneficiaries3b.length}</h2>
-                <p className="text-[10px] mt-1 text-slate-400">L: {b3bL} | P: {b3bP}</p>
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-800">{penerima3bPorsi}</h2>
+                <p className="text-[10px] mt-1 text-slate-400">Bumil {bumil} + Busui {busui} + Balita {balita0_6_dash + balita6_59_dash}</p>
               </div>
               <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 col-span-2 lg:col-span-1">
                 <div className="flex items-center justify-between mb-2">
