@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
         headers.forEach((h, i) => { obj[h] = row[i] || null })
         const detectedCat = (findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Balita').trim()
         const isBalita = detectedCat.toLowerCase() === 'balita'
-        return {
+        const record: Record<string, any> = {
           posyandu_name: findVal(obj, ['posyandu_name', 'posyandu', 'nama_posyandu']) || '-',
           sub_category: detectedCat.charAt(0).toUpperCase() + detectedCat.slice(1).toLowerCase(),
           nik: findVal(obj, ['nik', 'no_nik']) || null,
@@ -166,16 +166,21 @@ export async function POST(req: NextRequest) {
           tempat_lahir: findVal(obj, ['tempat_lahir', 'tempat', 'tmpt_lahir', 'tmp_lahir']) || null,
           birth_date: parseDate(findVal(obj, ['birth_date', 'tanggal_lahir', 'ttl', 'tgl_lahir'])),
           alamat: findVal(obj, ['alamat', 'address']) || null,
-          nama_orang_tua: isBalita ? (findVal(obj, ['nama_orang_tua', 'nama_ortu', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null) : null,
           berat_badan: parseFloat(findVal(obj, ['berat_badan', 'bb', 'berat', 'weight']) || '0') || 0,
           tinggi_badan: parseFloat(findVal(obj, ['tinggi_badan', 'tb', 'tinggi', 'height']) || '0') || 0,
           lingkar_kepala: parseFloat(findVal(obj, ['lingkar_kepala', 'lk', 'lingkar_kpala']) || '0') || 0,
           lingkar_lengan: parseFloat(findVal(obj, ['lingkar_lengan', 'll', 'lingkar_lgkn']) || '0') || 0,
-          usia_kandungan: !isBalita ? (findVal(obj, ['usia_kandungan', 'usia', 'hamil', 'usia_hamil']) || null) : null,
           has_allergy: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy']); return v !== null && v !== '' })(),
           allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
           status: 'Aktif',
         }
+        if (isBalita) {
+          record.nama_orang_tua = findVal(obj, ['nama_orang_tua', 'nama_ortu', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null
+        } else {
+          const uk = findVal(obj, ['usia_kandungan', 'usia', 'hamil', 'usia_hamil'])
+          if (uk) record.usia_kandungan = uk
+        }
+        return record
       })
       const { error } = await supabase.from('beneficiaries_3b').insert(records)
       if (error) { console.error(error); return NextResponse.json({ error: `Gagal import penerima 3B: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
