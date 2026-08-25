@@ -9,6 +9,7 @@ import {
   Users,
   Users2,
   ClipboardCheck,
+  FileBarChart,
   ChevronLeft,
   ChevronRight,
   X,
@@ -25,6 +26,7 @@ interface SidebarProps {
 const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard },
   { name: 'Penerima Manfaat', icon: Users2 },
+  { name: 'Rekapitulasi PM', icon: FileBarChart },
   { name: 'ASLAP', icon: ClipboardCheck },
   { name: 'Relawan', icon: HeartHandshake },
   { name: 'Manajemen User', icon: Users },

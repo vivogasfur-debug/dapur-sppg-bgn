@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import Sidebar from './Sidebar';
 import UserModule from './UserModule';
 import AslapModule from './AslapModule';
+import RekapitulasiPmModule from './RekapitulasiPmModule';
 import Image from 'next/image';
 import * as ExcelJS from 'exceljs';
 import { 
@@ -1798,6 +1799,9 @@ export default function MainApp() {
             </div>}
           </div>
         );
+
+      case 'Rekapitulasi PM':
+        return <RekapitulasiPmModule />;
 
       case 'ASLAP':
         return <AslapModule />;
