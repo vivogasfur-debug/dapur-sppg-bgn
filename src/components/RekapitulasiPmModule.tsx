@@ -107,10 +107,9 @@ export default function RekapitulasiPmModule() {
   const siswaSMA = students.filter(s => getJenjang(s.schoolName) === 'SMA').length;
   const bumil = beneficiaries3b.filter(b => b.subCategory === 'Bumil').length;
   const busui = beneficiaries3b.filter(b => b.subCategory === 'Busui').length;
-  const balita0_6 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '< 6 Bln').length;
   const balita6_11 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '6-11 Bln').length;
   const balita12_60 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '12-60 Bln').length;
-  const porsiKecil = siswaTKRA + siswaSDKelas123 + balita0_6 + balita6_11 + balita12_60;
+  const porsiKecil = siswaTKRA + siswaSDKelas123 + balita6_11 + balita12_60;
   const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui;
   const totalPorsi = porsiKecil + porsiBesar;
   const totalPenerimaAll = students.length + teachers.length + beneficiaries3b.length;
@@ -193,7 +192,6 @@ export default function RekapitulasiPmModule() {
       const rows: any[] = [];
       rows.push({kat:'PORSI KECIL',sub:'TK/RA',jml:siswaTKRA,l:'-',p:'-'});
       rows.push({kat:'PORSI KECIL',sub:'SD Kelas 1-3',jml:siswaSDKelas123,l:'-',p:'-'});
-      rows.push({kat:'PORSI KECIL',sub:'Balita 0-6 Bln',jml:balita0_6,l:'-',p:'-'});
       rows.push({kat:'PORSI KECIL',sub:'Balita 6-11 Bln',jml:balita6_11,l:'-',p:'-'});
       rows.push({kat:'PORSI KECIL',sub:'Balita 12-60 Bln',jml:balita12_60,l:'-',p:'-'});
       rows.push({kat:'TOTAL PORSI KECIL',sub:'',jml:porsiKecil,l:siswaL,p:siswaP});
@@ -249,7 +247,6 @@ export default function RekapitulasiPmModule() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">TK/RA</span><span className="text-[10px] font-bold text-white">{siswaTKRA}</span></div>
               <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">SD Kelas 1-3</span><span className="text-[10px] font-bold text-white">{siswaSDKelas123}</span></div>
-              <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 0-6 Bln</span><span className="text-[10px] font-bold text-white">{balita0_6}</span></div>
               <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 6-11 Bln</span><span className="text-[10px] font-bold text-white">{balita6_11}</span></div>
               <div className="flex items-center justify-between"><span className="text-[10px] text-slate-300">Balita 12-60 Bln</span><span className="text-[10px] font-bold text-white">{balita12_60}</span></div>
             </div>
