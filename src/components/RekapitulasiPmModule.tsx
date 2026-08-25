@@ -109,13 +109,10 @@ export default function RekapitulasiPmModule() {
   const busui = beneficiaries3b.filter(b => b.subCategory === 'Busui').length;
   const balita0_6 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '< 6 Bln').length;
   const balita6_59 = beneficiaries3b.filter(b => b.subCategory === 'Balita' && (classifyBalita(b.birthDate) === '6-12 Bln' || classifyBalita(b.birthDate) === '12-59 Bln')).length;
-  const balita60plus = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '>= 60 Bln').length;
-  const balitaNoDate = beneficiaries3b.filter(b => b.subCategory === 'Balita' && classifyBalita(b.birthDate) === '-').length;
   const porsiKecil = siswaTKRA + siswaSDKelas123 + balita0_6 + balita6_59;
   const porsiBesar = teachers.length + siswaSDKelas456 + siswaSMP + siswaSMA + bumil + busui;
   const totalPorsi = porsiKecil + porsiBesar;
   const totalPenerimaAll = students.length + teachers.length + beneficiaries3b.length;
-  const tidakKategori = totalPenerimaAll - totalPorsi;
 
   // Gender
   const siswaL = students.filter(s => s.jk === 'L').length;
@@ -207,8 +204,6 @@ export default function RekapitulasiPmModule() {
       rows.push({kat:'TOTAL PORSI BESAR',sub:'',jml:porsiBesar,l:'-',p:'-'});
       rows.push({kat:'GRAND TOTAL',sub:'Porsi Kecil + Besar',jml:totalPorsi,l:'-',p:'-'});
       rows.push({kat:'',sub:'',jml:'',l:'',p:''});
-      rows.push({kat:'TIDAK DIKATEGORIKAN',sub:'Balita >= 60 Bln',jml:balita60plus,l:'-',p:'-'});
-      rows.push({kat:'TIDAK DIKATEGORIKAN',sub:'Tanpa Tanggal Lahir',jml:balitaNoDate,l:'-',p:'-'});
       rows.push({kat:'TOTAL DATA',sub:'Seluruh Penerima',jml:totalPenerimaAll,l:'-',p:'-'});
       ws.addRows(rows);
       const buf = await wb.xlsx.writeBuffer();
@@ -275,20 +270,14 @@ export default function RekapitulasiPmModule() {
           {totalPenerimaAll > 0 && <>
             <div className="bg-gradient-to-r from-sky-400 to-sky-500 transition-all" style={{width: `${(porsiKecil/totalPenerimaAll)*100}%`}} />
             <div className="bg-gradient-to-r from-orange-400 to-orange-500 transition-all" style={{width: `${(porsiBesar/totalPenerimaAll)*100}%`}} />
-            {tidakKategori > 0 && <div className="bg-gradient-to-r from-slate-500 to-slate-600 transition-all" style={{width: `${(tidakKategori/totalPenerimaAll)*100}%`}} />}
-          </>}
+            </>}
         </div>
         <div className="mt-1.5 flex justify-between text-[9px] text-slate-400">
           <span>Kecil {totalPenerimaAll>0?((porsiKecil/totalPenerimaAll)*100).toFixed(0):0}%</span>
           <span className="font-bold text-white">Total Porsi: {totalPorsi} | Total Data: {totalPenerimaAll}</span>
           <span>Besar {totalPenerimaAll>0?((porsiBesar/totalPenerimaAll)*100).toFixed(0):0}%</span>
         </div>
-        {tidakKategori > 0 && (
-          <div className="mt-2 bg-white/5 rounded-lg px-3 py-1.5 flex items-center justify-between">
-            <span className="text-[10px] text-amber-300">Tidak Dikategorikan: Balita {'>= 60 Bln'} ({balita60plus}) + tanpa tanggal lahir ({balitaNoDate})</span>
-            <span className="text-[10px] font-extrabold text-amber-300">{tidakKategori}</span>
-          </div>
-        )}
+
       </div>
 
       {/* Sub-tab toggle */}
