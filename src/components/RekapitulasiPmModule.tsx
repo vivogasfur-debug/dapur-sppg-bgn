@@ -18,6 +18,7 @@ interface TeacherBeneficiary {
 interface Beneficiary3B {
   id: string; posyanduName: string; subCategory: 'Bumil' | 'Busui' | 'Balita';
   gender: 'L' | 'P'; birthDate: string;
+  hasAllergy?: boolean; allergyType?: string;
 }
 
 const classifyBalita = (birthDateString: string): string => {
