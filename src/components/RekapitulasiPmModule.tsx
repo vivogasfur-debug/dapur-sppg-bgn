@@ -5,7 +5,6 @@ import {
   FileBarChart, School, Baby, Heart, Users, GraduationCap, UserCheck,
   PieChart, BarChart3, Activity, UtensilsCrossed, Loader2, Download, AlertCircle
 } from 'lucide-react';
-import * as ExcelJS from 'exceljs';
 
 interface StudentBeneficiary {
   id: string; nama: string; schoolName: string; jk: 'L' | 'P'; kelas: string;
@@ -73,9 +72,35 @@ export default function RekapitulasiPmModule() {
         fetch('/api/teachers').then(r => r.json()),
         fetch('/api/beneficiaries-3b').then(r => r.json()),
       ]);
-      setStudents(Array.isArray(sRes) ? sRes : []);
-      setTeachers(Array.isArray(tRes) ? tRes : []);
-      setBeneficiaries3b(Array.isArray(bRes) ? bRes : []);
+      const mapStudent = (r: any): StudentBeneficiary => ({
+        id: r.id, nama: r.nama,
+        schoolName: r.school_name ?? r.schoolName ?? '',
+        jk: r.jk, kelas: r.kelas ?? '-',
+        beratBadan: Number(r.berat_badan ?? r.beratBadan ?? 0),
+        tinggiBadan: Number(r.tinggi_badan ?? r.tinggiBadan ?? 0),
+        hasAllergy: r.has_allergy ?? r.hasAllergy ?? false,
+        allergyType: r.allergy_type ?? r.allergyType ?? undefined,
+      });
+      const mapTeacher = (r: any): TeacherBeneficiary => ({
+        id: r.id,
+        fullName: r.full_name ?? r.fullName ?? '',
+        schoolName: r.school_name ?? r.schoolName ?? '',
+        jk: r.jk,
+        hasAllergy: r.has_allergy ?? r.hasAllergy ?? false,
+        allergyType: r.allergy_type ?? r.allergyType ?? undefined,
+      });
+      const map3B = (r: any): Beneficiary3B => ({
+        id: r.id,
+        posyanduName: r.posyandu_name ?? r.posyanduName ?? '',
+        subCategory: r.sub_category ?? r.subCategory ?? 'Balita',
+        gender: r.gender,
+        birthDate: r.birth_date ?? r.birthDate ?? '',
+        hasAllergy: r.has_allergy ?? r.hasAllergy ?? false,
+        allergyType: r.allergy_type ?? r.allergyType ?? undefined,
+      });
+      setStudents(Array.isArray(sRes) ? sRes.map(mapStudent) : []);
+      setTeachers(Array.isArray(tRes) ? tRes.map(mapTeacher) : []);
+      setBeneficiaries3b(Array.isArray(bRes) ? bRes.map(map3B) : []);
     } catch { /* silent */ } finally { setLoading(false); }
   }, []);
 
@@ -153,7 +178,9 @@ export default function RekapitulasiPmModule() {
   const handleExport = async () => {
     setExporting(true);
     try {
-      const wb = new ExcelJS.Workbook();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ExcelJSMod = (await import('exceljs') as any).default;
+      const wb = new ExcelJSMod.Workbook();
       const ws = wb.addWorksheet('Rekapitulasi PM');
       ws.columns = [
         {header:'Kategori',key:'kat',width:20},{header:'Sub Kategori',key:'sub',width:25},
