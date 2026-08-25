@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   FileBarChart, School, Baby, Heart, Users, GraduationCap, UserCheck,
-  PieChart, BarChart3, Activity, UtensilsCrossed, Loader2, Download, AlertCircle
+  PieChart, Activity, UtensilsCrossed, Loader2, Download, AlertCircle, ChevronDown, ChevronUp
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -48,14 +48,6 @@ const extractKelasNum = (kelas: string): number => {
   const roman: Record<string,number> = {'I':1,'II':2,'III':3,'IV':4,'V':5,'VI':6,'VII':7,'VIII':8,'IX':9,'X':10,'XI':11,'XII':12};
   return roman[kelas.toUpperCase().trim()] ?? -1;
 };
-const getJenjangPriority = (name: string): number => {
-  const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim();
-  if (/^(TK|RA|RAUDHATUL)/.test(u)) return 1;
-  if (/^(SD|MI|SDLB|MIN)/.test(u)) return 2;
-  if (/^(SMP|MTS|SMPLB)/.test(u)) return 3;
-  if (/^(SMA|SMK|MA|MAK)/.test(u)) return 4;
-  return 5;
-};
 
 export default function RekapitulasiPmModule() {
   const [students, setStudents] = useState<StudentBeneficiary[]>([]);
@@ -64,6 +56,7 @@ export default function RekapitulasiPmModule() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [exporting, setExporting] = useState(false);
+  const [expandedJenjang, setExpandedJenjang] = useState<string | null>('TK');
 
   const fetchData = useCallback(async () => {
     try {
@@ -137,20 +130,33 @@ export default function RekapitulasiPmModule() {
   const alergi3b = beneficiaries3b.filter(b=>b.hasAllergy).length;
   const alergiTotal = alergiSekolah + alergi3b;
 
-  // School maps
-  const schoolMap: Record<string,number> = {};
-  students.forEach(s => { schoolMap[s.schoolName] = (schoolMap[s.schoolName] || 0) + 1; });
-  const topSchools = Object.entries(schoolMap).sort((a, b) => {
-    const pa = getJenjangPriority(a[0]); const pb = getJenjangPriority(b[0]);
-    if (pa !== pb) return pa - pb; return a[0].localeCompare(b[0]);
-  });
+  // Guru per sekolah map
   const guruSchoolMap: Record<string,number> = {};
   teachers.forEach(t => { guruSchoolMap[t.schoolName] = (guruSchoolMap[t.schoolName] || 0) + 1; });
 
-  // Kelas
-  const kelasMap: Record<string,number> = {};
-  students.forEach(s => { const k = s.kelas && s.kelas !== '-' ? s.kelas : '-'; kelasMap[k] = (kelasMap[k] || 0) + 1; });
-  const kelasEntries = Object.entries(kelasMap).sort((a,b) => a[0].localeCompare(b[0], undefined, {numeric:true}));
+  // Jenjang grouping
+  const jenjangColor = (j: string) => {
+    switch(j) { case 'TK': return 'bg-pink-500'; case 'SD': return 'bg-blue-500'; case 'SMP': return 'bg-amber-500'; case 'SMA': return 'bg-violet-500'; default: return 'bg-slate-400'; }
+  };
+  const jenjangLabel = (j: string) => {
+    switch(j) { case 'TK': return 'TK / RA'; case 'SD': return 'SD / MI'; case 'SMP': return 'SMP / MTs'; case 'SMA': return 'SMA / SMK / MA'; default: return 'Lainnya'; }
+  };
+  const jenjangGroups: [string, {siswaCount:number, L:number, P:number, guru:number, schools:[string,number][]}][] = ['TK','SD','SMP','SMA','Lainnya']
+    .map(j => {
+      const jStudents = students.filter(s => getJenjang(s.schoolName) === j);
+      const jSchools: Record<string,number> = {};
+      jStudents.forEach(s => { jSchools[s.schoolName] = (jSchools[s.schoolName] || 0) + 1; });
+      const schoolEntries = Object.entries(jSchools).sort((a,b) => a[0].localeCompare(b[0]));
+      const jTeachers = teachers.filter(t => getJenjang(t.schoolName) === j);
+      return [j, {
+        siswaCount: jStudents.length,
+        L: jStudents.filter(s => s.jk === 'L').length,
+        P: jStudents.filter(s => s.jk === 'P').length,
+        guru: jTeachers.length,
+        schools: schoolEntries,
+      }];
+    })
+    .filter(([, g]) => g.siswaCount > 0 || g.guru > 0);
 
   // Gizi BMI
   const giziC = { kurang: 0, normal: 0, lebih: 0, noData: 0 };
@@ -337,36 +343,47 @@ export default function RekapitulasiPmModule() {
           </div>
         </div>
 
-        {/* Per Sekolah */}
-        {topSchools.length > 0 && (
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-            <div className="flex items-center gap-2 mb-3"><School className="w-4 h-4 text-emerald-500" /><h4 className="text-xs font-bold text-slate-700">Rekapitulasi Per Sekolah</h4></div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border-collapse">
-                <thead><tr className="bg-emerald-50 text-emerald-700"><th className="px-3 py-2 text-left font-semibold border-b border-emerald-200/60">Sekolah</th><th className="px-3 py-2 text-center font-semibold border-b border-emerald-200/60">Siswa</th><th className="px-3 py-2 text-center font-semibold border-b border-emerald-200/60">L</th><th className="px-3 py-2 text-center font-semibold border-b border-emerald-200/60">P</th><th className="px-3 py-2 text-center font-semibold border-b border-emerald-200/60">Guru</th></tr></thead>
-                <tbody>
-                  {topSchools.map(([name, count]) => { const sL = students.filter(s => s.schoolName === name && s.jk === 'L').length; const sP = students.filter(s => s.schoolName === name && s.jk === 'P').length; const gC = guruSchoolMap[name] || 0; return (<tr key={name} className="border-b border-slate-100 hover:bg-slate-50/50"><td className="px-3 py-2 font-medium text-slate-700">{name}</td><td className="px-3 py-2 text-center font-bold">{count}</td><td className="px-3 py-2 text-center text-blue-500">{sL}</td><td className="px-3 py-2 text-center text-pink-400">{sP}</td><td className="px-3 py-2 text-center text-violet-500">{gC}</td></tr>); })}
-                  <tr className="bg-emerald-50/50 font-bold"><td className="px-3 py-2 text-emerald-800">TOTAL</td><td className="px-3 py-2 text-center">{students.length}</td><td className="px-3 py-2 text-center text-blue-600">{siswaL}</td><td className="px-3 py-2 text-center text-pink-500">{siswaP}</td><td className="px-3 py-2 text-center text-violet-600">{teachers.length}</td></tr>
-                </tbody>
-              </table>
+        {/* Per Tingkatan Jenjang */}
+        {jenjangGroups.length > 0 && jenjangGroups.map(([jenjang, group]) => (
+          <div key={jenjang} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <button
+              onClick={() => setExpandedJenjang(prev => prev === jenjang ? null : jenjang)}
+              className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50/80 transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-extrabold text-white ${jenjangColor(jenjang)}`}>{group.siswaCount}</div>
+                <div className="text-left">
+                  <h4 className="text-xs font-bold text-slate-700">{jenjangLabel(jenjang)}</h4>
+                  <p className="text-[10px] text-slate-400">{group.schools.length} sekolah · L: {group.L} | P: {group.P} · Guru: {group.guru}</p>
+                </div>
+              </div>
+              {expandedJenjang === jenjang ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            </button>
+            {expandedJenjang === jenjang && (
+              <div className="border-t border-slate-100">
+                <table className="w-full text-xs border-collapse">
+                  <thead><tr className="bg-slate-50 text-slate-500"><th className="px-4 py-1.5 text-left font-semibold text-[10px]">Sekolah</th><th className="px-3 py-1.5 text-center font-semibold text-[10px]">Siswa</th><th className="px-3 py-1.5 text-center font-semibold text-[10px]">L</th><th className="px-3 py-1.5 text-center font-semibold text-[10px]">P</th><th className="px-3 py-1.5 text-center font-semibold text-[10px]">Guru</th></tr></thead>
+                  <tbody>
+                    {group.schools.map(([name, count]) => { const sL = students.filter(s => s.schoolName === name && s.jk === 'L').length; const sP = students.filter(s => s.schoolName === name && s.jk === 'P').length; const gC = guruSchoolMap[name] || 0; return (<tr key={name} className="border-b border-slate-50 hover:bg-slate-50/50"><td className="px-4 py-2 font-medium text-slate-600">{name}</td><td className="px-3 py-2 text-center font-bold">{count}</td><td className="px-3 py-2 text-center text-blue-500">{sL}</td><td className="px-3 py-2 text-center text-pink-400">{sP}</td><td className="px-3 py-2 text-center text-violet-500">{gC}</td></tr>); })}
+                    <tr className="bg-slate-50/80 font-bold"><td className="px-4 py-2 text-slate-700 text-[10px]">SUBTOTAL</td><td className="px-3 py-2 text-center">{group.siswaCount}</td><td className="px-3 py-2 text-center text-blue-600">{group.L}</td><td className="px-3 py-2 text-center text-pink-500">{group.P}</td><td className="px-3 py-2 text-center text-violet-600">{group.guru}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ))}
+        {/* Total semua jenjang */}
+        <div className="bg-gradient-to-r from-emerald-50 to-emerald-100/60 p-3 rounded-2xl border border-emerald-200/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2"><School className="w-4 h-4 text-emerald-600" /><span className="text-[10px] font-bold text-emerald-700 uppercase">Total Seluruh Sekolah</span></div>
+            <div className="flex items-center gap-4 text-xs font-bold">
+              <span className="text-slate-700">Siswa: <span className="text-emerald-600">{students.length}</span></span>
+              <span className="text-blue-500">L: {siswaL}</span>
+              <span className="text-pink-500">P: {siswaP}</span>
+              <span className="text-violet-500">Guru: {teachers.length}</span>
             </div>
           </div>
-        )}
-
-        {/* Per Kelas */}
-        {kelasEntries.length > 0 && (
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-            <div className="flex items-center gap-2 mb-3"><BarChart3 className="w-4 h-4 text-blue-500" /><h4 className="text-xs font-bold text-slate-700">Rekapitulasi Per Kelas</h4></div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border-collapse">
-                <thead><tr className="bg-blue-50 text-blue-700"><th className="px-3 py-2 text-center font-semibold border-b border-blue-200/60">Kelas</th><th className="px-3 py-2 text-center font-semibold border-b border-blue-200/60">Jumlah</th><th className="px-3 py-2 text-center font-semibold border-b border-blue-200/60">L</th><th className="px-3 py-2 text-center font-semibold border-b border-blue-200/60">P</th></tr></thead>
-                <tbody>
-                  {kelasEntries.map(([k, c]) => { const kL = students.filter(s => { const kk = s.kelas && s.kelas !== '-' ? s.kelas : '-'; return kk === k && s.jk === 'L'; }).length; const kP = students.filter(s => { const kk = s.kelas && s.kelas !== '-' ? s.kelas : '-'; return kk === k && s.jk === 'P'; }).length; return (<tr key={k} className="border-b border-slate-100 hover:bg-slate-50/50"><td className="px-3 py-2 text-center font-bold">{k === '-' ? 'Lainnya' : k}</td><td className="px-3 py-2 text-center font-bold">{c}</td><td className="px-3 py-2 text-center text-blue-500">{kL}</td><td className="px-3 py-2 text-center text-pink-400">{kP}</td></tr>); })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* BMI Gizi */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
