@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import UserModule from './UserModule';
 import AslapModule from './AslapModule';
 import RekapitulasiPmModule from './RekapitulasiPmModule';
+import StockModule from './StockModule';
 import Image from 'next/image';
 
 import { 
@@ -1501,6 +1502,9 @@ export default function MainApp() {
 
       case 'Rekapitulasi PM':
         return <RekapitulasiPmModule />;
+
+      case 'Gudang':
+        return <StockModule />;
 
       case 'ASLAP':
         return <AslapModule />;
