@@ -1527,9 +1527,9 @@ export default function MainApp() {
   );
 
   return (
-    <div className="flex bg-slate-100 min-h-screen">
+    <div className="flex bg-slate-100 h-screen overflow-hidden">
       <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} isMobileOpen={mobileSidebarOpen} onMobileClose={() => setMobileSidebarOpen(false)} />
-      <main className="flex-1 min-w-0 flex flex-col">
+      <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* MOBILE HEADER */}
         <header className="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-3 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">

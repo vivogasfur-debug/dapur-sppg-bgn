@@ -98,7 +98,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = fals
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-3 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 140px)' }}>
+        <div className="p-3 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 140px)' }}>
           <MenuNav activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={true} onNavigate={onMobileClose} />
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -116,7 +116,7 @@ export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = fals
 
       {/* Desktop Sidebar */}
       <aside 
-        className={`hidden lg:flex relative bg-slate-900 text-white min-h-screen p-4 flex-col justify-between shadow-xl transition-all duration-300 ${
+        className={`hidden lg:flex sticky top-0 bg-slate-900 text-white h-screen p-4 flex-col justify-between shadow-xl transition-all duration-300 ${
           isOpen ? 'w-64' : 'w-20'
         }`}
       >
