@@ -6,7 +6,7 @@ import {
   PieChart, Activity, UtensilsCrossed, Loader2, Download, AlertCircle,
   ChevronDown, ChevronUp, Camera, TrendingUp, History, Clock,
   Calendar, Plus, Trash2, RefreshCw, ChevronLeft, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Minus, Eye, Database
+  ArrowUpRight, ArrowDownRight, Minus, Eye, Database, ExternalLink, Check, Copy
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -62,9 +62,60 @@ const auditActionColor = (action: string) => { switch (action) { case 'INSERT': 
 const auditActionLabel = (action: string) => { switch (action) { case 'INSERT': return 'Tambah'; case 'UPDATE': return 'Ubah'; case 'DELETE': return 'Hapus'; default: return action; } };
 const auditTableLabel = (t: string) => { switch (t) { case 'students': return 'Siswa'; case 'teachers': return 'Guru'; case 'beneficiaries_3b': return '3B'; default: return t; } };
 
+const SETUP_SQL = `-- PM Snapshots & Audit Log Tables
+-- Jalankan di Supabase SQL Editor
+
+CREATE TABLE IF NOT EXISTS pm_snapshots (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  period_start DATE NOT NULL,
+  period_end DATE NOT NULL,
+  period_label TEXT NOT NULL,
+  snapshot_data JSONB NOT NULL DEFAULT '{}',
+  students_total INTEGER DEFAULT 0,
+  teachers_total INTEGER DEFAULT 0,
+  b3b_total INTEGER DEFAULT 0,
+  porsi_kecil INTEGER DEFAULT 0,
+  porsi_besar INTEGER DEFAULT 0,
+  total_porsi INTEGER DEFAULT 0,
+  gizi_kurang INTEGER DEFAULT 0,
+  gizi_normal INTEGER DEFAULT 0,
+  gizi_lebih INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  created_by TEXT DEFAULT 'system',
+  notes TEXT,
+  UNIQUE(period_start, period_end)
+);
+
+CREATE TABLE IF NOT EXISTS pm_audit_log (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  table_name TEXT NOT NULL,
+  record_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  old_data JSONB,
+  new_data JSONB,
+  changed_fields TEXT[],
+  performed_by TEXT DEFAULT 'system',
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_table_time ON pm_audit_log(table_name, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_time ON pm_audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_snapshot_period ON pm_snapshots(period_start DESC);
+
+ALTER TABLE pm_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pm_audit_log ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow anon read write snapshots" ON pm_snapshots
+  FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow anon read write audit" ON pm_audit_log
+  FOR ALL USING (true) WITH CHECK (true);`;
+
 export default function RekapitulasiPmModule() {
   const [data, setData] = useState<RekapData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [setupNeeded, setSetupNeeded] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [mainTab, setMainTab] = useState<'live' | 'periode' | 'trend' | 'audit'>('live');
   const [subTab, setSubTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [exporting, setExporting] = useState(false);
@@ -103,7 +154,15 @@ export default function RekapitulasiPmModule() {
 
   const fetchSnapshots = useCallback(async () => {
     setSnapLoading(true);
-    try { const res = await fetch('/api/pm-snapshots'); const json = await res.json(); if (!json.error) setSnapshots(Array.isArray(json) ? json : []); } catch {} finally { setSnapLoading(false); }
+    try {
+      const res = await fetch('/api/pm-snapshots'); const json = await res.json();
+      if (json.error && (json.error.includes('could not find') || json.error.includes('does not exist') || json.error.includes('relation'))) {
+        setSetupNeeded(true);
+      } else if (!json.error) {
+        setSnapshots(Array.isArray(json) ? json : []);
+        setSetupNeeded(false);
+      }
+    } catch { } finally { setSnapLoading(false); }
   }, []);
 
   const fetchAudit = useCallback(async (offset = 0) => {
@@ -116,7 +175,7 @@ export default function RekapitulasiPmModule() {
     } catch {} finally { setAuditLoading(false); }
   }, [auditTable]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchData(); fetchSnapshots(); }, [fetchData, fetchSnapshots]);
   useEffect(() => { if (mainTab === 'periode') fetchSnapshots(); }, [mainTab, fetchSnapshots]);
   useEffect(() => { if (mainTab === 'audit') { setAuditData([]); fetchAudit(0); } }, [mainTab, auditTable]);
 
@@ -144,6 +203,62 @@ export default function RekapitulasiPmModule() {
   };
 
   if (loading) return (<div className="min-h-[60vh] flex flex-col items-center justify-center gap-3"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /><span className="text-xs text-slate-400">Memuat rekapitulasi...</span></div>);
+
+  // Setup wizard: show if tables don't exist
+  if (setupNeeded) {
+    const handleCopySql = () => { navigator.clipboard.writeText(SETUP_SQL); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+    const handleCheckAgain = () => { setSetupNeeded(false); fetchSnapshots(); };
+    return (
+      <div className="max-w-lg mx-auto space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center space-y-4">
+          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto">
+            <Database className="w-8 h-8 text-indigo-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">Setup Database Diperlukan</h2>
+            <p className="text-sm text-slate-500 mt-1">Tabel <b>pm_snapshots</b> dan <b>pm_audit_log</b> belum dibuat di Supabase. Ikuti langkah berikut:</p>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-4 text-left space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Buka Supabase SQL Editor</p>
+                <a href="https://supabase.com/dashboard/project/zwbspstsbpzsnphdohko/sql" target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline flex items-center gap-1 mt-0.5">
+                  Klik di sini untuk membuka <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Salin & Jalankan SQL</p>
+                <p className="text-xs text-slate-500 mt-0.5">Salin SQL di bawah, tempel di SQL Editor, lalu klik <b>Run</b></p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Klik &quot;Cek Ulang&quot; di bawah</p>
+                <p className="text-xs text-slate-500 mt-0.5">Setelah SQL berhasil, klik tombol untuk memverifikasi</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <pre className="bg-slate-900 text-emerald-400 rounded-xl p-4 text-[11px] overflow-auto max-h-64 font-mono leading-relaxed text-left">{SETUP_SQL}</pre>
+            <button onClick={handleCopySql} className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition-colors" title="Salin SQL">
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleCheckAgain} className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+              <RefreshCw className="w-4 h-4" /> Cek Ulang
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) return (<div className="min-h-[60vh] flex flex-col items-center justify-center gap-3"><AlertCircle className="w-8 h-8 text-rose-400" /><span className="text-xs text-slate-400">Gagal memuat data rekapitulasi</span></div>);
 
   const p = data.porsi, g = data.gender, a = data.alergi, gz = data.gizi, ps = data.posyandu, t = data.totals;

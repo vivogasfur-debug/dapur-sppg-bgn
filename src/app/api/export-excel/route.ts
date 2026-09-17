@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
       const wb = XLSX.utils.book_new()
       const ws = XLSX.utils.json_to_sheet(rows)
-      ws['!cols'] = rows.length > 0 ? Object.keys(rows[0]).map((_, i) => ({ wch: i === 0 ? 5 : i <= 2 ? 25 : 18 }))
+      if (rows.length > 0) ws['!cols'] = Object.keys(rows[0]).map((_, i) => ({ wch: i === 0 ? 5 : i <= 2 ? 25 : 18 }))
       XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa')
 
       const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
 
       const wb = XLSX.utils.book_new()
       const ws = XLSX.utils.json_to_sheet(rows)
-      ws['!cols'] = rows.length > 0 ? Object.keys(rows[0]).map((_, i) => ({ wch: i === 0 ? 5 : 22 }))
+      if (rows.length > 0) ws['!cols'] = Object.keys(rows[0]).map((_, i) => ({ wch: i === 0 ? 5 : 22 }))
       XLSX.utils.book_append_sheet(wb, ws, 'Data Guru')
 
       const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
 
       const wb = XLSX.utils.book_new()
       const ws = XLSX.utils.json_to_sheet(rows)
-      ws['!cols'] = rows.length > 0 ? Object.keys(rows[0]).map((_, i) => ({ wch: i === 0 ? 5 : 22 }))
+      if (rows.length > 0) ws['!cols'] = Object.keys(rows[0]).map((_, i) => ({ wch: i === 0 ? 5 : 22 }))
       XLSX.utils.book_append_sheet(wb, ws, `Data ${sub}`)
 
       const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' })
