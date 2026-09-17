@@ -41,14 +41,15 @@ interface AuditEntry {
 const jenjangColor = (j: string) => { switch (j) { case 'TK': return 'bg-pink-500'; case 'SD': return 'bg-blue-500'; case 'SMP': return 'bg-amber-500'; case 'SMA': return 'bg-violet-500'; default: return 'bg-slate-400'; } };
 const jenjangLabel = (j: string) => { switch (j) { case 'TK': return 'TK / RA'; case 'SD': return 'SD / MI'; case 'SMP': return 'SMP / MTs'; case 'SMA': return 'SMA / SMK / MA'; default: return 'Lainnya'; } };
 
+const PERIOD_START = new Date(2026, 7, 31, 0, 0, 0, 0); // 31 Agustus 2026
 const generatePeriods = (startDate: Date, count: number) => {
-  const periods: { start: string; end: string; label: string }[] = [];
+  const periods: { start: string; end: string; label: string; index: number }[] = [];
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   for (let i = 0; i < count; i++) {
     const start = new Date(startDate); start.setDate(start.getDate() + i * 14);
     const end = new Date(start); end.setDate(end.getDate() + 13);
-    const label = `Periode ${start.getDate()} ${months[start.getMonth()]} - ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
-    periods.push({ start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0], label });
+    const label = `Periode ${i + 1}: ${start.getDate()} ${months[start.getMonth()]} - ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
+    periods.push({ start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0], label, index: i + 1 });
   }
   return periods;
 };
@@ -126,9 +127,7 @@ export default function RekapitulasiPmModule() {
   const [snapLoading, setSnapLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [periods] = useState(() => {
-    const start = new Date(); start.setDate(1); start.setHours(0,0,0,0);
-    while (start.getDay() !== 1) start.setDate(start.getDate() + 1);
-    return generatePeriods(start, 26);
+    return generatePeriods(PERIOD_START, 26);
   });
   const [selPeriod, setSelPeriod] = useState(0);
   const [compA, setCompA] = useState<number | null>(null);
