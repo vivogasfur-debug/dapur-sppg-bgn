@@ -82,7 +82,7 @@ export function AIChat() {
               <p className="text-xs text-muted-foreground">Dipersembahkan oleh AI</p>
             </div>
             <Badge variant="outline" className="ml-auto text-xs">
-              <Sparkles className="h-3 w-3 mr-1" />Online
+              <Sparkles className="h-3 w-3 mr-1" />GLM-5.3
             </Badge>
           </div>
         </CardHeader>
