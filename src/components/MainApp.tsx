@@ -14,7 +14,7 @@ import {
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
   AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
   Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity, UtensilsCrossed,
-  Eraser, Copy
+  Eraser, Copy, Database, ClipboardCopy, AlertTriangle
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -97,6 +97,29 @@ export default function MainApp() {
   const [periods, setPeriods] = useState<any[]>([]);
   const [activePeriodId, setActivePeriodId] = useState<string | null>(null);
   const [copyingPeriod, setCopyingPeriod] = useState(false);
+
+  // ─── Migration check ───
+  const [migrationNeeded, setMigrationNeeded] = useState(false);
+  const [migrationSql, setMigrationSql] = useState<string>('');
+  const [checkingMigration, setCheckingMigration] = useState(true);
+  const [showMigrationBanner, setShowMigrationBanner] = useState(true);
+
+  // Check migration status on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/check-migration');
+        const data = await res.json();
+        if (data.applied === false && data.sql) {
+          setMigrationNeeded(true);
+          setMigrationSql(data.sql);
+        } else {
+          setMigrationNeeded(false);
+        }
+      } catch { /* silent - if endpoint not ready yet */ }
+      finally { setCheckingMigration(false); }
+    })();
+  }, []);
 
   const fetchPeriods = useCallback(async () => {
     try {
@@ -1666,6 +1689,62 @@ export default function MainApp() {
         </header>
 
         <div className="flex-1 p-3 lg:p-5 overflow-y-auto">
+          {/* ─── MIGRATION BANNER ─── */}
+          {migrationNeeded && showMigrationBanner && (
+            <div className="mb-3 bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 shadow-sm">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-bold text-amber-800 mb-1">Migrasi Database Diperlukan</h3>
+                  <p className="text-xs text-amber-700 mb-2">
+                    Tabel <code className="bg-amber-100 px-1 py-0.5 rounded font-mono">pm_periods</code> belum ada di database. 
+                    Fitur pemisahan data per perduaminggu memerlukan migrasi ini. 
+                    Jalankan SQL berikut di <strong>Supabase Dashboard → SQL Editor</strong>:
+                  </p>
+                  <div className="relative">
+                    <pre className="bg-slate-900 text-green-400 p-3 rounded-xl text-[10px] leading-relaxed overflow-x-auto max-h-48 overflow-y-auto font-mono whitespace-pre">
+{migrationSql}
+                    </pre>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(migrationSql); toast.success('SQL disalin ke clipboard!'); }}
+                      className="absolute top-2 right-2 bg-slate-700 hover:bg-slate-600 text-white p-1.5 rounded-lg transition-colors"
+                      title="Salin SQL ke clipboard"
+                    >
+                      <ClipboardCopy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2 mt-3">
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(migrationSql); toast.success('SQL disalin! Buka Supabase Dashboard → SQL Editor → Paste → Run'); }}
+                      className="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+                    >
+                      <ClipboardCopy className="w-3.5 h-3.5" />
+                      Salin SQL & Jalankan di Supabase
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMigrationNeeded(false);
+                        setShowMigrationBanner(false);
+                        fetchPeriods();
+                        toast.info('Cek ulang periode...');
+                      }}
+                      className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all active:scale-95"
+                      title="Saya sudah menjalankan migrasi di Supabase"
+                    >
+                      <Database className="w-3.5 h-3.5" />
+                      Sudah Dijalankan
+                    </button>
+                    <button
+                      onClick={() => setShowMigrationBanner(false)}
+                      className="text-amber-600 hover:text-amber-800 text-xs underline"
+                    >
+                      Tutup banner
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {renderContent()}
         </div>
       </main>

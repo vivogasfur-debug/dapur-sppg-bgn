@@ -5,9 +5,12 @@ import * as XLSX from 'xlsx'
 export async function GET(req: NextRequest) {
   try {
     const type = req.nextUrl.searchParams.get('type') || 'students'
+    const periodId = req.nextUrl.searchParams.get('period_id')
 
     if (type === 'students') {
-      const { data, error } = await supabase.from('students').select('*').order('nama')
+      let query = supabase.from('students').select('*').order('nama')
+      if (periodId) query = query.eq('period_id', periodId)
+      const { data, error } = await query
       if (error) throw new Error(error.message)
 
       const rows = (data || []).map((s: any, i: number) => ({
@@ -45,7 +48,9 @@ export async function GET(req: NextRequest) {
     }
 
     if (type === 'teachers') {
-      const { data, error } = await supabase.from('teachers').select('*').order('full_name')
+      let query = supabase.from('teachers').select('*').order('full_name')
+      if (periodId) query = query.eq('period_id', periodId)
+      const { data, error } = await query
       if (error) throw new Error(error.message)
 
       const rows = (data || []).map((t: any, i: number) => ({
@@ -80,11 +85,9 @@ export async function GET(req: NextRequest) {
 
     if (type === 'beneficiaries-3b') {
       const sub = req.nextUrl.searchParams.get('sub') || 'Bumil'
-      const { data, error } = await supabase
-        .from('beneficiaries_3b')
-        .select('*')
-        .eq('sub_category', sub)
-        .order('full_name')
+      let query = supabase.from('beneficiaries_3b').select('*').eq('sub_category', sub).order('full_name')
+      if (periodId) query = query.eq('period_id', periodId)
+      const { data, error } = await query
       if (error) throw new Error(error.message)
 
       const rows = (data || []).map((b: any, i: number) => ({
@@ -117,10 +120,15 @@ export async function GET(req: NextRequest) {
     }
 
     if (type === 'all') {
+      const buildQ = (table: string, order: string) => {
+        let q = supabase.from(table).select('*').order(order)
+        if (periodId) q = q.eq('period_id', periodId)
+        return q
+      }
       const [sRes, tRes, bRes] = await Promise.all([
-        supabase.from('students').select('*').order('nama'),
-        supabase.from('teachers').select('*').order('full_name'),
-        supabase.from('beneficiaries_3b').select('*').order('sub_category'),
+        buildQ('students', 'nama'),
+        buildQ('teachers', 'full_name'),
+        buildQ('beneficiaries_3b', 'sub_category'),
       ])
 
       const wb = XLSX.utils.book_new()
