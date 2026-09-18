@@ -8,36 +8,17 @@ function parseDate(dateStr: string | null): string | null {
   const dmySlash = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
   if (dmySlash) {
     const [, d, m, y] = dmySlash
-    // Validasi: hari 1-31, bulan 1-12
     const day = parseInt(d), month = parseInt(m)
-    if (day > 12) {
-      // Pasti dd/mm/yyyy karena hari > 12
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-    } else if (month > 12) {
-      // Pasti mm/dd/yyyy karena bulan > 12, tapi masuk akal sebagai hari
-      return `${y}-${d.padStart(2, '0')}-${m.padStart(2, '0')}`
-    } else {
-      // Ambigu (misal 01/05/2024), default ke dd/mm/yyyy (format Indonesia)
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-    }
+    if (day > 12) return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+    else if (month > 12) return `${y}-${d.padStart(2, '0')}-${m.padStart(2, '0')}`
+    else return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
   }
-  // dd-mm-yyyy
   const dmyDash = cleaned.match(/^(\d{1,2})\-(\d{1,2})\-(\d{4})$/)
-  if (dmyDash) {
-    const [, d, m, y] = dmyDash
-    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-  }
-  // yyyy-mm-dd (sudah benar)
+  if (dmyDash) { const [, d, m, y] = dmyDash; return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` }
   const ymdDash = cleaned.match(/^(\d{4})\-(\d{1,2})\-(\d{1,2})$/)
-  if (ymdDash) {
-    const [, y, m, d] = ymdDash
-    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-  }
-  // Fallback: coba JS Date parse
+  if (ymdDash) { const [, y, m, d] = ymdDash; return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` }
   const parsed = new Date(cleaned)
-  if (!isNaN(parsed.getTime())) {
-    return parsed.toISOString().split('T')[0]
-  }
+  if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0]
   return null
 }
 
@@ -57,12 +38,27 @@ function parseCSV(text: string): string[][] {
   })
 }
 
+// Audit log: direct Supabase insert (fire-and-forget)
+function auditLogBatch(tableName: string, insertedRecords: any[]) {
+  if (insertedRecords.length === 0) return
+  const entries = insertedRecords.map(r => ({
+    table_name: tableName,
+    record_id: String(r.id || ''),
+    action: 'INSERT',
+    old_data: null,
+    new_data: { ...r, _source: 'csv_import' },
+    changed_fields: null,
+    performed_by: 'csv-import',
+  }))
+  supabase.from('pm_audit_log').insert(entries).then(() => {}).catch(() => {})
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File
     const type = formData.get('type') as string // 'students' | 'teachers' | 'beneficiaries-3b'
-    const subCategory = formData.get('sub_category') as string | null // 'Bumil' | 'Busui' | 'Balita'
+    const subCategory = formData.get('sub_category') as string | null
 
     if (!file || !type) {
       return NextResponse.json({ error: 'File dan tipe diperlukan' }, { status: 400 })
@@ -81,7 +77,6 @@ export async function POST(req: NextRequest) {
     let inserted = 0
     let errors = 0
 
-    // Buat lookup fleksibel: cari header yang mengandung keyword (bukan exact match)
     const findVal = (obj: Record<string, any>, keywords: string[]): string | null => {
       for (const key of Object.keys(obj)) {
         const lowered = key.toLowerCase()
@@ -95,7 +90,6 @@ export async function POST(req: NextRequest) {
       return null
     }
 
-    // Log header yang terdeteksi untuk debugging
     console.log('[CSV Import] type:', type, 'headers:', headers)
 
     if (type === 'students') {
@@ -122,9 +116,10 @@ export async function POST(req: NextRequest) {
           allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
         }
       })
-      const { error } = await supabase.from('students').insert(records)
+      const { data: insertedData, error } = await supabase.from('students').insert(records).select()
       if (error) { console.error(error); return NextResponse.json({ error: `Gagal import siswa: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
-      else { inserted = records.length }
+      inserted = insertedData?.length || records.length
+      auditLogBatch('students', insertedData || [])
     }
 
     else if (type === 'teachers') {
@@ -147,9 +142,10 @@ export async function POST(req: NextRequest) {
           status: 'Aktif',
         }
       })
-      const { error } = await supabase.from('teachers').insert(records)
+      const { data: insertedData, error } = await supabase.from('teachers').insert(records).select()
       if (error) { console.error(error); return NextResponse.json({ error: `Gagal import guru: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
-      else { inserted = records.length }
+      inserted = insertedData?.length || records.length
+      auditLogBatch('teachers', insertedData || [])
     }
 
     else if (type === 'beneficiaries-3b') {
@@ -180,9 +176,10 @@ export async function POST(req: NextRequest) {
         }
         return record
       })
-      const { error } = await supabase.from('beneficiaries_3b').insert(records)
+      const { data: insertedData, error } = await supabase.from('beneficiaries_3b').insert(records).select()
       if (error) { console.error(error); return NextResponse.json({ error: `Gagal import penerima 3B: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
-      else { inserted = records.length }
+      inserted = insertedData?.length || records.length
+      auditLogBatch('beneficiaries_3b', insertedData || [])
     }
 
     else {
