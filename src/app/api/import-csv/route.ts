@@ -4,40 +4,20 @@ import { supabase } from '@/lib/supabase'
 function parseDate(dateStr: string | null): string | null {
   if (!dateStr) return null
   const cleaned = dateStr.trim()
-  // dd/mm/yyyy (format CSV Indonesia)
   const dmySlash = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
   if (dmySlash) {
     const [, d, m, y] = dmySlash
-    // Validasi: hari 1-31, bulan 1-12
     const day = parseInt(d), month = parseInt(m)
-    if (day > 12) {
-      // Pasti dd/mm/yyyy karena hari > 12
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-    } else if (month > 12) {
-      // Pasti mm/dd/yyyy karena bulan > 12, tapi masuk akal sebagai hari
-      return `${y}-${d.padStart(2, '0')}-${m.padStart(2, '0')}`
-    } else {
-      // Ambigu (misal 01/05/2024), default ke dd/mm/yyyy (format Indonesia)
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-    }
+    if (day > 12) return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
+    else if (month > 12) return `${y}-${d.padStart(2, '0')}-${m.padStart(2, '0')}`
+    else return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
   }
-  // dd-mm-yyyy
   const dmyDash = cleaned.match(/^(\d{1,2})\-(\d{1,2})\-(\d{4})$/)
-  if (dmyDash) {
-    const [, d, m, y] = dmyDash
-    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-  }
-  // yyyy-mm-dd (sudah benar)
+  if (dmyDash) { const [, d, m, y] = dmyDash; return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` }
   const ymdDash = cleaned.match(/^(\d{4})\-(\d{1,2})\-(\d{1,2})$/)
-  if (ymdDash) {
-    const [, y, m, d] = ymdDash
-    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-  }
-  // Fallback: coba JS Date parse
+  if (ymdDash) { const [, y, m, d] = ymdDash; return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` }
   const parsed = new Date(cleaned)
-  if (!isNaN(parsed.getTime())) {
-    return parsed.toISOString().split('T')[0]
-  }
+  if (!isNaN(parsed.getTime())) return parsed.toISOString().split('T')[0]
   return null
 }
 
@@ -57,12 +37,67 @@ function parseCSV(text: string): string[][] {
   })
 }
 
+// ─── Match Key Builders (Priority-based dedup) ───
+
+function getStudentMatchKey(rec: Record<string, any>): string | null {
+  if (rec.nisn && String(rec.nisn).trim() !== '' && String(rec.nisn).trim() !== '-') return `nisn:${String(rec.nisn).trim()}`
+  if (rec.nipd && String(rec.nipd).trim() !== '' && String(rec.nipd).trim() !== '-') return `nipd:${String(rec.nipd).trim()}`
+  if (rec.nik && String(rec.nik).trim() !== '' && String(rec.nik).trim() !== '-') return `nik:${String(rec.nik).trim()}`
+  const nama = (rec.nama || '').trim().toLowerCase()
+  const tgl = (rec.tanggal_lahir || '').trim()
+  if (nama && nama !== '-' && tgl) return `nama_tgl:${nama}|${tgl}`
+  return null
+}
+
+function getTeacherMatchKey(rec: Record<string, any>): string | null {
+  if (rec.nuptk && String(rec.nuptk).trim() !== '' && String(rec.nuptk).trim() !== '-') return `nuptk:${String(rec.nuptk).trim()}`
+  if (rec.nip && String(rec.nip).trim() !== '' && String(rec.nip).trim() !== '-') return `nip:${String(rec.nip).trim()}`
+  if (rec.nik && String(rec.nik).trim() !== '' && String(rec.nik).trim() !== '-') return `nik:${String(rec.nik).trim()}`
+  const nama = (rec.full_name || '').trim().toLowerCase()
+  const tgl = (rec.tanggal_lahir || '').trim()
+  if (nama && nama !== '-' && tgl) return `nama_tgl:${nama}|${tgl}`
+  return null
+}
+
+function getBeneficiaryMatchKey(rec: Record<string, any>): string | null {
+  if (rec.nik && String(rec.nik).trim() !== '' && String(rec.nik).trim() !== '-') return `nik:${String(rec.nik).trim()}`
+  const nama = (rec.full_name || '').trim().toLowerCase()
+  const tgl = (rec.birth_date || '').trim()
+  if (nama && nama !== '-' && tgl) return `nama_tgl:${nama}|${tgl}`
+  return null
+}
+
+function buildExistingMap(existingRecords: any[], matchKeyFn: (r: Record<string, any>) => string | null): Map<string, string> {
+  const map = new Map<string, string>()
+  for (const rec of existingRecords) {
+    const mk = matchKeyFn(rec)
+    if (mk && !map.has(mk)) map.set(mk, rec.id)  // keep first (oldest) match
+  }
+  return map
+}
+
+// Audit log: direct Supabase insert (fire-and-forget)
+function auditLogBatch(tableName: string, records: any[], action: string = 'INSERT') {
+  if (records.length === 0) return
+  const entries = records.map(r => ({
+    table_name: tableName,
+    record_id: String(r.id || ''),
+    action,
+    old_data: null,
+    new_data: { ...r, _source: 'csv_import' },
+    changed_fields: null,
+    performed_by: 'csv-import',
+  }))
+  supabase.from('pm_audit_log').insert(entries).then(() => {}).catch(() => {})
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File
-    const type = formData.get('type') as string // 'students' | 'teachers' | 'beneficiaries-3b'
-    const subCategory = formData.get('sub_category') as string | null // 'Bumil' | 'Busui' | 'Balita'
+    const type = formData.get('type') as string
+    const subCategory = formData.get('sub_category') as string | null
+    const duplicateAction = (formData.get('duplicate_action') as string) || 'update'
 
     if (!file || !type) {
       return NextResponse.json({ error: 'File dan tipe diperlukan' }, { status: 400 })
@@ -79,9 +114,10 @@ export async function POST(req: NextRequest) {
     const dataRows = rows.slice(1).filter(r => r.some(cell => cell.length > 0))
 
     let inserted = 0
+    let updated = 0
+    let skipped = 0
     let errors = 0
 
-    // Buat lookup fleksibel: cari header yang mengandung keyword (bukan exact match)
     const findVal = (obj: Record<string, any>, keywords: string[]): string | null => {
       for (const key of Object.keys(obj)) {
         const lowered = key.toLowerCase()
@@ -95,8 +131,7 @@ export async function POST(req: NextRequest) {
       return null
     }
 
-    // Log header yang terdeteksi untuk debugging
-    console.log('[CSV Import] type:', type, 'headers:', headers)
+    console.log('[CSV Import] type:', type, 'headers:', headers, 'duplicate_action:', duplicateAction)
 
     if (type === 'students') {
       const records = dataRows.map(row => {
@@ -122,9 +157,35 @@ export async function POST(req: NextRequest) {
           allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
         }
       })
-      const { error } = await supabase.from('students').insert(records)
-      if (error) { console.error(error); return NextResponse.json({ error: `Gagal import siswa: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
-      else { inserted = records.length }
+
+      // Fetch existing records for dedup
+      const { data: existingData } = await supabase.from('students').select('id,nisn,nipd,nik,nama,tanggal_lahir')
+      const existingMap = buildExistingMap(existingData || [], getStudentMatchKey)
+
+      const toInsert: any[] = []
+      const toUpdate: { id: string; data: any }[] = []
+
+      for (const rec of records) {
+        const mk = getStudentMatchKey(rec)
+        if (mk && existingMap.has(mk)) {
+          if (duplicateAction === 'skip') { skipped++ }
+          else { toUpdate.push({ id: existingMap.get(mk)!, data: rec }) }
+        } else {
+          toInsert.push(rec)
+        }
+      }
+
+      if (toInsert.length > 0) {
+        const { data: insertedData, error: insertErr } = await supabase.from('students').insert(toInsert).select()
+        if (insertErr) { console.error('[CSV Import] Insert error:', insertErr); errors += toInsert.length }
+        else { inserted = insertedData?.length || toInsert.length; auditLogBatch('students', insertedData || []) }
+      }
+
+      for (const { id, data } of toUpdate) {
+        const { data: updatedData, error: updateErr } = await supabase.from('students').update(data).eq('id', id).select()
+        if (updateErr) { console.error('[CSV Import] Update error:', updateErr); errors++ }
+        else { updated++; auditLogBatch('students', updatedData || [], 'UPDATE') }
+      }
     }
 
     else if (type === 'teachers') {
@@ -147,9 +208,34 @@ export async function POST(req: NextRequest) {
           status: 'Aktif',
         }
       })
-      const { error } = await supabase.from('teachers').insert(records)
-      if (error) { console.error(error); return NextResponse.json({ error: `Gagal import guru: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
-      else { inserted = records.length }
+
+      const { data: existingData } = await supabase.from('teachers').select('id,nuptk,nip,nik,full_name,tanggal_lahir')
+      const existingMap = buildExistingMap(existingData || [], getTeacherMatchKey)
+
+      const toInsert: any[] = []
+      const toUpdate: { id: string; data: any }[] = []
+
+      for (const rec of records) {
+        const mk = getTeacherMatchKey(rec)
+        if (mk && existingMap.has(mk)) {
+          if (duplicateAction === 'skip') { skipped++ }
+          else { toUpdate.push({ id: existingMap.get(mk)!, data: rec }) }
+        } else {
+          toInsert.push(rec)
+        }
+      }
+
+      if (toInsert.length > 0) {
+        const { data: insertedData, error: insertErr } = await supabase.from('teachers').insert(toInsert).select()
+        if (insertErr) { console.error(insertErr); errors += toInsert.length }
+        else { inserted = insertedData?.length || toInsert.length; auditLogBatch('teachers', insertedData || []) }
+      }
+
+      for (const { id, data } of toUpdate) {
+        const { data: updatedData, error: updateErr } = await supabase.from('teachers').update(data).eq('id', id).select()
+        if (updateErr) { console.error(updateErr); errors++ }
+        else { updated++; auditLogBatch('teachers', updatedData || [], 'UPDATE') }
+      }
     }
 
     else if (type === 'beneficiaries-3b') {
@@ -180,16 +266,41 @@ export async function POST(req: NextRequest) {
         }
         return record
       })
-      const { error } = await supabase.from('beneficiaries_3b').insert(records)
-      if (error) { console.error(error); return NextResponse.json({ error: `Gagal import penerima 3B: ${error.message}`, inserted: 0, errors: dataRows.length, total: dataRows.length }, { status: 500 }) }
-      else { inserted = records.length }
+
+      const { data: existingData } = await supabase.from('beneficiaries_3b').select('id,nik,full_name,birth_date')
+      const existingMap = buildExistingMap(existingData || [], getBeneficiaryMatchKey)
+
+      const toInsert: any[] = []
+      const toUpdate: { id: string; data: any }[] = []
+
+      for (const rec of records) {
+        const mk = getBeneficiaryMatchKey(rec)
+        if (mk && existingMap.has(mk)) {
+          if (duplicateAction === 'skip') { skipped++ }
+          else { toUpdate.push({ id: existingMap.get(mk)!, data: rec }) }
+        } else {
+          toInsert.push(rec)
+        }
+      }
+
+      if (toInsert.length > 0) {
+        const { data: insertedData, error: insertErr } = await supabase.from('beneficiaries_3b').insert(toInsert).select()
+        if (insertErr) { console.error(insertErr); errors += toInsert.length }
+        else { inserted = insertedData?.length || toInsert.length; auditLogBatch('beneficiaries_3b', insertedData || []) }
+      }
+
+      for (const { id, data } of toUpdate) {
+        const { data: updatedData, error: updateErr } = await supabase.from('beneficiaries_3b').update(data).eq('id', id).select()
+        if (updateErr) { console.error(updateErr); errors++ }
+        else { updated++; auditLogBatch('beneficiaries_3b', updatedData || [], 'UPDATE') }
+      }
     }
 
     else {
       return NextResponse.json({ error: 'Tipe tidak valid' }, { status: 400 })
     }
 
-    return NextResponse.json({ inserted, errors, total: dataRows.length, detected_headers: headers })
+    return NextResponse.json({ inserted, updated, skipped, errors, total: dataRows.length, detected_headers: headers })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal import CSV'
     return NextResponse.json({ error: msg }, { status: 500 })

@@ -13,7 +13,8 @@ import {
   Utensils, Plus, Search, X, Trash2,
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
   AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
-  Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity, UtensilsCrossed
+  Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity, UtensilsCrossed,
+  Eraser
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -137,6 +138,8 @@ export default function MainApp() {
   const [searchTerm, setSearchTerm] = useState('');
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [duplicateAction, setDuplicateAction] = useState<'update' | 'skip'>('update');
+  const [cleaningUp, setCleaningUp] = useState(false);
   const csvInputRef = { current: null as HTMLInputElement | null };
 
   const [formSiswa, setFormSiswa] = useState({
@@ -486,6 +489,8 @@ export default function MainApp() {
     setImporting(true);
     const total = files.length;
     let totalInserted = 0;
+    let totalUpdated = 0;
+    let totalSkipped = 0;
     const importType = getImportType();
     try {
       for (let i = 0; i < total; i++) {
@@ -494,18 +499,57 @@ export default function MainApp() {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('type', importType);
+        formData.append('duplicate_action', duplicateAction);
         if (importType === 'beneficiaries-3b') formData.append('sub_category', getDbSubCat());
         const res = await fetch('/api/import-csv', { method: 'POST', body: formData });
         const result = await res.json();
-        if (res.ok && result.inserted > 0) totalInserted += result.inserted;
-        else if (!res.ok) toast.error(`${file.name}: ${result.error || 'Gagal import'}`);
+        if (res.ok) {
+          totalInserted += result.inserted || 0;
+          totalUpdated += result.updated || 0;
+          totalSkipped += result.skipped || 0;
+        } else {
+          toast.error(`${file.name}: ${result.error || 'Gagal import'}`);
+        }
       }
-      if (totalInserted > 0) {
-        toast.success(`${totalInserted} data berhasil diimport dari ${total} file CSV`);
+      const parts: string[] = [];
+      if (totalInserted > 0) parts.push(`${totalInserted} baru`);
+      if (totalUpdated > 0) parts.push(`${totalUpdated} diupdate`);
+      if (totalSkipped > 0) parts.push(`${totalSkipped} dilewati`);
+      if (parts.length > 0) {
+        toast.success(`Import selesai: ${parts.join(', ')} dari ${total} file CSV`);
         fetchData();
+      } else {
+        toast.info('Semua data sudah ada, tidak ada perubahan.');
       }
     } catch { toast.error('Gagal membaca file CSV'); }
     finally { setImporting(false); if (csvInputRef.current) csvInputRef.current.value = ''; }
+  };
+
+  const handleCleanupDuplicates = async () => {
+    const importType = getImportType();
+    setCleaningUp(true);
+    try {
+      const res = await fetch('/api/cleanup-duplicates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: importType }),
+      });
+      const result = await res.json();
+      if (res.ok) {
+        if (result.removed > 0) {
+          toast.success(result.message);
+          fetchData();
+        } else {
+          toast.info(result.message);
+        }
+      } else {
+        toast.error(result.error || 'Gagal membersihkan duplikat');
+      }
+    } catch {
+      toast.error('Gagal membersihkan duplikat');
+    } finally {
+      setCleaningUp(false);
+    }
   };
 
   const handleExportExcel = async (scope: 'current' | 'all') => {
@@ -1293,10 +1337,18 @@ export default function MainApp() {
                   <button onClick={openAddModal} className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm">
                     <Plus className="w-4 h-4" /><span className="sm:inline hidden">Tambah</span>
                   </button>
+                  <select value={duplicateAction} onChange={e => setDuplicateAction(e.target.value as 'update' | 'skip')} className="bg-slate-100 border border-slate-200 rounded-lg text-[11px] px-1.5 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400/50" title="Aksi jika data duplikat ditemukan">
+                    <option value="update">Duplikat: Ganti</option>
+                    <option value="skip">Duplikat: Lewati</option>
+                  </select>
                   <input ref={csvInputRef} type="file" accept=".csv" multiple onChange={handleImportCSV} className="hidden" />
                   <button onClick={() => csvInputRef.current?.click()} disabled={importing} className="flex items-center gap-1 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Import CSV">
                     {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
                     <span className="sm:inline hidden">Import</span>
+                  </button>
+                  <button onClick={handleCleanupDuplicates} disabled={cleaningUp} className="flex items-center gap-1 bg-orange-500 hover:bg-orange-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Bersihkan data duplikat yang sudah ada">
+                    {cleaningUp ? <Loader2 className="w-4 h-4 animate-spin" /> : <Eraser className="w-4 h-4" />}
+                    <span className="sm:inline hidden">Bersihkan</span>
                   </button>
                   <button onClick={() => handleExportExcel('current')} disabled={exporting} className="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Export Excel">
                     {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
