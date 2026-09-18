@@ -62,7 +62,7 @@ const auditActionColor = (action: string) => { switch (action) { case 'INSERT': 
 const auditActionLabel = (action: string) => { switch (action) { case 'INSERT': return 'Tambah'; case 'UPDATE': return 'Ubah'; case 'DELETE': return 'Hapus'; default: return action; } };
 const auditTableLabel = (t: string) => { switch (t) { case 'students': return 'Siswa'; case 'teachers': return 'Guru'; case 'beneficiaries_3b': return '3B'; default: return t; } };
 
-export default function RekapitulasiPmModule() {
+export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodId?: string | null } = {}) {
   const [data, setData] = useState<RekapData | null>(null);
   const [loading, setLoading] = useState(true);
   const [mainTab, setMainTab] = useState<'live' | 'periode' | 'trend' | 'audit'>('live');
@@ -98,8 +98,8 @@ export default function RekapitulasiPmModule() {
   }, [periods]);
 
   const fetchData = useCallback(async () => {
-    try { const res = await fetch('/api/rekap-pm'); const json = await res.json(); if (json.error) throw new Error(json.error); setData(json as RekapData); } catch {} finally { setLoading(false); }
-  }, []);
+    try { const qp = activePeriodId ? `?period_id=${activePeriodId}` : ''; const res = await fetch(`/api/rekap-pm${qp}`); const json = await res.json(); if (json.error) throw new Error(json.error); setData(json as RekapData); } catch {} finally { setLoading(false); }
+  }, [activePeriodId]);
 
   const fetchSnapshots = useCallback(async () => {
     setSnapLoading(true);
@@ -122,7 +122,7 @@ export default function RekapitulasiPmModule() {
 
   const handleCreateSnapshot = async () => {
     const period = periods[selPeriod]; if (!period) return; setCreating(true);
-    try { const res = await fetch('/api/pm-snapshots', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ periodStart: period.start, periodEnd: period.end, periodLabel: period.label }) }); const json = await res.json(); if (json.error) alert(json.error); else await fetchSnapshots(); } catch {} finally { setCreating(false); }
+    try { const body: any = { periodStart: period.start, periodEnd: period.end, periodLabel: period.label }; if (activePeriodId) body.periodId = activePeriodId; const res = await fetch('/api/pm-snapshots', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); const json = await res.json(); if (json.error) alert(json.error); else await fetchSnapshots(); } catch {} finally { setCreating(false); }
   };
 
   const handleDeleteSnapshot = async (id: string) => {

@@ -9,11 +9,19 @@ function auditLog(tableName: string, recordId: string, action: string, oldData?:
   }).catch(() => {})
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const data = await fetchAll('students', {
+    const { searchParams } = new URL(req.url)
+    const periodId = searchParams.get('period_id')
+
+    const options: any = {
       order: { column: 'created_at', ascending: true },
-    })
+    }
+    if (periodId) {
+      options.filter = { column: 'period_id', operator: 'eq', value: periodId }
+    }
+
+    const data = await fetchAll('students', options)
     return NextResponse.json(data)
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal memuat data'
@@ -42,10 +50,10 @@ export async function POST(req: NextRequest) {
       nama_ibu: body.namaIbu || null,
       has_allergy: body.hasAllergy || false,
       allergy_type: body.hasAllergy ? body.allergyType : null,
+      period_id: body.period_id || null,
     }]).select()
 
     if (error) throw error
-    // Fire-and-forget audit logging
     auditLog('students', data[0]?.id, 'INSERT', undefined, data[0])
     return NextResponse.json(data[0], { status: 201 })
   } catch (error: unknown) {
@@ -60,7 +68,6 @@ export async function PUT(req: NextRequest) {
     const id = searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
 
-    // Fetch old data before update
     const { data: oldRecord } = await supabase.from('students').select('*').eq('id', id).single()
 
     const body = await req.json()
@@ -87,12 +94,10 @@ export async function PUT(req: NextRequest) {
     const { error } = await supabase.from('students').update(newValues).eq('id', id)
     if (error) throw error
 
-    // Calculate changed fields
     const changedFields = oldRecord
       ? Object.keys(newValues).filter(key => JSON.stringify(newValues[key as keyof typeof newValues]) !== JSON.stringify((oldRecord as any)[key]))
       : null
 
-    // Fire-and-forget audit logging
     auditLog('students', id, 'UPDATE', oldRecord, newValues, changedFields || undefined)
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
@@ -106,22 +111,26 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
     const all = searchParams.get('all')
+    const periodId = searchParams.get('period_id')
 
     if (all === 'true') {
-      const { error } = await supabase.from('students').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      let query = supabase.from('students').delete()
+      if (periodId) {
+        query = query.eq('period_id', periodId)
+      } else {
+        query = query.neq('id', '00000000-0000-0000-0000-000000000000')
+      }
+      const { error } = await query
       if (error) throw error
       return NextResponse.json({ success: true, deleted: 'all' })
     }
 
     if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
 
-    // Fetch old data before delete
     const { data: oldRecord } = await supabase.from('students').select('*').eq('id', id).single()
-
     const { error } = await supabase.from('students').delete().eq('id', id)
     if (error) throw error
 
-    // Fire-and-forget audit logging
     auditLog('students', id, 'DELETE', oldRecord)
     return NextResponse.json({ success: true })
   } catch (error: unknown) {

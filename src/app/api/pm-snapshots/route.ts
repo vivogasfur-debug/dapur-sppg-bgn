@@ -33,11 +33,12 @@ const getAgeMonths = (birthDateString: string): number => {
   return y * 12 + m
 }
 
-const computeRekap = async () => {
+const computeRekap = async (periodId?: string | null) => {
+  const periodFilter = periodId ? { column: 'period_id', operator: 'eq', value: periodId } : undefined
   const [students, teachers, beneficiaries3b] = await Promise.all([
-    fetchAll('students', { select: 'id,nama,school_name,jk,kelas,berat_badan,tinggi_badan,has_allergy,allergy_type' }),
-    fetchAll('teachers', { select: 'id,full_name,school_name,jk,has_allergy,allergy_type' }),
-    fetchAll('beneficiaries_3b', { select: 'id,posyandu_name,sub_category,gender,birth_date,has_allergy,allergy_type' }),
+    fetchAll('students', { select: 'id,nama,school_name,jk,kelas,berat_badan,tinggi_badan,has_allergy,allergy_type', filter: periodFilter }),
+    fetchAll('teachers', { select: 'id,full_name,school_name,jk,has_allergy,allergy_type', filter: periodFilter }),
+    fetchAll('beneficiaries_3b', { select: 'id,posyandu_name,sub_category,gender,birth_date,has_allergy,allergy_type', filter: periodFilter }),
   ])
 
   const siswaTKRA = students.filter((s: any) => getJenjang(s.school_name) === 'TK').length
@@ -100,7 +101,8 @@ export async function GET(req: NextRequest) {
 
     if (action === 'current') {
       // Return current live data as a snapshot (for preview before saving)
-      const data = await computeRekap()
+      const periodId = url.searchParams.get('period_id')
+      const data = await computeRekap(periodId)
       return NextResponse.json({ data, period: 'live' })
     }
 
@@ -121,14 +123,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { periodStart, periodEnd, periodLabel, notes } = body
+    const { periodStart, periodEnd, periodLabel, notes, periodId } = body
 
     if (!periodStart || !periodEnd || !periodLabel) {
       return NextResponse.json({ error: 'periodStart, periodEnd, periodLabel wajib diisi' }, { status: 400 })
     }
 
-    // Compute current live data
-    const snapshotData = await computeRekap()
+    // Compute current live data for this period
+    const snapshotData = await computeRekap(periodId)
 
     const { data, error } = await supabase.from('pm_snapshots').insert([{
       period_start: periodStart,

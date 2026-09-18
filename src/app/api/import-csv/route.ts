@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
     const type = formData.get('type') as string
     const subCategory = formData.get('sub_category') as string | null
     const duplicateAction = (formData.get('duplicate_action') as string) || 'update'
+    const periodId = (formData.get('period_id') as string) || null
 
     if (!file || !type) {
       return NextResponse.json({ error: 'File dan tipe diperlukan' }, { status: 400 })
@@ -158,14 +159,17 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      // Fetch existing records for dedup
-      const { data: existingData } = await supabase.from('students').select('id,nisn,nipd,nik,nama,tanggal_lahir')
+      // Fetch existing records for dedup (within same period)
+      let dedupQuery = supabase.from('students').select('id,nisn,nipd,nik,nama,tanggal_lahir')
+      if (periodId) dedupQuery = dedupQuery.eq('period_id', periodId) as any
+      const { data: existingData } = await dedupQuery
       const existingMap = buildExistingMap(existingData || [], getStudentMatchKey)
 
       const toInsert: any[] = []
       const toUpdate: { id: string; data: any }[] = []
 
       for (const rec of records) {
+        if (periodId) rec.period_id = periodId
         const mk = getStudentMatchKey(rec)
         if (mk && existingMap.has(mk)) {
           if (duplicateAction === 'skip') { skipped++ }
@@ -209,13 +213,16 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      const { data: existingData } = await supabase.from('teachers').select('id,nuptk,nip,nik,full_name,tanggal_lahir')
+      let dedupQuery = supabase.from('teachers').select('id,nuptk,nip,nik,full_name,tanggal_lahir')
+      if (periodId) dedupQuery = dedupQuery.eq('period_id', periodId) as any
+      const { data: existingData } = await dedupQuery
       const existingMap = buildExistingMap(existingData || [], getTeacherMatchKey)
 
       const toInsert: any[] = []
       const toUpdate: { id: string; data: any }[] = []
 
       for (const rec of records) {
+        if (periodId) rec.period_id = periodId
         const mk = getTeacherMatchKey(rec)
         if (mk && existingMap.has(mk)) {
           if (duplicateAction === 'skip') { skipped++ }
@@ -267,13 +274,16 @@ export async function POST(req: NextRequest) {
         return record
       })
 
-      const { data: existingData } = await supabase.from('beneficiaries_3b').select('id,nik,full_name,birth_date')
+      let dedupQuery = supabase.from('beneficiaries_3b').select('id,nik,full_name,birth_date')
+      if (periodId) dedupQuery = dedupQuery.eq('period_id', periodId) as any
+      const { data: existingData } = await dedupQuery
       const existingMap = buildExistingMap(existingData || [], getBeneficiaryMatchKey)
 
       const toInsert: any[] = []
       const toUpdate: { id: string; data: any }[] = []
 
       for (const rec of records) {
+        if (periodId) rec.period_id = periodId
         const mk = getBeneficiaryMatchKey(rec)
         if (mk && existingMap.has(mk)) {
           if (duplicateAction === 'skip') { skipped++ }

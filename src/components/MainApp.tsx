@@ -14,7 +14,7 @@ import {
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
   AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
   Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity, UtensilsCrossed,
-  Eraser
+  Eraser, Copy
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -93,12 +93,31 @@ export default function MainApp() {
   const [teachers, setTeachers] = useState<TeacherBeneficiary[]>([]);
   const [beneficiaries3b, setBeneficiaries3b] = useState<Beneficiary3B[]>([]);
 
+  // ─── Period state ───
+  const [periods, setPeriods] = useState<any[]>([]);
+  const [activePeriodId, setActivePeriodId] = useState<string | null>(null);
+  const [copyingPeriod, setCopyingPeriod] = useState(false);
+
+  const fetchPeriods = useCallback(async () => {
+    try {
+      const res = await fetch('/api/pm-periods');
+      const data = await res.json();
+      if (data.periods) {
+        setPeriods(data.periods);
+        setActivePeriodId(data.current_period_id || null);
+      }
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => { fetchPeriods(); }, [fetchPeriods]);
+
   const fetchData = useCallback(async () => {
     try {
+      const qp = activePeriodId ? `?period_id=${activePeriodId}` : '';
       const [sRes, tRes, bRes] = await Promise.all([
-        fetch('/api/students').then(r => r.json()),
-        fetch('/api/teachers').then(r => r.json()),
-        fetch('/api/beneficiaries-3b').then(r => r.json()),
+        fetch(`/api/students${qp}`).then(r => r.json()),
+        fetch(`/api/teachers${qp}`).then(r => r.json()),
+        fetch(`/api/beneficiaries-3b${qp}`).then(r => r.json()),
       ]);
       if (Array.isArray(sRes)) setStudents(sRes.map((s: any) => ({
         id: s.id, no: 0, nama: s.nama, schoolName: s.school_name,
@@ -130,7 +149,7 @@ export default function MainApp() {
       })));
     } catch { toast.error('Gagal memuat data dari database'); }
     finally { setLoading(false); }
-  }, []);
+  }, [activePeriodId]);
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -403,19 +422,19 @@ export default function MainApp() {
       let ok = false;
       if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') {
         const url = editingId ? `/api/students?id=${editingId}` : '/api/students';
-        const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formSiswa) });
+        const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...formSiswa, period_id: activePeriodId }) });
         if (!res.ok) throw new Error();
         toast.success(editingId ? 'Data siswa diperbarui' : 'Data siswa tersimpan');
         ok = true;
       } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
         const url = editingId ? `/api/teachers?id=${editingId}` : '/api/teachers';
-        const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formGuru) });
+        const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...formGuru, period_id: activePeriodId }) });
         if (!res.ok) throw new Error();
         toast.success(editingId ? 'Data guru diperbarui' : 'Data guru tersimpan');
         ok = true;
       } else {
         const url = editingId ? `/api/beneficiaries-3b?id=${editingId}` : '/api/beneficiaries-3b';
-        const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form3B, subCategory: getDbSubCat() }) });
+        const res = await fetch(url, { method: editingId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form3B, subCategory: getDbSubCat(), period_id: activePeriodId }) });
         if (!res.ok) throw new Error();
         toast.success(editingId ? 'Data 3B diperbarui' : 'Data 3B tersimpan');
         ok = true;
@@ -459,9 +478,10 @@ export default function MainApp() {
     if (!confirm('Anda yakin? Ketuk OK untuk menghapus semua data.')) return;
     setDeletingAll(true);
     try {
-      let url = '/api/students?all=true';
-      if (pmSubTab === 'Guru') url = '/api/teachers?all=true';
-      else if (isBalitaTab()) url = `/api/beneficiaries-3b?all=true&sub_category=Balita`;
+      const pid = activePeriodId ? `&period_id=${activePeriodId}` : '';
+      let url = `/api/students?all=true${pid}`;
+      if (pmSubTab === 'Guru') url = `/api/teachers?all=true${pid}`;
+      else if (isBalitaTab()) url = `/api/beneficiaries-3b?all=true&sub_category=Balita${pid}`;
       const res = await fetch(url, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       toast.success(`Semua data ${pmSubTab} berhasil dihapus`); fetchData();
@@ -500,6 +520,7 @@ export default function MainApp() {
         formData.append('file', file);
         formData.append('type', importType);
         formData.append('duplicate_action', duplicateAction);
+        if (activePeriodId) formData.append('period_id', activePeriodId);
         if (importType === 'beneficiaries-3b') formData.append('sub_category', getDbSubCat());
         const res = await fetch('/api/import-csv', { method: 'POST', body: formData });
         const result = await res.json();
@@ -1333,6 +1354,37 @@ export default function MainApp() {
                   <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400" />
                   <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder={`Cari ${pmSubTab}...`} className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/50" />
                 </div>
+                {/* ─── Period Selector ─── */}
+                <select value={activePeriodId || ''} onChange={async (e) => {
+                  const newId = e.target.value;
+                  setActivePeriodId(newId || null);
+                  if (newId) await fetch('/api/pm-periods', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'set_active', period_id: newId }) });
+                }} className="bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg text-[11px] px-1.5 py-2 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400/50 min-w-[140px]" title="Pilih Periode Perduaminggu">
+                  <option value="">Semua Periode</option>
+                  {periods.map((p: any) => (
+                    <option key={p.id} value={p.id}>{p.period_label}</option>
+                  ))}
+                </select>
+                <button onClick={async () => {
+                  if (!activePeriodId) { toast.info('Pilih periode target dulu'); return; }
+                  const prevPeriod = periods.find((p: any) => p.id === activePeriodId);
+                  const prevIdx = periods.findIndex((p: any) => p.id === activePeriodId);
+                  if (prevIdx <= 0) { toast.info('Tidak ada periode sebelumnya'); return; }
+                  const sourcePeriod = periods[prevIdx - 1];
+                  if (!confirm(`Salin data dari "${sourcePeriod.period_label}" ke "${prevPeriod.period_label}"?`)) return;
+                  setCopyingPeriod(true);
+                  try {
+                    const res = await fetch('/api/pm-periods', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'copy_data', source_period_id: sourcePeriod.id, target_period_id: activePeriodId }) });
+                    const result = await res.json();
+                    if (res.ok && result.copied > 0) { toast.success(result.message); fetchData(); }
+                    else if (res.ok) toast.info('Tidak ada data untuk disalin');
+                    else toast.error(result.error || 'Gagal salin data');
+                  } catch { toast.error('Gagal salin data'); }
+                  finally { setCopyingPeriod(false); }
+                }} disabled={copyingPeriod} className="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white px-2 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Salin data dari periode sebelumnya">
+                  {copyingPeriod ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+                  <span className="sm:inline hidden">Copy</span>
+                </button>
                 <div className="flex items-center gap-1.5">
                   <button onClick={openAddModal} className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm">
                     <Plus className="w-4 h-4" /><span className="sm:inline hidden">Tambah</span>
@@ -1553,7 +1605,7 @@ export default function MainApp() {
         );
 
       case 'Rekapitulasi PM':
-        return <RekapitulasiPmModule />;
+        return <RekapitulasiPmModule activePeriodId={activePeriodId} />;
 
       case 'Gudang':
         return <StockModule />;

@@ -9,11 +9,19 @@ function auditLog(tableName: string, recordId: string, action: string, oldData?:
   }).catch(() => {})
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const data = await fetchAll('beneficiaries_3b', {
+    const { searchParams } = new URL(req.url)
+    const periodId = searchParams.get('period_id')
+
+    const options: any = {
       order: { column: 'created_at', ascending: true },
-    })
+    }
+    if (periodId) {
+      options.filter = { column: 'period_id', operator: 'eq', value: periodId }
+    }
+
+    const data = await fetchAll('beneficiaries_3b', options)
     return NextResponse.json(data)
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal memuat data'
@@ -41,10 +49,10 @@ export async function POST(req: NextRequest) {
       has_allergy: body.hasAllergy || false,
       allergy_type: body.hasAllergy ? body.allergyType : null,
       status: 'Aktif',
+      period_id: body.period_id || null,
     }]).select()
 
     if (error) throw error
-    // Fire-and-forget audit logging
     auditLog('beneficiaries_3b', data[0]?.id, 'INSERT', undefined, data[0])
     return NextResponse.json(data[0], { status: 201 })
   } catch (error: unknown) {
@@ -59,7 +67,6 @@ export async function PUT(req: NextRequest) {
     const id = searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
 
-    // Fetch old data before update
     const { data: oldRecord } = await supabase.from('beneficiaries_3b').select('*').eq('id', id).single()
 
     const body = await req.json()
@@ -84,12 +91,10 @@ export async function PUT(req: NextRequest) {
     const { error } = await supabase.from('beneficiaries_3b').update(newValues).eq('id', id)
     if (error) throw error
 
-    // Calculate changed fields
     const changedFields = oldRecord
       ? Object.keys(newValues).filter(key => JSON.stringify(newValues[key as keyof typeof newValues]) !== JSON.stringify((oldRecord as any)[key]))
       : null
 
-    // Fire-and-forget audit logging
     auditLog('beneficiaries_3b', id, 'UPDATE', oldRecord, newValues, changedFields || undefined)
     return NextResponse.json({ success: true })
   } catch (error: unknown) {
@@ -104,22 +109,22 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id')
     const all = searchParams.get('all')
     const sub = searchParams.get('sub_category')
+    const periodId = searchParams.get('period_id')
 
     if (all === 'true' && sub) {
-      const { error } = await supabase.from('beneficiaries_3b').delete().eq('sub_category', sub)
+      let query = supabase.from('beneficiaries_3b').delete().eq('sub_category', sub)
+      if (periodId) query = query.eq('period_id', periodId)
+      const { error } = await query
       if (error) throw error
       return NextResponse.json({ success: true, deleted: 'all' })
     }
 
     if (!id) return NextResponse.json({ error: 'ID diperlukan' }, { status: 400 })
 
-    // Fetch old data before delete
     const { data: oldRecord } = await supabase.from('beneficiaries_3b').select('*').eq('id', id).single()
-
     const { error } = await supabase.from('beneficiaries_3b').delete().eq('id', id)
     if (error) throw error
 
-    // Fire-and-forget audit logging
     auditLog('beneficiaries_3b', id, 'DELETE', oldRecord)
     return NextResponse.json({ success: true })
   } catch (error: unknown) {

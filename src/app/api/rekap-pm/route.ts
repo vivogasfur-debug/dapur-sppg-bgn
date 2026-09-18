@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase, fetchAll } from '@/lib/supabase'
 
 const getJenjang = (name: string): string => {
@@ -40,13 +40,18 @@ const getAgeMonths = (birthDateString: string): number => {
   return y * 12 + m
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url)
+    const periodId = searchParams.get('period_id')
+
+    const periodFilter = periodId ? { column: 'period_id', operator: 'eq', value: periodId } : undefined
+
     // Fetch only needed columns in parallel using fetchAll for >1000 rows
     const [students, teachers, beneficiaries3b] = await Promise.all([
-      fetchAll('students', { select: 'id,nama,school_name,jk,kelas,berat_badan,tinggi_badan,has_allergy,allergy_type' }),
-      fetchAll('teachers', { select: 'id,full_name,school_name,jk,has_allergy,allergy_type' }),
-      fetchAll('beneficiaries_3b', { select: 'id,posyandu_name,sub_category,gender,birth_date,has_allergy,allergy_type' }),
+      fetchAll('students', { select: 'id,nama,school_name,jk,kelas,berat_badan,tinggi_badan,has_allergy,allergy_type', filter: periodFilter }),
+      fetchAll('teachers', { select: 'id,full_name,school_name,jk,has_allergy,allergy_type', filter: periodFilter }),
+      fetchAll('beneficiaries_3b', { select: 'id,posyandu_name,sub_category,gender,birth_date,has_allergy,allergy_type', filter: periodFilter }),
     ])
 
     // === PORSI ===
