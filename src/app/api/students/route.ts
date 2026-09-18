@@ -2,11 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchAll, supabase } from '@/lib/supabase'
 
 function auditLog(tableName: string, recordId: string, action: string, oldData?: any, newData?: any, changedFields?: string[]) {
-  fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/pm-audit-log/track`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tableName, recordId, action, oldData, newData, changedFields }),
-  }).catch(() => {})
+  supabase.from('pm_audit_log').insert([{
+    table_name: tableName,
+    record_id: String(recordId),
+    action,
+    old_data: oldData || null,
+    new_data: newData || null,
+    changed_fields: changedFields || null,
+    performed_by: 'user',
+  }]).then(() => {}).catch(() => {})
 }
 
 export async function GET(req: NextRequest) {

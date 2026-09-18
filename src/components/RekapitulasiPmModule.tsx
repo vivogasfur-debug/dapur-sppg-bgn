@@ -6,7 +6,7 @@ import {
   PieChart, Activity, UtensilsCrossed, Loader2, Download, AlertCircle,
   ChevronDown, ChevronUp, Camera, TrendingUp, History, Clock,
   Calendar, Plus, Trash2, RefreshCw, ChevronLeft, ChevronRight,
-  ArrowUpRight, ArrowDownRight, Minus, Eye, Database
+  ArrowUpRight, ArrowDownRight, Minus, Eye, Database, ExternalLink, Check, Copy
 } from 'lucide-react';
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -41,14 +41,15 @@ interface AuditEntry {
 const jenjangColor = (j: string) => { switch (j) { case 'TK': return 'bg-pink-500'; case 'SD': return 'bg-blue-500'; case 'SMP': return 'bg-amber-500'; case 'SMA': return 'bg-violet-500'; default: return 'bg-slate-400'; } };
 const jenjangLabel = (j: string) => { switch (j) { case 'TK': return 'TK / RA'; case 'SD': return 'SD / MI'; case 'SMP': return 'SMP / MTs'; case 'SMA': return 'SMA / SMK / MA'; default: return 'Lainnya'; } };
 
+const PERIOD_START = new Date(2026, 7, 31, 0, 0, 0, 0); // 31 Agustus 2026
 const generatePeriods = (startDate: Date, count: number) => {
-  const periods: { start: string; end: string; label: string }[] = [];
+  const periods: { start: string; end: string; label: string; index: number }[] = [];
   const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
   for (let i = 0; i < count; i++) {
     const start = new Date(startDate); start.setDate(start.getDate() + i * 14);
     const end = new Date(start); end.setDate(end.getDate() + 13);
-    const label = `Periode ${start.getDate()} ${months[start.getMonth()]} - ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
-    periods.push({ start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0], label });
+    const label = `Periode ${i + 1}: ${start.getDate()} ${months[start.getMonth()]} - ${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`;
+    periods.push({ start: start.toISOString().split('T')[0], end: end.toISOString().split('T')[0], label, index: i + 1 });
   }
   return periods;
 };
@@ -65,6 +66,8 @@ const auditTableLabel = (t: string) => { switch (t) { case 'students': return 'S
 export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodId?: string | null } = {}) {
   const [data, setData] = useState<RekapData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [setupNeeded, setSetupNeeded] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [mainTab, setMainTab] = useState<'live' | 'periode' | 'trend' | 'audit'>('live');
   const [subTab, setSubTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [exporting, setExporting] = useState(false);
@@ -75,9 +78,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
   const [snapLoading, setSnapLoading] = useState(false);
   const [creating, setCreating] = useState(false);
   const [periods] = useState(() => {
-    const start = new Date(); start.setDate(1); start.setHours(0,0,0,0);
-    while (start.getDay() !== 1) start.setDate(start.getDate() + 1);
-    return generatePeriods(start, 26);
+    return generatePeriods(PERIOD_START, 26);
   });
   const [selPeriod, setSelPeriod] = useState(0);
   const [compA, setCompA] = useState<number | null>(null);
@@ -103,7 +104,15 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
 
   const fetchSnapshots = useCallback(async () => {
     setSnapLoading(true);
-    try { const res = await fetch('/api/pm-snapshots'); const json = await res.json(); if (!json.error) setSnapshots(Array.isArray(json) ? json : []); } catch {} finally { setSnapLoading(false); }
+    try {
+      const res = await fetch('/api/pm-snapshots'); const json = await res.json();
+      if (json.error && (json.error.includes('could not find') || json.error.includes('does not exist') || json.error.includes('relation'))) {
+        setSetupNeeded(true);
+      } else if (!json.error) {
+        setSnapshots(Array.isArray(json) ? json : []);
+        setSetupNeeded(false);
+      }
+    } catch { } finally { setSnapLoading(false); }
   }, []);
 
   const fetchAudit = useCallback(async (offset = 0) => {
@@ -116,7 +125,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
     } catch {} finally { setAuditLoading(false); }
   }, [auditTable]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchData(); fetchSnapshots(); }, [fetchData, fetchSnapshots]);
   useEffect(() => { if (mainTab === 'periode') fetchSnapshots(); }, [mainTab, fetchSnapshots]);
   useEffect(() => { if (mainTab === 'audit') { setAuditData([]); fetchAudit(0); } }, [mainTab, auditTable]);
 
@@ -144,6 +153,62 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
   };
 
   if (loading) return (<div className="min-h-[60vh] flex flex-col items-center justify-center gap-3"><Loader2 className="w-8 h-8 animate-spin text-emerald-500" /><span className="text-xs text-slate-400">Memuat rekapitulasi...</span></div>);
+
+  // Setup wizard: show if tables don't exist
+  if (setupNeeded) {
+    const handleCopySql = () => { navigator.clipboard.writeText(SETUP_SQL); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+    const handleCheckAgain = () => { setSetupNeeded(false); fetchSnapshots(); };
+    return (
+      <div className="max-w-lg mx-auto space-y-6">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center space-y-4">
+          <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mx-auto">
+            <Database className="w-8 h-8 text-indigo-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">Setup Database Diperlukan</h2>
+            <p className="text-sm text-slate-500 mt-1">Tabel <b>pm_snapshots</b> dan <b>pm_audit_log</b> belum dibuat di Supabase. Ikuti langkah berikut:</p>
+          </div>
+          <div className="bg-slate-50 rounded-xl p-4 text-left space-y-3">
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Buka Supabase SQL Editor</p>
+                <a href="https://supabase.com/dashboard/project/zwbspstsbpzsnphdohko/sql" target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 hover:underline flex items-center gap-1 mt-0.5">
+                  Klik di sini untuk membuka <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Salin & Jalankan SQL</p>
+                <p className="text-xs text-slate-500 mt-0.5">Salin SQL di bawah, tempel di SQL Editor, lalu klik <b>Run</b></p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <span className="w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</span>
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Klik &quot;Cek Ulang&quot; di bawah</p>
+                <p className="text-xs text-slate-500 mt-0.5">Setelah SQL berhasil, klik tombol untuk memverifikasi</p>
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <pre className="bg-slate-900 text-emerald-400 rounded-xl p-4 text-[11px] overflow-auto max-h-64 font-mono leading-relaxed text-left">{SETUP_SQL}</pre>
+            <button onClick={handleCopySql} className="absolute top-2 right-2 p-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-white transition-colors" title="Salin SQL">
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={handleCheckAgain} className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-sm font-bold transition-all flex items-center justify-center gap-2">
+              <RefreshCw className="w-4 h-4" /> Cek Ulang
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!data) return (<div className="min-h-[60vh] flex flex-col items-center justify-center gap-3"><AlertCircle className="w-8 h-8 text-rose-400" /><span className="text-xs text-slate-400">Gagal memuat data rekapitulasi</span></div>);
 
   const p = data.porsi, g = data.gender, a = data.alergi, gz = data.gizi, ps = data.posyandu, t = data.totals;
