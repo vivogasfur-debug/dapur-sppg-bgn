@@ -497,20 +497,60 @@ export default function MainApp({ onLogout }: MainAppProps) {
 
   const [deletingAll, setDeletingAll] = useState(false);
   const handleDeleteAll = async () => {
-    const count = pmSubTab === 'Siswa' ? students.length
-      : pmSubTab === 'Guru' ? teachers.length
-      : beneficiaries3b.filter(b => b.subCategory === pmSubTab).length;
+    // Calculate count correctly - Balita uses age-based filtering
+    let count: number;
+    let idsToDelete: string[] = [];
+
+    if (pmSubTab === 'Siswa') {
+      count = students.length;
+    } else if (pmSubTab === 'Guru') {
+      count = teachers.length;
+    } else if (pmSubTab === 'Bumil' || pmSubTab === 'Busui') {
+      const filtered = beneficiaries3b.filter(b => b.subCategory === pmSubTab);
+      count = filtered.length;
+      idsToDelete = filtered.map(b => b.id);
+    } else if (isBalitaTab()) {
+      // Use same age-based filtering as filtered3b
+      const filtered = beneficiaries3b.filter(b => {
+        if (b.subCategory !== 'Balita') return false;
+        const age = getAgeMonths(b.birthDate);
+        if (pmSubTab === 'Balita < 6 Bln') return age < 6;
+        if (pmSubTab === 'Balita 6-11 Bln') return age >= 6 && age <= 11;
+        if (pmSubTab === 'Balita 12-60 Bln') return age >= 12 && age <= 60;
+        if (pmSubTab === 'Balita > 60 Bln') return age > 60 && age < 999;
+        if (pmSubTab === 'Balita Tdk Dikategorikan') return age >= 999;
+        return true;
+      });
+      count = filtered.length;
+      idsToDelete = filtered.map(b => b.id);
+    } else {
+      count = beneficiaries3b.filter(b => b.subCategory === pmSubTab).length;
+      idsToDelete = beneficiaries3b.filter(b => b.subCategory === pmSubTab).map(b => b.id);
+    }
+
     if (count === 0) { toast.error('Tidak ada data untuk dihapus'); return; }
     if (!confirm(`HAPUS SEMUA data ${pmSubTab} (${count} data)?\n\nTindakan ini tidak dapat dibatalkan!`)) return;
     if (!confirm('Anda yakin? Ketuk OK untuk menghapus semua data.')) return;
     setDeletingAll(true);
     try {
-      const pid = activePeriodId ? `&period_id=${activePeriodId}` : '';
-      let url = `/api/students?all=true${pid}`;
-      if (pmSubTab === 'Guru') url = `/api/teachers?all=true${pid}`;
-      else if (isBalitaTab()) url = `/api/beneficiaries-3b?all=true&sub_category=Balita${pid}`;
-      const res = await fetch(url, { method: 'DELETE' });
-      if (!res.ok) throw new Error();
+      if (pmSubTab === 'Siswa') {
+        const pid = activePeriodId ? `&period_id=${activePeriodId}` : '';
+        const res = await fetch(`/api/students?all=true${pid}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+      } else if (pmSubTab === 'Guru') {
+        const pid = activePeriodId ? `&period_id=${activePeriodId}` : '';
+        const res = await fetch(`/api/teachers?all=true${pid}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error();
+      } else if (idsToDelete.length > 0) {
+        // For 3B data (Bumil, Busui, Balita sub-categories), delete by IDs
+        // to handle age-based filtering correctly
+        let failCount = 0;
+        for (const id of idsToDelete) {
+          const res = await fetch(`/api/beneficiaries-3b?id=${id}`, { method: 'DELETE' });
+          if (!res.ok) failCount++;
+        }
+        if (failCount > 0) toast.error(`${failCount} data gagal dihapus`);
+      }
       toast.success(`Semua data ${pmSubTab} berhasil dihapus`); fetchData();
     } catch { toast.error('Gagal menghapus semua data'); }
     finally { setDeletingAll(false); }
