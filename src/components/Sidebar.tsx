@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Menu
+  Menu,
+  LogOut
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -22,6 +23,7 @@ interface SidebarProps {
   setActiveMenu: (menu: string) => void;
   isMobileOpen?: boolean;
   onMobileClose?: () => void;
+  onLogout?: () => void;
 }
 
 const menuItems = [
@@ -65,7 +67,7 @@ const MenuNav = ({ activeMenu, setActiveMenu, isOpen, onNavigate }: {
   </nav>
 );
 
-export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = false, onMobileClose }: SidebarProps) {
+export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = false, onMobileClose, onLogout }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   return (
@@ -101,7 +103,16 @@ export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = fals
         <div className="p-3 overflow-y-auto flex-1" style={{ maxHeight: 'calc(100vh - 140px)' }}>
           <MenuNav activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={true} onNavigate={onMobileClose} />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 p-3">
+        <div className="absolute bottom-0 left-0 right-0 p-3 space-y-2">
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="w-full p-2.5 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center space-x-3 text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span className="font-semibold whitespace-nowrap">Keluar</span>
+            </button>
+          )}
           <div className="p-3 bg-slate-800/40 border border-slate-800 rounded-xl flex items-center space-x-3 text-xs text-slate-300">
             <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-full shrink-0">
               <UserCheck className="w-4 h-4" />
@@ -145,16 +156,27 @@ export default function Sidebar({ activeMenu, setActiveMenu, isMobileOpen = fals
           <MenuNav activeMenu={activeMenu} setActiveMenu={setActiveMenu} isOpen={isOpen} />
         </div>
 
-        <div className={`p-3 bg-slate-800/40 border border-slate-800 rounded-xl flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} text-xs text-slate-300`}>
-          <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-full shrink-0">
-            <UserCheck className="w-4 h-4" />
-          </div>
-          {isOpen && (
-            <div className="overflow-hidden">
-              <p className="text-[10px] text-slate-400 uppercase font-semibold whitespace-nowrap">Role Terhubung</p>
-              <p className="font-semibold text-white whitespace-nowrap">Asisten Lapangan</p>
-            </div>
+        <div className="space-y-2">
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className={`w-full p-2.5 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} text-xs text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors`}
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              {isOpen && <span className="font-semibold whitespace-nowrap">Keluar</span>}
+            </button>
           )}
+          <div className={`p-3 bg-slate-800/40 border border-slate-800 rounded-xl flex items-center ${isOpen ? 'space-x-3' : 'justify-center'} text-xs text-slate-300`}>
+            <div className="p-1.5 bg-emerald-500/20 text-emerald-400 rounded-full shrink-0">
+              <UserCheck className="w-4 h-4" />
+            </div>
+            {isOpen && (
+              <div className="overflow-hidden">
+                <p className="text-[10px] text-slate-400 uppercase font-semibold whitespace-nowrap">Role Terhubung</p>
+                <p className="font-semibold text-white whitespace-nowrap">Asisten Lapangan</p>
+              </div>
+            )}
+          </div>
         </div>
       </aside>
     </>

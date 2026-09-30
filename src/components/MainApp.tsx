@@ -71,7 +71,11 @@ const classifyBalita = (birthDateString: string): string => {
   return '> 60 Bln';
 };
 
-export default function MainApp() {
+interface MainAppProps {
+  onLogout?: () => void;
+}
+
+export default function MainApp({ onLogout }: MainAppProps) {
   const [activeMenu, setActiveMenu] = useState('Penerima Manfaat');
   const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [pmSubTab, setPmSubTab] = useState<'Siswa' | 'Guru' | 'Bumil' | 'Busui' | 'Balita < 6 Bln' | 'Balita 6-11 Bln' | 'Balita 12-60 Bln' | 'Balita > 60 Bln' | 'Balita Tdk Dikategorikan'>('Siswa');
@@ -1655,7 +1659,7 @@ export default function MainApp() {
 
   return (
     <div className="flex bg-slate-100 h-screen overflow-hidden">
-      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} isMobileOpen={mobileSidebarOpen} onMobileClose={() => setMobileSidebarOpen(false)} />
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} isMobileOpen={mobileSidebarOpen} onMobileClose={() => setMobileSidebarOpen(false)} onLogout={onLogout} />
       <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
         {/* MOBILE HEADER */}
         <header className="lg:hidden sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200 px-3 py-2.5 flex items-center justify-between">

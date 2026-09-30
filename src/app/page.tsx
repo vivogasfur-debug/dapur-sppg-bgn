@@ -1,20 +1,69 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Lock, Mail, Loader2, Eye, EyeOff, ShieldCheck, Heart, Apple, Wheat, Droplets } from 'lucide-react'
 import Image from 'next/image'
 import MainApp from '@/components/MainApp'
 
+const SESSION_KEY = 'sppg_session'
+
+interface SessionData {
+  id: string
+  email: string
+  name: string
+  role: string
+  loggedInAt: number
+}
+
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
   const [email, setEmail] = useState('admin@dashboard.id')
   const [password, setPassword] = useState('password123')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Check existing session on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SESSION_KEY)
+      if (stored) {
+        const session: SessionData = JSON.parse(stored)
+        // Session valid for 24 hours
+        const MAX_SESSION_MS = 24 * 60 * 60 * 1000
+        if (session.loggedInAt && (Date.now() - session.loggedInAt < MAX_SESSION_MS)) {
+          setIsAuthenticated(true)
+        } else {
+          localStorage.removeItem(SESSION_KEY)
+        }
+      }
+    } catch {
+      localStorage.removeItem(SESSION_KEY)
+    } finally {
+      setCheckingSession(false)
+    }
+  }, [])
+
+  // Show loading while checking session
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
+          <p className="text-slate-500 text-sm">Memuat sesi...</p>
+        </div>
+      </div>
+    )
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem(SESSION_KEY)
+    setIsAuthenticated(false)
+  }
+
   if (isAuthenticated) {
-    return <MainApp />
+    return <MainApp onLogout={handleLogout} />
   }
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -28,6 +77,15 @@ export default function Home() {
       })
       const data = await res.json()
       if (res.ok) {
+        // Save session to localStorage
+        const sessionData: SessionData = {
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          role: data.role,
+          loggedInAt: Date.now(),
+        }
+        localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData))
         setIsAuthenticated(true)
         toast.success(`Selamat datang, ${data.name}!`, { style: { backgroundColor: '#047857', color: 'white', border: 'none' } })
       } else {
