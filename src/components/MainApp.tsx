@@ -815,8 +815,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
       if (scope === 'all' || pmSubTab === 'Bumil' || pmSubTab === 'Busui') {
         const nonBalitaData = scope === 'all' ? beneficiaries3b.filter(b => b.subCategory !== 'Balita') : filtered3b.filter(b => b.subCategory !== 'Balita');
         if (nonBalitaData.length > 0) {
-          const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Nama Balita/Busui', 'Tgl Lahir Balita', 'Umur Balita', 'Usia Kandungan', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
-          const rows = nonBalitaData.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), safeStr(b.namaBalita), safeStr(b.tanggalLahirBalita), b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : '', safeStr(b.usiaKandungan), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+          const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Nama Balita/Busui', 'Tgl Lahir Balita', 'Umur Balita', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
+          const rows = nonBalitaData.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), safeStr(b.namaBalita), safeStr(b.tanggalLahirBalita), b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : '', safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
           const ws = workbook.addWorksheet(scope === 'all' ? 'Bumil-Busui' : pmSubTab);
           addKop(ws, `DATA PENERIMA MANFAAT - ${scope === 'all' ? 'BUMIL & BUSUI' : pmSubTab.toUpperCase()}`, headers, rows, [5, 10, 25, 20, 5, 15, 15, 12, 20, 15, 12, 15, 20, 8, 8, 8, 8, 20, 12]);
         }
@@ -970,7 +970,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
               <div><span className="text-slate-400">Umur Balita:</span> <span className="font-bold text-emerald-700">{calculateAge(b.tanggalLahirBalita)}</span></div>
             </>)}
           </>)}
-          <div className="col-span-2"><span className="text-slate-400">Usia Kandungan:</span> <span className="font-medium text-amber-700">{b.usiaKandungan}</span></div>
+          {b.subCategory === 'Bumil' && <div className="col-span-2"><span className="text-slate-400">Usia Kandungan:</span> <span className="font-medium text-amber-700">{b.usiaKandungan}</span></div>}
           <div className="col-span-2"><span className="text-slate-400">Alamat:</span> <span className="font-medium text-slate-700">{b.alamat}</span></div>
           <div className="grid grid-cols-4 gap-1 text-center">
             <div className="bg-emerald-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">BB</div><div className="font-bold text-emerald-700">{b.beratBadan || '-'}</div></div>
@@ -1623,7 +1623,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                             <th className="py-2.5 px-3 border-r border-slate-200">Tgl Lahir Balita</th>
                             <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-emerald-50/50 text-emerald-800">Umur Balita</th>
                           </>)}
-                          <th className="py-2.5 px-3 border-r border-slate-200">Usia Kandungan</th>
+                          {pmSubTab === 'Bumil' && <th className="py-2.5 px-3 border-r border-slate-200">Usia Kandungan</th>}
                           <th className="py-2.5 px-3 border-r border-slate-200">Alamat</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">BB (kg)</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">TB (cm)</th>
@@ -1657,7 +1657,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                               <td className="py-2.5 px-3 border-r border-slate-100">{b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : ''}</td>
                               <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-emerald-700">{b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : ''}</td>
                             </>)}
-                            <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.usiaKandungan}</span></td>
+                            {pmSubTab === 'Bumil' && <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.usiaKandungan}</span></td>}
                             <td className="py-2.5 px-3 border-r border-slate-100 max-w-[150px] truncate">{b.alamat}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-emerald-700">{b.beratBadan || '-'}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-blue-700">{b.tinggiBadan || '-'}</td>
@@ -1931,7 +1931,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                           <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Balita/Busui</label><input type="text" placeholder="Nama anak/bayi" value={form3B.namaBalita} onChange={(e) => setForm3B({...form3B, namaBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                           <div><label className="block text-xs font-semibold text-slate-700 mb-1">Tgl Lahir Balita/Busui</label><input type="date" value={form3B.tanggalLahirBalita} onChange={(e) => setForm3B({...form3B, tanggalLahirBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />{form3B.tanggalLahirBalita && <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1"><Calendar className="w-3 h-3" /><span>Umur: {calculateAge(form3B.tanggalLahirBalita)}</span></p>}</div>
                         </>)}
-                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">Usia Kandungan</label><input type="text" placeholder="Contoh: 24 Minggu / 7 Bulan" value={form3B.usiaKandungan} onChange={(e) => setForm3B({...form3B, usiaKandungan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                        {pmSubTab === 'Bumil' && <div><label className="block text-xs font-semibold text-slate-700 mb-1">Usia Kandungan</label><input type="text" placeholder="Contoh: 24 Minggu / 7 Bulan" value={form3B.usiaKandungan} onChange={(e) => setForm3B({...form3B, usiaKandungan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>}
                         <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label><input type="text" placeholder="Desa/Kelurahan, Kecamatan" value={form3B.alamat} onChange={(e) => setForm3B({...form3B, alamat: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                           <div><label className="block text-xs font-semibold text-slate-700 mb-1">BB (kg)</label><input type="number" step="0.1" placeholder="65.0" value={form3B.beratBadan} onChange={(e) => setForm3B({...form3B, beratBadan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
