@@ -50,6 +50,8 @@ export async function POST(req: NextRequest) {
       tinggi_badan: body.tinggiBadan || 0,
       lingkar_kepala: body.lingkarKepala || 0,
       lingkar_lengan: body.lingkarLengan || 0,
+      nama_balita: body.namaBalita || null,
+      tanggal_lahir_balita: body.tanggalLahirBalita || null,
       has_allergy: body.hasAllergy || false,
       allergy_type: body.hasAllergy ? body.allergyType : null,
       status: 'Aktif',
@@ -88,6 +90,8 @@ export async function PUT(req: NextRequest) {
       tinggi_badan: body.tinggiBadan || 0,
       lingkar_kepala: body.lingkarKepala || 0,
       lingkar_lengan: body.lingkarLengan || 0,
+      nama_balita: body.namaBalita || null,
+      tanggal_lahir_balita: body.tanggalLahirBalita || null,
       has_allergy: body.hasAllergy || false,
       allergy_type: body.hasAllergy ? body.allergyType : null,
     }

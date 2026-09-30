@@ -40,6 +40,7 @@ interface Beneficiary3B {
   beratBadan: number; tinggiBadan: number;
   lingkarKepala: number; lingkarLengan: number;
   usiaKandungan: string;
+  namaBalita: string; tanggalLahirBalita: string;
   hasAllergy: boolean; allergyType: string;
   status: 'Aktif' | 'Lulus 3B';
 }
@@ -115,8 +116,13 @@ export default function MainApp({ onLogout }: MainAppProps) {
         const res = await fetch('/api/check-migration');
         const data = await res.json();
         if (data.applied === false && data.sql) {
+          // Migration 003 not applied
           setMigrationNeeded(true);
           setMigrationSql(data.sql);
+        } else if (data.missing_migrations && data.missing_migrations.length > 0) {
+          // Some later migrations not applied
+          setMigrationNeeded(true);
+          setMigrationSql(data.missing_migrations.join('\n\n'));
         } else {
           setMigrationNeeded(false);
         }
@@ -171,6 +177,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
         beratBadan: b.berat_badan || 0, tinggiBadan: b.tinggi_badan || 0,
         lingkarKepala: b.lingkar_kepala || 0, lingkarLengan: b.lingkar_lengan || 0,
         usiaKandungan: b.usia_kandungan || '-',
+        namaBalita: b.nama_balita || '-', tanggalLahirBalita: b.tanggal_lahir_balita || '-',
         hasAllergy: b.has_allergy,
         allergyType: b.allergy_type || '-', status: b.status || 'Aktif',
       })));
@@ -205,6 +212,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
     birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '',
     beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '',
     usiaKandungan: '',
+    namaBalita: '', tanggalLahirBalita: '',
     hasAllergy: false, allergyType: '',
   });
 
@@ -480,7 +488,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
       setFormGuru({ schoolName: item.schoolName, fullName: item.fullName, nuptk: item.nuptk || '', nip: item.nip || '', jk: item.jk, tempatLahir: item.tempatLahir || '', tanggalLahir: item.tanggalLahir || '', nik: item.nik || '', jenisTendik: item.jenisTendik || 'Guru', alamat: item.alamat || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     } else {
       setPmSubTab(item.subCategory === 'Balita' ? (getAgeMonths(item.birthDate) >= 999 ? 'Balita Tdk Dikategorikan' : getAgeMonths(item.birthDate) < 6 ? 'Balita < 6 Bln' : getAgeMonths(item.birthDate) <= 11 ? 'Balita 6-11 Bln' : getAgeMonths(item.birthDate) <= 60 ? 'Balita 12-60 Bln' : 'Balita > 60 Bln') : item.subCategory as any); setPmMainTab('3B');
-      setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), usiaKandungan: item.usiaKandungan || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
+      setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), usiaKandungan: item.usiaKandungan || '', namaBalita: item.namaBalita || '', tanggalLahirBalita: item.tanggalLahirBalita || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     }
     setIsModalOpen(true);
   };
@@ -560,7 +568,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
     setEditingId(null);
     if (pmMainTab === 'Sekolah' && pmSubTab === 'Siswa') setFormSiswa({ schoolName: 'SDN 01 Sambas', nama: '', nipd: '', jk: 'L', nisn: '', tempatLahir: '', tanggalLahir: '', nik: '', agama: 'Islam', alamat: '', kelas: '', beratBadan: '', tinggiBadan: '', namaAyah: '', namaIbu: '', hasAllergy: false, allergyType: '' });
     else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') setFormGuru({ schoolName: 'SDN 01 Sambas', fullName: '', nuptk: '', nip: '', jk: 'L', tempatLahir: '', tanggalLahir: '', nik: '', jenisTendik: 'Guru', alamat: '', hasAllergy: false, allergyType: '' });
-    else setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '', beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '', usiaKandungan: '', hasAllergy: false, allergyType: '' });
+    else setForm3B({ posyanduName: '', fullName: '', nik: '', gender: 'P', birthDate: '', tempatLahir: '', alamat: '', namaOrtu: '', beratBadan: '', tinggiBadan: '', lingkarKepala: '', lingkarLengan: '', usiaKandungan: '', namaBalita: '', tanggalLahirBalita: '', hasAllergy: false, allergyType: '' });
     setIsModalOpen(true);
   };
 
@@ -807,10 +815,10 @@ export default function MainApp({ onLogout }: MainAppProps) {
       if (scope === 'all' || pmSubTab === 'Bumil' || pmSubTab === 'Busui') {
         const nonBalitaData = scope === 'all' ? beneficiaries3b.filter(b => b.subCategory !== 'Balita') : filtered3b.filter(b => b.subCategory !== 'Balita');
         if (nonBalitaData.length > 0) {
-          const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Usia Kandungan', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
-          const rows = nonBalitaData.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), safeStr(b.usiaKandungan), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+          const headers = ['No', 'Kategori', 'Nama Penerima', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Nama Balita/Busui', 'Tgl Lahir Balita', 'Umur Balita', 'Usia Kandungan', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
+          const rows = nonBalitaData.map((b, i) => [safeStr(i+1), safeStr(b.subCategory), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), safeStr(b.namaBalita), safeStr(b.tanggalLahirBalita), b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : '', safeStr(b.usiaKandungan), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
           const ws = workbook.addWorksheet(scope === 'all' ? 'Bumil-Busui' : pmSubTab);
-          addKop(ws, `DATA PENERIMA MANFAAT - ${scope === 'all' ? 'BUMIL & BUSUI' : pmSubTab.toUpperCase()}`, headers, rows, [5, 10, 25, 20, 5, 15, 15, 12, 15, 20, 8, 8, 8, 8, 20, 12]);
+          addKop(ws, `DATA PENERIMA MANFAAT - ${scope === 'all' ? 'BUMIL & BUSUI' : pmSubTab.toUpperCase()}`, headers, rows, [5, 10, 25, 20, 5, 15, 15, 12, 20, 15, 12, 15, 20, 8, 8, 8, 8, 20, 12]);
         }
       }
 
@@ -955,6 +963,11 @@ export default function MainApp({ onLogout }: MainAppProps) {
             <div className="bg-amber-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">LL</div><div className="font-bold text-amber-700">{b.lingkarLengan || '-'}</div></div>
           </div>
         </>) : (<>
+          <div className="col-span-2"><span className="text-slate-400">Nama Balita/Busui:</span> <span className="font-medium text-emerald-700">{b.namaBalita !== '-' ? b.namaBalita : '-'}</span></div>
+          {b.tanggalLahirBalita !== '-' && (<>
+            <div><span className="text-slate-400">Tgl Lahir Balita:</span> <span className="font-medium">{b.tanggalLahirBalita}</span></div>
+            <div><span className="text-slate-400">Umur Balita:</span> <span className="font-bold text-emerald-700">{calculateAge(b.tanggalLahirBalita)}</span></div>
+          </>)}
           <div className="col-span-2"><span className="text-slate-400">Usia Kandungan:</span> <span className="font-medium text-amber-700">{b.usiaKandungan}</span></div>
           <div className="col-span-2"><span className="text-slate-400">Alamat:</span> <span className="font-medium text-slate-700">{b.alamat}</span></div>
           <div className="grid grid-cols-4 gap-1 text-center">
@@ -1603,6 +1616,9 @@ export default function MainApp({ onLogout }: MainAppProps) {
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">LK (cm)</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">LL (cm)</th>
                         </>) : (<>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Nama Balita/Busui</th>
+                          <th className="py-2.5 px-3 border-r border-slate-200">Tgl Lahir Balita</th>
+                          <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-emerald-50/50 text-emerald-800">Umur Balita</th>
                           <th className="py-2.5 px-3 border-r border-slate-200">Usia Kandungan</th>
                           <th className="py-2.5 px-3 border-r border-slate-200">Alamat</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">BB (kg)</th>
@@ -1632,6 +1648,9 @@ export default function MainApp({ onLogout }: MainAppProps) {
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-violet-700">{b.lingkarKepala || '-'}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-amber-700">{b.lingkarLengan || '-'}</td>
                           </>) : (<>
+                            <td className="py-2.5 px-3 border-r border-slate-100 font-medium">{b.namaBalita !== '-' ? b.namaBalita : ''}</td>
+                            <td className="py-2.5 px-3 border-r border-slate-100">{b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : ''}</td>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-emerald-700">{b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : ''}</td>
                             <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.usiaKandungan}</span></td>
                             <td className="py-2.5 px-3 border-r border-slate-100 max-w-[150px] truncate">{b.alamat}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-emerald-700">{b.beratBadan || '-'}</td>
@@ -1902,6 +1921,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
                       </>
                     ) : (
                       <>
+                        <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Balita/Busui</label><input type="text" placeholder="Nama anak/bayi" value={form3B.namaBalita} onChange={(e) => setForm3B({...form3B, namaBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">Tgl Lahir Balita/Busui</label><input type="date" value={form3B.tanggalLahirBalita} onChange={(e) => setForm3B({...form3B, tanggalLahirBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />{form3B.tanggalLahirBalita && <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1"><Calendar className="w-3 h-3" /><span>Umur: {calculateAge(form3B.tanggalLahirBalita)}</span></p>}</div>
                         <div><label className="block text-xs font-semibold text-slate-700 mb-1">Usia Kandungan</label><input type="text" placeholder="Contoh: 24 Minggu / 7 Bulan" value={form3B.usiaKandungan} onChange={(e) => setForm3B({...form3B, usiaKandungan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                         <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label><input type="text" placeholder="Desa/Kelurahan, Kecamatan" value={form3B.alamat} onChange={(e) => setForm3B({...form3B, alamat: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

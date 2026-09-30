@@ -72,12 +72,28 @@ CREATE POLICY "Allow all for pm_periods" ON pm_periods FOR ALL USING (true) WITH
       .limit(1)
     checks.beneficiaries_3b_period_id = !benErr
 
-    const allApplied = checks.pm_periods && checks.students_period_id && checks.teachers_period_id && checks.beneficiaries_3b_period_id
+    // Check if nama_balita column exists (migration 004)
+    const { error: balitaFieldErr } = await supabase
+      .from('beneficiaries_3b')
+      .select('id,nama_balita,tanggal_lahir_balita')
+      .limit(1)
+    checks.beneficiaries_3b_balita_fields = !balitaFieldErr
+
+    const allApplied = checks.pm_periods && checks.students_period_id && checks.teachers_period_id && checks.beneficiaries_3b_period_id && checks.beneficiaries_3b_balita_fields
+
+    // Build migration SQL for any missing parts
+    const missingMigrations: string[] = []
+    if (!checks.beneficiaries_3b_balita_fields) {
+      missingMigrations.push(`-- Migration 004: Add balita/child fields to beneficiaries_3b
+ALTER TABLE beneficiaries_3b ADD COLUMN IF NOT EXISTS nama_balita TEXT NULL;
+ALTER TABLE beneficiaries_3b ADD COLUMN IF NOT EXISTS tanggal_lahir_balita DATE NULL;`)
+    }
 
     return NextResponse.json({
       applied: allApplied,
       checks,
       period_count: data?.length || 0,
+      missing_migrations: missingMigrations,
     })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal cek migrasi'
