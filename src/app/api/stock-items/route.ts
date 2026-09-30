@@ -20,6 +20,23 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
+
+    // Bulk insert for CSV import
+    if (body.bulk && Array.isArray(body.items)) {
+      const records = body.items.map((item: any) => ({
+        name: item.name,
+        category: item.category || 'Lainnya',
+        unit: item.unit || 'pcs',
+        stock_qty: item.stock_qty || 0,
+        min_stock: item.min_stock || 0,
+        location: item.location || '-',
+        description: item.description || null,
+      }))
+      const { data, error } = await supabase.from('stock_items').insert(records).select()
+      if (error) throw error
+      return NextResponse.json({ inserted: data?.length || 0 }, { status: 201 })
+    }
+
     const { data, error } = await supabase.from('stock_items').insert([{
       name: body.name,
       category: body.category || 'Lainnya',
