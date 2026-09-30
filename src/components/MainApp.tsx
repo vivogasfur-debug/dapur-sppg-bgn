@@ -963,10 +963,12 @@ export default function MainApp({ onLogout }: MainAppProps) {
             <div className="bg-amber-50 rounded-lg p-1.5"><div className="text-[9px] text-slate-400">LL</div><div className="font-bold text-amber-700">{b.lingkarLengan || '-'}</div></div>
           </div>
         </>) : (<>
-          <div className="col-span-2"><span className="text-slate-400">Nama Balita/Busui:</span> <span className="font-medium text-emerald-700">{b.namaBalita !== '-' ? b.namaBalita : '-'}</span></div>
-          {b.tanggalLahirBalita !== '-' && (<>
-            <div><span className="text-slate-400">Tgl Lahir Balita:</span> <span className="font-medium">{b.tanggalLahirBalita}</span></div>
-            <div><span className="text-slate-400">Umur Balita:</span> <span className="font-bold text-emerald-700">{calculateAge(b.tanggalLahirBalita)}</span></div>
+          {b.subCategory === 'Busui' && (<>
+            <div className="col-span-2"><span className="text-slate-400">Nama Balita/Busui:</span> <span className="font-medium text-emerald-700">{b.namaBalita !== '-' ? b.namaBalita : '-'}</span></div>
+            {b.tanggalLahirBalita !== '-' && (<>
+              <div><span className="text-slate-400">Tgl Lahir Balita:</span> <span className="font-medium">{b.tanggalLahirBalita}</span></div>
+              <div><span className="text-slate-400">Umur Balita:</span> <span className="font-bold text-emerald-700">{calculateAge(b.tanggalLahirBalita)}</span></div>
+            </>)}
           </>)}
           <div className="col-span-2"><span className="text-slate-400">Usia Kandungan:</span> <span className="font-medium text-amber-700">{b.usiaKandungan}</span></div>
           <div className="col-span-2"><span className="text-slate-400">Alamat:</span> <span className="font-medium text-slate-700">{b.alamat}</span></div>
@@ -1616,9 +1618,11 @@ export default function MainApp({ onLogout }: MainAppProps) {
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">LK (cm)</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">LL (cm)</th>
                         </>) : (<>
-                          <th className="py-2.5 px-3 border-r border-slate-200">Nama Balita/Busui</th>
-                          <th className="py-2.5 px-3 border-r border-slate-200">Tgl Lahir Balita</th>
-                          <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-emerald-50/50 text-emerald-800">Umur Balita</th>
+                          {pmSubTab === 'Busui' && (<>
+                            <th className="py-2.5 px-3 border-r border-slate-200">Nama Balita/Busui</th>
+                            <th className="py-2.5 px-3 border-r border-slate-200">Tgl Lahir Balita</th>
+                            <th className="py-2.5 px-3 text-center border-r border-slate-200 bg-emerald-50/50 text-emerald-800">Umur Balita</th>
+                          </>)}
                           <th className="py-2.5 px-3 border-r border-slate-200">Usia Kandungan</th>
                           <th className="py-2.5 px-3 border-r border-slate-200">Alamat</th>
                           <th className="py-2.5 px-3 text-center border-r border-slate-200">BB (kg)</th>
@@ -1648,9 +1652,11 @@ export default function MainApp({ onLogout }: MainAppProps) {
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-violet-700">{b.lingkarKepala || '-'}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-amber-700">{b.lingkarLengan || '-'}</td>
                           </>) : (<>
-                            <td className="py-2.5 px-3 border-r border-slate-100 font-medium">{b.namaBalita !== '-' ? b.namaBalita : ''}</td>
-                            <td className="py-2.5 px-3 border-r border-slate-100">{b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : ''}</td>
-                            <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-emerald-700">{b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : ''}</td>
+                            {pmSubTab === 'Busui' && (<>
+                              <td className="py-2.5 px-3 border-r border-slate-100 font-medium">{b.namaBalita !== '-' ? b.namaBalita : ''}</td>
+                              <td className="py-2.5 px-3 border-r border-slate-100">{b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : ''}</td>
+                              <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-emerald-700">{b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : ''}</td>
+                            </>)}
                             <td className="py-2.5 px-3 border-r border-slate-100"><span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded font-semibold">{b.usiaKandungan}</span></td>
                             <td className="py-2.5 px-3 border-r border-slate-100 max-w-[150px] truncate">{b.alamat}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-emerald-700">{b.beratBadan || '-'}</td>
@@ -1921,8 +1927,10 @@ export default function MainApp({ onLogout }: MainAppProps) {
                       </>
                     ) : (
                       <>
-                        <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Balita/Busui</label><input type="text" placeholder="Nama anak/bayi" value={form3B.namaBalita} onChange={(e) => setForm3B({...form3B, namaBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
-                        <div><label className="block text-xs font-semibold text-slate-700 mb-1">Tgl Lahir Balita/Busui</label><input type="date" value={form3B.tanggalLahirBalita} onChange={(e) => setForm3B({...form3B, tanggalLahirBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />{form3B.tanggalLahirBalita && <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1"><Calendar className="w-3 h-3" /><span>Umur: {calculateAge(form3B.tanggalLahirBalita)}</span></p>}</div>
+                        {pmSubTab === 'Busui' && (<>
+                          <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Nama Balita/Busui</label><input type="text" placeholder="Nama anak/bayi" value={form3B.namaBalita} onChange={(e) => setForm3B({...form3B, namaBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
+                          <div><label className="block text-xs font-semibold text-slate-700 mb-1">Tgl Lahir Balita/Busui</label><input type="date" value={form3B.tanggalLahirBalita} onChange={(e) => setForm3B({...form3B, tanggalLahirBalita: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" />{form3B.tanggalLahirBalita && <p className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1"><Calendar className="w-3 h-3" /><span>Umur: {calculateAge(form3B.tanggalLahirBalita)}</span></p>}</div>
+                        </>)}
                         <div><label className="block text-xs font-semibold text-slate-700 mb-1">Usia Kandungan</label><input type="text" placeholder="Contoh: 24 Minggu / 7 Bulan" value={form3B.usiaKandungan} onChange={(e) => setForm3B({...form3B, usiaKandungan: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                         <div className="sm:col-span-2"><label className="block text-xs font-semibold text-slate-700 mb-1">Alamat</label><input type="text" placeholder="Desa/Kelurahan, Kecamatan" value={form3B.alamat} onChange={(e) => setForm3B({...form3B, alamat: e.target.value})} className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm" /></div>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
