@@ -1460,7 +1460,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
     {/* DESKTOP: TABLE VIEW (hidden on mobile) */}
             <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200">
               <div className="flex items-stretch">
-                <button onClick={() => { const el = document.getElementById('pm-table-scroll'); if (el) el.scrollBy({ left: -300, behavior: 'smooth' }); }} className="shrink-0 w-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 border-r border-slate-200 text-slate-400 hover:text-slate-700 transition-all active:scale-95" title="Geser kiri"><ChevronLeft className="w-5 h-5" /></button>
+                <button onClick={() => { const el = document.getElementById('pm-table-scroll'); if (el) el.scrollBy({ left: -300, behavior: 'smooth' }); }} className="shrink-0 w-12 flex flex-col items-center justify-center gap-0.5 bg-emerald-50 hover:bg-emerald-100 border-r-2 border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all active:scale-95 font-bold" title="Geser kiri"><ChevronLeft className="w-5 h-5" /><span className="text-[8px] leading-none">KIRI</span></button>
                 <div className="flex-1 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'thin' }} id="pm-table-scroll">
                 {pmMainTab === 'Sekolah' && pmSubTab === 'Siswa' && (
                   <table className="min-w-max w-full text-left border-collapse text-xs whitespace-nowrap">
@@ -1625,7 +1625,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                   </table>
                 )}
               </div>
-                <button onClick={() => { const el = document.getElementById('pm-table-scroll'); if (el) el.scrollBy({ left: 300, behavior: 'smooth' }); }} className="shrink-0 w-10 flex items-center justify-center bg-slate-50 hover:bg-slate-100 border-l border-slate-200 text-slate-400 hover:text-slate-700 transition-all active:scale-95" title="Geser kanan"><ChevronRight className="w-5 h-5" /></button>
+                <button onClick={() => { const el = document.getElementById('pm-table-scroll'); if (el) el.scrollBy({ left: 300, behavior: 'smooth' }); }} className="shrink-0 w-12 flex flex-col items-center justify-center gap-0.5 bg-emerald-50 hover:bg-emerald-100 border-l-2 border-emerald-200 text-emerald-600 hover:text-emerald-800 transition-all active:scale-95 font-bold" title="Geser kanan"><ChevronRight className="w-5 h-5" /><span className="text-[8px] leading-none">KANAN</span></button>
               </div>
             </div>
 
