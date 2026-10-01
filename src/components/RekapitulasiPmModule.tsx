@@ -365,8 +365,10 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                   </button>
                   {/* Card Body */}
                   {!isCollapsed && (
-                    <div className="p-3 relative">
-                      <div className="overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'thin' }} id={`scroll-${recap.jenjang}`}>
+                    <div className="p-3">
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => { const el = document.getElementById(`scroll-${recap.jenjang}`); if (el) el.scrollBy({ left: -250, behavior: 'smooth' }); }} className="shrink-0 w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm text-slate-600 hover:text-slate-800 transition-all active:scale-90" title="Geser kiri"><ChevronLeft className="w-5 h-5" /></button>
+                        <div className="flex-1 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'thin' }} id={`scroll-${recap.jenjang}`}>
                         <table className="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
                         <thead>
                           <tr className={jenjangHeaderBg(recap.jenjang)}>
@@ -450,9 +452,8 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                         </tbody>
                       </table>
                       </div>
-                      {/* Scroll buttons */}
-                      <button onClick={() => { const el = document.getElementById(`scroll-${recap.jenjang}`); if (el) el.scrollBy({ left: -200, behavior: 'smooth' }); }} className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 hover:bg-white border border-slate-200 rounded-full shadow-md text-slate-600 hover:text-slate-800 transition-all" title="Geser kiri"><ChevronLeft className="w-4 h-4" /></button>
-                      <button onClick={() => { const el = document.getElementById(`scroll-${recap.jenjang}`); if (el) el.scrollBy({ left: 200, behavior: 'smooth' }); }} className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 hover:bg-white border border-slate-200 rounded-full shadow-md text-slate-600 hover:text-slate-800 transition-all" title="Geser kanan"><ChevronRight className="w-4 h-4" /></button>
+                        <button onClick={() => { const el = document.getElementById(`scroll-${recap.jenjang}`); if (el) el.scrollBy({ left: 250, behavior: 'smooth' }); }} className="shrink-0 w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm text-slate-600 hover:text-slate-800 transition-all active:scale-90" title="Geser kanan"><ChevronRight className="w-5 h-5" /></button>
+                      </div>
                     </div>
                   )}
                 </div>
