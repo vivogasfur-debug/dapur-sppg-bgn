@@ -63,3 +63,22 @@ Stage Summary:
 - Fixed 2 TypeScript bugs: searchTerm before declaration, type mismatch in 3B delete-all filter
 - Pagination works: schoolNames derived from filtered data, schoolPageIdx tracks current page, data filtered per currentSchoolName
 - UI shows school name with "X dari Y" counter and prev/next buttons
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Deploy project to Vercel
+
+Work Log:
+- Found Supabase credentials in scripts: URL=https://zwbspstsbpzsnphdohko.supabase.co, Key=sb_publishable_IBx9PYkqJPg77OZmISs_Rg_NWDtJDLw
+- Added NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env
+- Removed output:"standalone" from next.config.ts (not needed for Vercel serverless)
+- Fixed package.json build script: removed cp commands for standalone, kept simple "next build"
+- Build succeeded locally with Supabase env vars
+- Deployed temporary deployment to Vercel: https://temporary-nimble-nickel-odb96yy.vercel.app
+- Claim URL: https://vercel.com/claim-deployment?code=9cb667d0-df98-4723-ab41-5ee93ea05f84
+
+Stage Summary:
+- Temporary deployment live at https://temporary-nimble-nickel-odb96yy.vercel.app (expires 58 min)
+- User needs to claim deployment to make it permanent
+- Environment variables need to be set in Vercel dashboard after claiming
