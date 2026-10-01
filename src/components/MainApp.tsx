@@ -219,8 +219,6 @@ export default function MainApp({ onLogout }: MainAppProps) {
   // === DETEKSI DATA GANDA ===
   const [duplicateWarnings, setDuplicateWarnings] = useState<Array<{type:string; field:string; label:string; detail:string}>>([]);
 
-  const normalizeStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-
   const checkDuplicates = useCallback(() => {
     if (editingId) { setDuplicateWarnings([]); return; }
     const warnings: Array<{type:string; field:string; label:string; detail:string}> = [];
@@ -235,19 +233,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
         const dup = students.find(s => s.nisn === f.nisn);
         if (dup) warnings.push({type:'exact', field:'NISN', label:'NISN Sama', detail:`${dup.nama} (${dup.schoolName}, Kelas ${dup.kelas})`});
       }
-      if (f.nama && f.nama.length >= 3) {
-        const norm = normalizeStr(f.nama);
-        const similar = students.filter(s => {
-          if (normalizeStr(s.nama) === norm && s.schoolName === f.schoolName) return true;
-          if (normalizeStr(s.nama) === norm && f.tanggalLahir && s.tanggalLahir === f.tanggalLahir) return true;
-          return false;
-        });
-        similar.forEach(s => {
-          if (!warnings.some(w => w.detail.includes(s.nama) && w.detail.includes(s.schoolName))) {
-            warnings.push({type:'similar', field:'Nama+Sekolah/TTL', label:'Nama Mirip', detail:`${s.nama} (${s.schoolName}${s.tanggalLahir ? ', TTL: '+s.tanggalLahir : ''})`});
-          }
-        });
-      }
+
     } else if (pmMainTab === 'Sekolah' && pmSubTab === 'Guru') {
       const f = formGuru;
       if (f.nik && f.nik.length >= 10) {
@@ -262,38 +248,14 @@ export default function MainApp({ onLogout }: MainAppProps) {
         const dup = teachers.find(t => t.nuptk === f.nuptk);
         if (dup) warnings.push({type:'exact', field:'NUPTK', label:'NUPTK Sama', detail:`${dup.fullName} (${dup.schoolName})`});
       }
-      if (f.fullName && f.fullName.length >= 3) {
-        const norm = normalizeStr(f.fullName);
-        const similar = teachers.filter(t => {
-          if (normalizeStr(t.fullName) === norm && t.schoolName === f.schoolName) return true;
-          if (normalizeStr(t.fullName) === norm && f.tanggalLahir && t.tanggalLahir === f.tanggalLahir) return true;
-          return false;
-        });
-        similar.forEach(t => {
-          if (!warnings.some(w => w.detail.includes(t.fullName) && w.detail.includes(t.schoolName))) {
-            warnings.push({type:'similar', field:'Nama+Sekolah/TTL', label:'Nama Mirip', detail:`${t.fullName} (${t.schoolName})`});
-          }
-        });
-      }
+
     } else if (pmMainTab === '3B') {
       const f = form3B;
       if (f.nik && f.nik.length >= 10) {
         const dup = beneficiaries3b.find(b => b.nik === f.nik);
         if (dup) warnings.push({type:'exact', field:'NIK', label:'NIK Sama', detail:`${dup.fullName} (${dup.posyanduName}, ${dup.subCategory})`});
       }
-      if (f.fullName && f.fullName.length >= 3) {
-        const norm = normalizeStr(f.fullName);
-        const similar = beneficiaries3b.filter(b => {
-          if (normalizeStr(b.fullName) === norm && b.posyanduName === f.posyanduName) return true;
-          if (normalizeStr(b.fullName) === norm && f.birthDate && b.birthDate === f.birthDate) return true;
-          return false;
-        });
-        similar.forEach(b => {
-          if (!warnings.some(w => w.detail.includes(b.fullName) && w.detail.includes(b.posyanduName))) {
-            warnings.push({type:'similar', field:'Nama+Posyandu/TTL', label:'Nama Mirip', detail:`${b.fullName} (${b.posyanduName}, ${b.subCategory})`});
-          }
-        });
-      }
+
     }
     setDuplicateWarnings(warnings);
   }, [pmMainTab, pmSubTab, formSiswa, formGuru, form3B, editingId, students, teachers, beneficiaries3b]);
@@ -309,17 +271,6 @@ export default function MainApp({ onLogout }: MainAppProps) {
     items: Array<{ id: string; nama: string; lokasi: string; nik: string; detail: string }>;
   }>>([]);
 
-  const levenshtein = (a: string, b: string): number => {
-    const m = a.length, n = b.length;
-    if (!m) return n; if (!n) return m;
-    const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-    for (let i = 0; i <= m; i++) dp[i][0] = i;
-    for (let j = 0; j <= n; j++) dp[0][j] = j;
-    for (let i = 1; i <= m; i++) for (let j = 1; j <= n; j++) {
-      dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
-    }
-    return dp[m][n];
-  };
 
   const scanAllDuplicates = useCallback(() => {
     setScanning(true);
@@ -330,17 +281,14 @@ export default function MainApp({ onLogout }: MainAppProps) {
       // --- SCAN SISWA ---
       for (let i = 0; i < students.length; i++) {
         const a = students[i]; const keyA = `s-${a.id}`; if (seen.has(keyA)) continue;
-        const normA = normalizeStr(a.nama);
         for (let j = i + 1; j < students.length; j++) {
           const b = students[j]; const keyB = `s-${b.id}`; if (seen.has(keyB)) continue;
-          let match = false; let reason = ''; let severity: 'exact' | 'similar' = 'similar';
-          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; severity = 'exact'; }
-          else if (a.nisn && b.nisn && a.nisn !== '-' && b.nisn !== '-' && a.nisn === b.nisn) { match = true; reason = 'NISN Sama'; severity = 'exact'; }
-          else if (normA === normalizeStr(b.nama) && a.schoolName === b.schoolName) { match = true; reason = `Nama Identik + Sekolah Sama (${a.schoolName})`; severity = 'exact'; }
-          else if (normA.length >= 4 && normalizeStr(b.nama).length >= 4 && levenshtein(normA, normalizeStr(b.nama)) <= 2 && a.schoolName === b.schoolName) { match = true; reason = `Nama Mirip (beda 1-2 huruf) + Sekolah Sama (${a.schoolName})`; }
+          let match = false; let reason = '';
+          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; }
+          else if (a.nisn && b.nisn && a.nisn !== '-' && b.nisn !== '-' && a.nisn === b.nisn) { match = true; reason = 'NISN Sama'; }
           if (match) {
             seen.add(keyA); seen.add(keyB);
-            groups.push({ type: 'students', reason, severity, items: [
+            groups.push({ type: 'students', reason, severity: 'exact', items: [
               { id: a.id, nama: a.nama, lokasi: a.schoolName, nik: a.nik, detail: `Kelas ${a.kelas}` },
               { id: b.id, nama: b.nama, lokasi: b.schoolName, nik: b.nik, detail: `Kelas ${b.kelas}` },
             ]});
@@ -351,18 +299,15 @@ export default function MainApp({ onLogout }: MainAppProps) {
       // --- SCAN GURU ---
       for (let i = 0; i < teachers.length; i++) {
         const a = teachers[i]; const keyA = `t-${a.id}`; if (seen.has(keyA)) continue;
-        const normA = normalizeStr(a.fullName);
         for (let j = i + 1; j < teachers.length; j++) {
           const b = teachers[j]; const keyB = `t-${b.id}`; if (seen.has(keyB)) continue;
-          let match = false; let reason = ''; let severity: 'exact' | 'similar' = 'similar';
-          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; severity = 'exact'; }
-          else if (a.nip && b.nip && a.nip !== '-' && b.nip !== '-' && a.nip === b.nip) { match = true; reason = 'NIP Sama'; severity = 'exact'; }
-          else if (a.nuptk && b.nuptk && a.nuptk !== '-' && b.nuptk !== '-' && a.nuptk === b.nuptk) { match = true; reason = 'NUPTK Sama'; severity = 'exact'; }
-          else if (normA === normalizeStr(b.fullName) && a.schoolName === b.schoolName) { match = true; reason = `Nama Identik + Sekolah Sama (${a.schoolName})`; severity = 'exact'; }
-          else if (normA.length >= 4 && normalizeStr(b.fullName).length >= 4 && levenshtein(normA, normalizeStr(b.fullName)) <= 2 && a.schoolName === b.schoolName) { match = true; reason = `Nama Mirip (beda 1-2 huruf) + Sekolah Sama (${a.schoolName})`; }
+          let match = false; let reason = '';
+          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; }
+          else if (a.nip && b.nip && a.nip !== '-' && b.nip !== '-' && a.nip === b.nip) { match = true; reason = 'NIP Sama'; }
+          else if (a.nuptk && b.nuptk && a.nuptk !== '-' && b.nuptk !== '-' && a.nuptk === b.nuptk) { match = true; reason = 'NUPTK Sama'; }
           if (match) {
             seen.add(keyA); seen.add(keyB);
-            groups.push({ type: 'teachers', reason, severity, items: [
+            groups.push({ type: 'teachers', reason, severity: 'exact', items: [
               { id: a.id, nama: a.fullName, lokasi: a.schoolName, nik: a.nik, detail: a.jenisTendik },
               { id: b.id, nama: b.fullName, lokasi: b.schoolName, nik: b.nik, detail: b.jenisTendik },
             ]});
@@ -373,16 +318,13 @@ export default function MainApp({ onLogout }: MainAppProps) {
       // --- SCAN 3B ---
       for (let i = 0; i < beneficiaries3b.length; i++) {
         const a = beneficiaries3b[i]; const keyA = `b-${a.id}`; if (seen.has(keyA)) continue;
-        const normA = normalizeStr(a.fullName);
         for (let j = i + 1; j < beneficiaries3b.length; j++) {
           const b = beneficiaries3b[j]; const keyB = `b-${b.id}`; if (seen.has(keyB)) continue;
-          let match = false; let reason = ''; let severity: 'exact' | 'similar' = 'similar';
-          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; severity = 'exact'; }
-          else if (normA === normalizeStr(b.fullName) && a.posyanduName === b.posyanduName) { match = true; reason = `Nama Identik + Posyandu Sama (${a.posyanduName})`; severity = 'exact'; }
-          else if (normA.length >= 4 && normalizeStr(b.fullName).length >= 4 && levenshtein(normA, normalizeStr(b.fullName)) <= 2 && a.posyanduName === b.posyanduName) { match = true; reason = `Nama Mirip (beda 1-2 huruf) + Posyandu Sama (${a.posyanduName})`; }
+          let match = false; let reason = '';
+          if (a.nik && b.nik && a.nik !== '-' && b.nik !== '-' && a.nik === b.nik) { match = true; reason = 'NIK Sama'; }
           if (match) {
             seen.add(keyA); seen.add(keyB);
-            groups.push({ type: '3b', reason, severity, items: [
+            groups.push({ type: '3b', reason, severity: 'exact', items: [
               { id: a.id, nama: a.fullName, lokasi: a.posyanduName, nik: a.nik, detail: a.subCategory },
               { id: b.id, nama: b.fullName, lokasi: b.posyanduName, nik: b.nik, detail: b.subCategory },
             ]});
@@ -393,15 +335,15 @@ export default function MainApp({ onLogout }: MainAppProps) {
       setDupResults(groups);
       setScanning(false);
       setDupModalOpen(true);
-      if (groups.length === 0) toast.success('Tidak ditemukan data ganda atau mirip!');
-      else toast.warning(`Ditemukan ${groups.length} pasang data ganda/mirip`);
+      if (groups.length === 0) toast.success('Tidak ditemukan data ganda!');
+      else toast.warning(`Ditemukan ${groups.length} pasang data ganda`);
     }, 100);
   }, [students, teachers, beneficiaries3b]);
 
   const [dupFilter, setDupFilter] = useState<'all' | 'students' | 'teachers' | '3b'>('all');
   const filteredDup = dupResults.filter(g => dupFilter === 'all' || g.type === dupFilter);
-  const dupExactCount = dupResults.filter(g => g.severity === 'exact').length;
-  const dupSimilarCount = dupResults.filter(g => g.severity === 'similar').length;
+  const dupExactCount = dupResults.length;
+  const dupSimilarCount = 0;
 
   const handleDeleteDupItem = async (type: string, id: string) => {
     try {
@@ -442,16 +384,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
     e.preventDefault();
     // Cek duplikat sebelum simpan (hanya saat tambah baru)
     if (!editingId && duplicateWarnings.length > 0) {
-      const exactWarnings = duplicateWarnings.filter(w => w.type === 'exact');
-      if (exactWarnings.length > 0) {
-        toast.error(`Data ganda terdeteksi! ${exactWarnings.map(w => w.field + ': ' + w.detail).join('; ')}`, { duration: 5000 });
-        return;
-      }
-      const simWarnings = duplicateWarnings.filter(w => w.type === 'similar');
-      if (simWarnings.length > 0) {
-        const msg = `Data mirip ditemukan:\n${simWarnings.map(w => '- ' + w.label + ': ' + w.detail).join('\n')}\n\nLanjutkan menyimpan?`;
-        if (!confirm(msg)) return;
-      }
+      toast.error(`Data ganda terdeteksi! ${duplicateWarnings.map(w => w.field + ': ' + w.detail).join('; ')}`, { duration: 5000 });
+      return;
     }
     try {
       let ok = false;
@@ -1508,7 +1442,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                     {exporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                     <span className="sm:inline hidden">Semua</span>
                   </button>
-                  <button onClick={scanAllDuplicates} disabled={scanning} className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Deteksi Data Ganda/Mirip">
+                  <button onClick={scanAllDuplicates} disabled={scanning} className="flex items-center gap-1 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white px-2.5 py-2 rounded-lg text-xs font-bold transition-all shadow-sm disabled:opacity-50" title="Deteksi Data Ganda">
                     {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertCircle className="w-4 h-4" />}
                     <span className="sm:inline hidden">Deteksi Duplikat</span>
                   </button>
@@ -1984,7 +1918,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
               <div>
                 <h3 className="text-base font-bold text-slate-800 flex items-center gap-2"><AlertCircle className="w-5 h-5 text-amber-500" />Hasil Deteksi Data Ganda</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{dupResults.length} pasang ditemukan &mdash; {dupExactCount} ganda pasti, {dupSimilarCount} mirip</p>
+                <p className="text-xs text-slate-500 mt-0.5">{dupExactCount} pasang data ganda ditemukan</p>
               </div>
               <button onClick={() => setDupModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-200 rounded-xl"><X className="w-5 h-5" /></button>
             </div>
