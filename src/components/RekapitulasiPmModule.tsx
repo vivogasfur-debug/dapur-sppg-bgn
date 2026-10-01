@@ -18,7 +18,7 @@ interface RekapData {
   gender: { siswaL: number; siswaP: number; guruL: number; guruP: number; b3bL: number; b3bP: number };
   alergi: { alergiSekolah: number; alergi3b: number; alergiTotal: number };
   jenjangGroups: Record<string, { siswaCount: number; L: number; P: number; guru: number; schools: [string, number][] }>;
-  sekolahRecap?: { jenjang: string; kelasGroups: { kelas: string; kelasNum: number; siswaL: number; siswaP: number; siswaTotal: number }[]; guruL: number; guruP: number; guruTotal: number; totalSiswaL: number; totalSiswaP: number; totalSiswa: number; totalAll: number }[];
+  sekolahRecap?: { jenjang: string; schools: { schoolName: string; kelasData: Record<string, { L: number; P: number }>; totalL: number; totalP: number }[]; allKelas: string[]; jenjangTotalL: number; jenjangTotalP: number }[];
   gizi: { kurang: number; normal: number; lebih: number; noData: number };
   posyandu: { list: { name: string; total: number; bumil: number; busui: number; balita: number; L: number; P: number }[]; balita: number; balita_lt6: number; balita_gt60: number; balita_noCat: number; };
   guruSchoolMap: Record<string, number>;
@@ -272,84 +272,92 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
           {/* Rekapitulasi Pertingkatan Sekolah */}
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
             <div className="flex items-center gap-2 mb-3"><GraduationCap className="w-4 h-4 text-indigo-500" /><h4 className="text-xs font-bold text-slate-700">Rekapitulasi Pertingkatan Sekolah</h4></div>
-            <p className="text-[10px] text-slate-400 mb-3">Klasifikasi siswa dan guru berdasarkan jenjang, kelas, dan jenis kelamin.</p>
+            <p className="text-[10px] text-slate-400 mb-3">Klasifikasi siswa per sekolah dan kelas berdasarkan jenis kelamin.</p>
             <div className="overflow-x-auto">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="bg-indigo-50 text-indigo-700">
-                    <th className="px-3 py-2 text-left font-semibold" rowSpan={2}>Tingkat</th>
-                    <th className="px-3 py-2 text-left font-semibold" rowSpan={2}>Kelas</th>
-                    <th className="px-3 py-2 text-center font-semibold" colSpan={3}>Siswa</th>
-                    <th className="px-3 py-2 text-center font-semibold" colSpan={3}>Guru/Tendik</th>
-                    <th className="px-3 py-2 text-center font-semibold" rowSpan={2}>Total</th>
-                  </tr>
-                  <tr className="bg-indigo-50 text-indigo-600">
-                    <th className="px-2 py-1 text-center font-semibold text-[10px]">L</th>
-                    <th className="px-2 py-1 text-center font-semibold text-[10px]">P</th>
-                    <th className="px-2 py-1 text-center font-semibold text-[10px]">Jml</th>
-                    <th className="px-2 py-1 text-center font-semibold text-[10px]">L</th>
-                    <th className="px-2 py-1 text-center font-semibold text-[10px]">P</th>
-                    <th className="px-2 py-1 text-center font-semibold text-[10px]">Jml</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sr.filter(r => r.totalAll > 0).map((recap) => {
-                    const jenjangHasKelas = recap.kelasGroups.length > 1 || (recap.kelasGroups.length === 1 && recap.kelasGroups[0].kelas !== '-')
-                    return (
-                      <React.Fragment key={recap.jenjang}>
-                        {recap.kelasGroups.map((kg, ki) => (
-                          <tr key={`${recap.jenjang}-k${ki}`} className="border-b border-slate-100 hover:bg-slate-50/50">
-                            {ki === 0 && <td className="px-3 py-2 font-bold text-indigo-700 align-top" rowSpan={recap.kelasGroups.length + (recap.guruTotal > 0 || jenjangHasKelas ? 1 : 0)}>{recap.jenjang}</td>}
-                            <td className="px-3 py-2 text-slate-600">{kg.kelas === '-' ? '—' : `Kelas ${kg.kelas}`}</td>
-                            <td className="px-2 py-2 text-center text-blue-600 font-bold">{kg.siswaL}</td>
-                            <td className="px-2 py-2 text-center text-pink-600 font-bold">{kg.siswaP}</td>
-                            <td className="px-2 py-2 text-center font-extrabold text-slate-800">{kg.siswaTotal}</td>
-                            <td className="px-2 py-2 text-center text-slate-300">-</td>
-                            <td className="px-2 py-2 text-center text-slate-300">-</td>
-                            <td className="px-2 py-2 text-center text-slate-300">-</td>
-                            <td className="px-2 py-2 text-center font-bold text-slate-600">{kg.siswaTotal}</td>
+              {sr.filter(r => r.schools.length > 0).map((recap) => {
+                // Per-jenjang pivot table
+                const kelasCols = recap.allKelas
+                const hasKelas = kelasCols.length > 0 && !(kelasCols.length === 1 && kelasCols[0] === '-')
+                return (
+                  <div key={recap.jenjang} className="mb-4 last:mb-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold">{recap.jenjang}</span>
+                      <span className="text-[10px] text-slate-400">{recap.schools.length} sekolah &middot; L: {recap.jenjangTotalL} | P: {recap.jenjangTotalP} | Total: {recap.jenjangTotalL + recap.jenjangTotalP}</span>
+                    </div>
+                    <table className="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
+                      <thead>
+                        <tr className="bg-indigo-50 text-indigo-700">
+                          <th className="px-3 py-2 text-left font-semibold border border-slate-200 min-w-[160px]">Nama Sekolah</th>
+                          {hasKelas ? kelasCols.map(k => (
+                            <th key={k} className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[80px]">Kelas {k}</th>
+                          )) : (
+                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[80px]">Jumlah</th>
+                          )}
+                          <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-emerald-50 text-emerald-700 min-w-[80px]">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {recap.schools.map((school, si) => (
+                          <tr key={school.schoolName} className={`border-b border-slate-100 ${si % 2 === 0 ? '' : 'bg-slate-50/30'} hover:bg-indigo-50/30`}>
+                            <td className="px-3 py-2 font-medium text-slate-700 border border-slate-200">{school.schoolName}</td>
+                            {hasKelas ? kelasCols.map(k => {
+                              const d = school.kelasData[k]
+                              if (!d) return <td key={k} className="px-2 py-2 text-center border border-slate-200 text-slate-300">-</td>
+                              return (
+                                <td key={k} className="px-2 py-2 text-center border border-slate-200">
+                                  <span className="text-blue-600 font-bold">{d.L}</span>
+                                  <span className="text-slate-400 mx-0.5">|</span>
+                                  <span className="text-pink-600 font-bold">{d.P}</span>
+                                </td>
+                              )
+                            }) : (() => {
+                              const d = school.kelasData['-']
+                              return <td className="px-2 py-2 text-center border border-slate-200">
+                                <span className="text-blue-600 font-bold">{d?.L || 0}</span>
+                                <span className="text-slate-400 mx-0.5">|</span>
+                                <span className="text-pink-600 font-bold">{d?.P || 0}</span>
+                              </td>
+                            })()}
+                            <td className="px-2 py-2 text-center border border-slate-200 bg-emerald-50/30 font-extrabold text-slate-800">
+                              {school.totalL + school.totalP}
+                              <span className="block text-[9px] font-semibold text-slate-400">L{school.totalL} P{school.totalP}</span>
+                            </td>
                           </tr>
                         ))}
-                        {/* Subtotal row per jenjang (includes guru) */}
-                        <tr className="border-b border-slate-200 bg-slate-50/80">
-                          <td className="px-3 py-2 font-bold text-slate-700 italic">{jenjangHasKelas ? 'Subtotal' : 'Total'}</td>
-                          <td className="px-2 py-2 text-center text-blue-600 font-extrabold">{recap.totalSiswaL}</td>
-                          <td className="px-2 py-2 text-center text-pink-600 font-extrabold">{recap.totalSiswaP}</td>
-                          <td className="px-2 py-2 text-center font-extrabold text-slate-800">{recap.totalSiswa}</td>
-                          <td className="px-2 py-2 text-center text-violet-600 font-bold">{recap.guruL}</td>
-                          <td className="px-2 py-2 text-center text-fuchsia-600 font-bold">{recap.guruP}</td>
-                          <td className="px-2 py-2 text-center font-extrabold text-violet-700">{recap.guruTotal}</td>
-                          <td className="px-2 py-2 text-center font-extrabold text-emerald-700">{recap.totalAll}</td>
+                        {/* Jenjang subtotal */}
+                        <tr className="bg-indigo-50/60 border-t-2 border-indigo-200">
+                          <td className="px-3 py-2 font-bold text-indigo-700 border border-slate-200">Total {recap.jenjang}</td>
+                          {hasKelas ? kelasCols.map(k => {
+                            let kL = 0, kP = 0
+                            recap.schools.forEach(s => { const d = s.kelasData[k]; if (d) { kL += d.L; kP += d.P } })
+                            if (kL === 0 && kP === 0) return <td key={k} className="px-2 py-2 text-center border border-slate-200 text-slate-300">-</td>
+                            return (
+                              <td key={k} className="px-2 py-2 text-center border border-slate-200">
+                                <span className="text-blue-700 font-extrabold">{kL}</span>
+                                <span className="text-slate-400 mx-0.5">|</span>
+                                <span className="text-pink-700 font-extrabold">{kP}</span>
+                              </td>
+                            )
+                          }) : (
+                            <td className="px-2 py-2 text-center border border-slate-200">
+                              <span className="text-blue-700 font-extrabold">{recap.jenjangTotalL}</span>
+                              <span className="text-slate-400 mx-0.5">|</span>
+                              <span className="text-pink-700 font-extrabold">{recap.jenjangTotalP}</span>
+                            </td>
+                          )}
+                          <td className="px-2 py-2 text-center border border-slate-200 bg-emerald-100/50">
+                            <span className="font-extrabold text-emerald-700 text-sm">{recap.jenjangTotalL + recap.jenjangTotalP}</span>
+                            <span className="block text-[9px] font-semibold text-slate-500">L{recap.jenjangTotalL} P{recap.jenjangTotalP}</span>
+                          </td>
                         </tr>
-                      </React.Fragment>
-                    )
-                  })}
-                  {/* Grand Total */}
-                  {(() => {
-                    const activeRecaps = sr.filter(r => r.totalAll > 0)
-                    if (activeRecaps.length === 0) return null
-                    const grandSiswaL = activeRecaps.reduce((s, r) => s + r.totalSiswaL, 0)
-                    const grandSiswaP = activeRecaps.reduce((s, r) => s + r.totalSiswaP, 0)
-                    const grandSiswa = activeRecaps.reduce((s, r) => s + r.totalSiswa, 0)
-                    const grandGuruL = activeRecaps.reduce((s, r) => s + r.guruL, 0)
-                    const grandGuruP = activeRecaps.reduce((s, r) => s + r.guruP, 0)
-                    const grandGuru = activeRecaps.reduce((s, r) => s + r.guruTotal, 0)
-                    const grandAll = activeRecaps.reduce((s, r) => s + r.totalAll, 0)
-                    return (
-                      <tr className="bg-emerald-50 border-t-2 border-emerald-200">
-                        <td className="px-3 py-2.5 font-extrabold text-emerald-800" colSpan={2}>Grand Total</td>
-                        <td className="px-2 py-2.5 text-center text-blue-700 font-extrabold">{grandSiswaL}</td>
-                        <td className="px-2 py-2.5 text-center text-pink-700 font-extrabold">{grandSiswaP}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-blue-800">{grandSiswa}</td>
-                        <td className="px-2 py-2.5 text-center text-violet-700 font-extrabold">{grandGuruL}</td>
-                        <td className="px-2 py-2.5 text-center text-fuchsia-700 font-extrabold">{grandGuruP}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-violet-800">{grandGuru}</td>
-                        <td className="px-2 py-2.5 text-center font-extrabold text-emerald-700 text-sm">{grandAll}</td>
-                      </tr>
-                    )
-                  })()}
-                </tbody>
-              </table>
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              })}
+              {sr.filter(r => r.schools.length > 0).length === 0 && (
+                <div className="text-center py-6 text-xs text-slate-400 italic">Belum ada data sekolah.</div>
+              )}
             </div>
           </div>
         </>) : (<>

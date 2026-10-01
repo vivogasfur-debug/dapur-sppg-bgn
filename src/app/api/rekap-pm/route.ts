@@ -109,36 +109,40 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // === SEKOLAH RECAP (per jenjang + kelas breakdown) ===
+    // === SEKOLAH RECAP (per sekolah, kelas as columns) ===
     const sekolahRecap: {
-      jenjang: string; kelasGroups: { kelas: string; kelasNum: number; siswaL: number; siswaP: number; siswaTotal: number }[];
-      guruL: number; guruP: number; guruTotal: number;
-      totalSiswaL: number; totalSiswaP: number; totalSiswa: number; totalAll: number;
+      jenjang: string;
+      schools: { schoolName: string; kelasData: Record<string, { L: number; P: number }>; totalL: number; totalP: number }[];
+      allKelas: string[];
+      jenjangTotalL: number; jenjangTotalP: number;
     }[] = []
     for (const j of ['TK', 'SD', 'SMP', 'SMA', 'Lainnya']) {
       const jStudents = students.filter((s: any) => getJenjang(s.school_name) === j)
-      const jTeachers = teachers.filter((t: any) => getJenjang(t.school_name) === j)
-      // Group students by kelas
-      const kelasMap: Record<string, { L: number; P: number }> = {}
+      // Group by school
+      const schoolMap: Record<string, Record<string, { L: number; P: number }>> = {}
       jStudents.forEach((s: any) => {
+        const sn = s.school_name || '-'
         const k = (s.kelas && s.kelas !== '-' && s.kelas.trim()) ? s.kelas.trim() : '-'
-        if (!kelasMap[k]) kelasMap[k] = { L: 0, P: 0 }
-        if (s.jk === 'L') kelasMap[k].L++
-        else kelasMap[k].P++
+        if (!schoolMap[sn]) schoolMap[sn] = {}
+        if (!schoolMap[sn][k]) schoolMap[sn][k] = { L: 0, P: 0 }
+        if (s.jk === 'L') schoolMap[sn][k].L++
+        else schoolMap[sn][k].P++
       })
-      const kelasGroups = Object.entries(kelasMap)
-        .map(([kelas, cnt]) => ({ kelas, kelasNum: extractKelasNum(kelas), siswaL: cnt.L, siswaP: cnt.P, siswaTotal: cnt.L + cnt.P }))
-        .sort((a, b) => a.kelasNum - b.kelasNum)
-      const gL = jTeachers.filter((t: any) => t.jk === 'L').length
-      const gP = jTeachers.filter((t: any) => t.jk === 'P').length
-      const tSL = jStudents.filter((s: any) => s.jk === 'L').length
-      const tSP = jStudents.filter((s: any) => s.jk === 'P').length
-      sekolahRecap.push({
-        jenjang: j, kelasGroups,
-        guruL: gL, guruP: gP, guruTotal: gL + gP,
-        totalSiswaL: tSL, totalSiswaP: tSP, totalSiswa: jStudents.length,
-        totalAll: jStudents.length + jTeachers.length,
-      })
+      // Collect all unique kelas for this jenjang, sorted
+      const allKelasSet = new Set<string>()
+      Object.values(schoolMap).forEach(km => Object.keys(km).forEach(k => allKelasSet.add(k)))
+      const allKelas = Array.from(allKelasSet).sort((a, b) => extractKelasNum(a) - extractKelasNum(b))
+      // Build schools array
+      const schools = Object.entries(schoolMap)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([schoolName, kelasData]) => {
+          let totalL = 0, totalP = 0
+          Object.values(kelasData).forEach(c => { totalL += c.L; totalP += c.P })
+          return { schoolName, kelasData, totalL, totalP }
+        })
+      const jenjangTotalL = jStudents.filter((s: any) => s.jk === 'L').length
+      const jenjangTotalP = jStudents.filter((s: any) => s.jk === 'P').length
+      sekolahRecap.push({ jenjang: j, schools, allKelas, jenjangTotalL, jenjangTotalP })
     }
 
     // === GIZI BMI ===
