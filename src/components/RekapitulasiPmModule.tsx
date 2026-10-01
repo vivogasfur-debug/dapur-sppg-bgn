@@ -147,12 +147,64 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
   const handleExport = async () => {
     if (!data) return; setExporting(true);
     try {
-      const ExcelJSMod = (await import('exceljs') as any).default; const wb = new ExcelJSMod.Workbook(); const ws = wb.addWorksheet('Rekapitulasi PM');
+      const ExcelJSMod = (await import('exceljs') as any).default; const wb = new ExcelJSMod.Workbook();
+      // Sheet 1: Rekapitulasi PM
+      const ws = wb.addWorksheet('Rekapitulasi PM');
       ws.columns = [{ header: 'Kategori', key: 'kat', width: 20 }, { header: 'Sub Kategori', key: 'sub', width: 25 }, { header: 'Jumlah', key: 'jml', width: 12 }, { header: 'L', key: 'l', width: 8 }, { header: 'P', key: 'p', width: 8 }];
       const p = data.porsi, g = data.gender;
       ws.addRows([
         { kat: 'PORSI KECIL', sub: 'TK/RA', jml: p.siswaTKRA, l: '-', p: '-' }, { kat: 'PORSI KECIL', sub: 'SD Kelas 1-3', jml: p.siswaSDKelas123, l: '-', p: '-' }, { kat: 'PORSI KECIL', sub: 'Balita 6-11 Bln', jml: p.balita6_11, l: '-', p: '-' }, { kat: 'PORSI KECIL', sub: 'Balita 12-60 Bln', jml: p.balita12_60, l: '-', p: '-' }, { kat: 'TOTAL PORSI KECIL', sub: '', jml: p.porsiKecil, l: g.siswaL, p: g.siswaP }, { kat: 'PORSI BESAR', sub: 'Guru/Tendik', jml: data.totals.teachers, l: g.guruL, p: g.guruP }, { kat: 'PORSI BESAR', sub: 'SD Kelas 4-6', jml: p.siswaSDKelas456, l: '-', p: '-' }, { kat: 'PORSI BESAR', sub: 'SMP', jml: p.siswaSMP, l: '-', p: '-' }, { kat: 'PORSI BESAR', sub: 'SMA/SMK', jml: p.siswaSMA, l: '-', p: '-' }, { kat: 'PORSI BESAR', sub: 'Bumil', jml: p.bumil, l: '-', p: '-' }, { kat: 'PORSI BESAR', sub: 'Busui', jml: p.busui, l: '-', p: '-' }, { kat: 'TOTAL PORSI BESAR', sub: '', jml: p.porsiBesar, l: '-', p: '-' }, { kat: 'GRAND TOTAL', sub: '', jml: p.totalPorsi, l: '-', p: '-' }, { kat: '', sub: '', jml: '', l: '', p: '' }, { kat: 'TOTAL DATA', sub: 'Seluruh Penerima', jml: p.totalPenerimaAll, l: '-', p: '-' },
       ]);
+      // Sheet 2: Data Guru per Sekolah
+      const sr = data.sekolahRecap || [];
+      if (sr.length > 0) {
+        const ws2 = wb.addWorksheet('Data Guru & Sekolah');
+        const headerRow = ['Tingkat', 'Nama Sekolah', 'Guru L', 'Guru P', 'Guru Total', 'Total Siswa L', 'Total Siswa P', 'Total Siswa', 'Total All'];
+        const colWidths = [10, 30, 10, 10, 12, 14, 14, 14, 12];
+        ws2.columns = headerRow.map((h, i) => ({ header: h, key: h, width: colWidths[i] }));
+        for (const recap of sr) {
+          for (const school of recap.schools) {
+            ws2.addRow({
+              'Tingkat': recap.jenjang, 'Nama Sekolah': school.schoolName,
+              'Guru L': school.guruL, 'Guru P': school.guruP, 'Guru Total': school.guruL + school.guruP,
+              'Total Siswa L': school.totalL, 'Total Siswa P': school.totalP, 'Total Siswa': school.totalL + school.totalP,
+              'Total All': school.totalL + school.totalP + school.guruL + school.guruP,
+            });
+          }
+        }
+      }
+      // Sheet 3: Detail Siswa per Kelas
+      if (sr.length > 0) {
+        const ws3 = wb.addWorksheet('Siswa per Kelas');
+        const allHeaders = ['Tingkat', 'Nama Sekolah'];
+        const allKeys = ['tingkat', 'school'];
+        // Collect all kelas columns across all jenjang
+        const allKelasSet = new Set<string>();
+        sr.forEach(r => r.allKelas.forEach(k => allKelasSet.add(k)));
+        const allKelasArr = Array.from(allKelasSet).sort((a, b) => {
+          const na = parseInt(a.replace(/[^0-9]/g, '')) || 0, nb = parseInt(b.replace(/[^0-9]/g, '')) || 0;
+          if (na !== nb) return na - nb;
+          return a.localeCompare(b);
+        });
+        for (const k of allKelasArr) {
+          allHeaders.push(`Kelas ${k} L`, `Kelas ${k} P`);
+          allKeys.push(`k${k}L`, `k${k}P`);
+        }
+        allHeaders.push('Total Siswa L', 'Total Siswa P', 'Total Siswa');
+        allKeys.push('totalL', 'totalP', 'total');
+        ws3.columns = allHeaders.map((h, i) => ({ header: h, key: allKeys[i], width: i < 2 ? 30 : 10 }));
+        for (const recap of sr) {
+          for (const school of recap.schools) {
+            const row: any = { tingkat: recap.jenjang, school: school.schoolName, totalL: school.totalL, totalP: school.totalP, total: school.totalL + school.totalP };
+            for (const k of allKelasArr) {
+              const d = school.kelasData[k];
+              row[`k${k}L`] = d?.L || 0;
+              row[`k${k}P`] = d?.P || 0;
+            }
+            ws3.addRow(row);
+          }
+        }
+      }
       const buf = await wb.xlsx.writeBuffer(); const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'Rekapitulasi_PM.xlsx'; a.click(); URL.revokeObjectURL(url);
     } catch {} finally { setExporting(false); }
   };
@@ -313,8 +365,9 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                   </button>
                   {/* Card Body */}
                   {!isCollapsed && (
-                    <div className="p-3 overflow-x-auto">
-                      <table className="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
+                    <div className="p-3 relative">
+                      <div className="overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'thin' }} id={`scroll-${recap.jenjang}`}>
+                        <table className="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
                         <thead>
                           <tr className={jenjangHeaderBg(recap.jenjang)}>
                             <th className="px-3 py-2 text-left font-semibold border border-slate-200 min-w-[180px]">Nama Sekolah</th>
@@ -396,6 +449,10 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                           </tr>
                         </tbody>
                       </table>
+                      </div>
+                      {/* Scroll buttons */}
+                      <button onClick={() => { const el = document.getElementById(`scroll-${recap.jenjang}`); if (el) el.scrollBy({ left: -200, behavior: 'smooth' }); }} className="absolute left-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 hover:bg-white border border-slate-200 rounded-full shadow-md text-slate-600 hover:text-slate-800 transition-all" title="Geser kiri"><ChevronLeft className="w-4 h-4" /></button>
+                      <button onClick={() => { const el = document.getElementById(`scroll-${recap.jenjang}`); if (el) el.scrollBy({ left: 200, behavior: 'smooth' }); }} className="absolute right-1 top-1/2 -translate-y-1/2 z-10 w-7 h-7 flex items-center justify-center bg-white/90 hover:bg-white border border-slate-200 rounded-full shadow-md text-slate-600 hover:text-slate-800 transition-all" title="Geser kanan"><ChevronRight className="w-4 h-4" /></button>
                     </div>
                   )}
                 </div>
