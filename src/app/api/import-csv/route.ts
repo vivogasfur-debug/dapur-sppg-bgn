@@ -251,11 +251,14 @@ export async function POST(req: NextRequest) {
         headers.forEach((h, i) => { obj[h] = row[i] || null })
         const detectedCat = subCategory || findVal(obj, ['sub_category', 'kategori', 'sub_kategori']) || 'Balita'
         const isBalita = detectedCat.toLowerCase() === 'balita'
+        const isBumil = detectedCat.toLowerCase() === 'bumil'
+        const isBusui = detectedCat.toLowerCase() === 'busui'
+
         const record: Record<string, any> = {
           posyandu_name: findVal(obj, ['posyandu_name', 'posyandu', 'nama_posyandu']) || '-',
           sub_category: detectedCat.charAt(0).toUpperCase() + detectedCat.slice(1).toLowerCase(),
           nik: findVal(obj, ['nik', 'no_nik']) || null,
-          full_name: findVal(obj, ['full_name', 'nama', 'name', 'nama_ibu', 'nama_anak']) || '-',
+          full_name: findVal(obj, ['full_name', 'nama', 'name', 'nama_ibu']) || '-',
           gender: (findVal(obj, ['gender', 'jk', 'jenis_kelamin', 'jenis_kel']) || 'P').charAt(0).toUpperCase(),
           tempat_lahir: findVal(obj, ['tempat_lahir', 'tempat', 'tmpt_lahir', 'tmp_lahir']) || null,
           birth_date: parseDate(findVal(obj, ['birth_date', 'tanggal_lahir', 'ttl', 'tgl_lahir'])),
@@ -268,9 +271,24 @@ export async function POST(req: NextRequest) {
           allergy_type: (() => { const v = findVal(obj, ['alergi', 'has_allergy', 'allergy_type', 'allergy']); return (v && v.toLowerCase() !== '-') ? v : null })(),
           status: 'Aktif',
         }
-        if (isBalita) {
+
+        if (isBalita || isBusui) {
+          // Untuk Balita/Busui: full_name = nama orang tua, nama_balita = nama anak
           record.nama_orang_tua = findVal(obj, ['nama_orang_tua', 'nama_ortu', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null
+          // Jika full_name kosong tapi nama_orang_tua ada, gunakan itu
+          if ((!record.full_name || record.full_name === '-') && record.nama_orang_tua) {
+            record.full_name = record.nama_orang_tua
+          }
+          record.nama_balita = findVal(obj, ['nama_balita', 'nama_anak', 'nama_bayi', 'nama_balita_busui', 'name']) || null
+          record.tanggal_lahir_balita = parseDate(findVal(obj, ['tanggal_lahir_balita', 'tgl_lahir_balita', 'tgl_lahir_anak', 'tanggal_lahir_anak', 'birth_date_balita', 'birth_date_anak'])) || null
         }
+
+        if (isBumil) {
+          // Untuk Bumil: usia_kandungan dari CSV
+          const usiaKandungan = findVal(obj, ['usia_kandungan', 'usia_kand', 'umur_kandungan'])
+          if (usiaKandungan) record.usia_kandungan = usiaKandungan
+        }
+
         return record
       })
 

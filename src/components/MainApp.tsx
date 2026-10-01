@@ -487,7 +487,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
       setPmSubTab('Guru'); setPmMainTab('Sekolah');
       setFormGuru({ schoolName: item.schoolName, fullName: item.fullName, nuptk: item.nuptk || '', nip: item.nip || '', jk: item.jk, tempatLahir: item.tempatLahir || '', tanggalLahir: item.tanggalLahir || '', nik: item.nik || '', jenisTendik: item.jenisTendik || 'Guru', alamat: item.alamat || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     } else {
-      setPmSubTab(item.subCategory === 'Balita' ? (getAgeMonths(item.birthDate) >= 999 ? 'Balita Tdk Dikategorikan' : getAgeMonths(item.birthDate) < 6 ? 'Balita < 6 Bln' : getAgeMonths(item.birthDate) <= 11 ? 'Balita 6-11 Bln' : getAgeMonths(item.birthDate) <= 60 ? 'Balita 12-60 Bln' : 'Balita > 60 Bln') : item.subCategory as any); setPmMainTab('3B');
+      const balitaAgeForTab = item.subCategory === 'Balita' && item.tanggalLahirBalita && item.tanggalLahirBalita !== '-' ? item.tanggalLahirBalita : item.birthDate;
+      setPmSubTab(item.subCategory === 'Balita' ? (getAgeMonths(balitaAgeForTab) >= 999 ? 'Balita Tdk Dikategorikan' : getAgeMonths(balitaAgeForTab) < 6 ? 'Balita < 6 Bln' : getAgeMonths(balitaAgeForTab) <= 11 ? 'Balita 6-11 Bln' : getAgeMonths(balitaAgeForTab) <= 60 ? 'Balita 12-60 Bln' : 'Balita > 60 Bln') : item.subCategory as any); setPmMainTab('3B');
       setForm3B({ posyanduName: item.posyanduName, fullName: item.fullName, nik: item.nik || '', gender: item.gender, birthDate: item.birthDate || '', tempatLahir: item.tempatLahir || '', alamat: item.alamat || '', namaOrtu: item.namaOrtu || '', beratBadan: String(item.beratBadan || ''), tinggiBadan: String(item.tinggiBadan || ''), lingkarKepala: String(item.lingkarKepala || ''), lingkarLengan: String(item.lingkarLengan || ''), usiaKandungan: item.usiaKandungan || '', namaBalita: item.namaBalita || '', tanggalLahirBalita: item.tanggalLahirBalita || '', hasAllergy: item.hasAllergy || false, allergyType: item.allergyType || '' });
     }
     setIsModalOpen(true);
@@ -792,11 +793,12 @@ export default function MainApp({ onLogout }: MainAppProps) {
       // 3B - Balita
       if (scope === 'all' || isBalitaTab()) {
         const balitaAll = beneficiaries3b.filter(b => b.subCategory === 'Balita');
-        const balita06 = scope === 'all' ? balitaAll.filter(b => getAgeMonths(b.birthDate) < 6) : [];
-        const balita611 = scope === 'all' ? balitaAll.filter(b => getAgeMonths(b.birthDate) >= 6 && getAgeMonths(b.birthDate) <= 11) : [];
-        const balita1260 = scope === 'all' ? balitaAll.filter(b => getAgeMonths(b.birthDate) >= 12 && getAgeMonths(b.birthDate) <= 60) : [];
-        const balita60p = scope === 'all' ? balitaAll.filter(b => getAgeMonths(b.birthDate) > 60 && getAgeMonths(b.birthDate) < 999) : [];
-        const mkRows = (list: typeof balitaAll) => list.map((b, i) => [safeStr(i+1), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), classifyBalita(b.birthDate), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+        const balita06 = scope === 'all' ? balitaAll.filter(b => getBalitaAgeMonths(b) < 6) : [];
+        const balita611 = scope === 'all' ? balitaAll.filter(b => getBalitaAgeMonths(b) >= 6 && getBalitaAgeMonths(b) <= 11) : [];
+        const balita1260 = scope === 'all' ? balitaAll.filter(b => getBalitaAgeMonths(b) >= 12 && getBalitaAgeMonths(b) <= 60) : [];
+        const balita60p = scope === 'all' ? balitaAll.filter(b => getBalitaAgeMonths(b) > 60 && getBalitaAgeMonths(b) < 999) : [];
+        const balitaAge = (b: Beneficiary3B) => b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate;
+        const mkRows = (list: typeof balitaAll) => list.map((b, i) => [safeStr(i+1), safeStr(b.namaBalita !== '-' && b.namaBalita ? b.namaBalita : b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(balitaAge(b)), calculateAge(balitaAge(b)), classifyBalita(balitaAge(b)), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
         const hdrs = ['No', 'Nama Anak', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Klasifikasi', 'Nama Orang Tua', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
         const colW = [5, 25, 20, 5, 15, 15, 12, 12, 25, 20, 8, 8, 8, 8, 20, 12];
         if (scope === 'all' && balita06.length > 0) { const ws = workbook.addWorksheet('Balita < 6 Bln'); addKop(ws, 'DATA PENERIMA MANFAAT - BALITA < 6 BULAN', hdrs, mkRows(balita06), colW); }
@@ -806,7 +808,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
         if (scope !== 'all' && filtered3b.length > 0) {
           const sheetName = pmSubTab;
           const headers = ['No', 'Nama Anak', 'NIK', 'JK', 'Tempat Lahir', 'Tanggal Lahir', 'Umur', 'Klasifikasi', 'Nama Orang Tua', 'Alamat', 'BB (kg)', 'TB (cm)', 'LK (cm)', 'LL (cm)', 'Posyandu', 'Alergi'];
-          const rows = filtered3b.map((b, i) => [safeStr(i+1), safeStr(b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(b.birthDate), calculateAge(b.birthDate), classifyBalita(b.birthDate), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']);
+          const rows = filtered3b.map((b, i) => { const bAge = b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate; return [safeStr(i+1), safeStr(b.namaBalita !== '-' && b.namaBalita ? b.namaBalita : b.fullName), safeStr(b.nik), safeStr(b.gender), safeStr(b.tempatLahir), safeStr(bAge), calculateAge(bAge), classifyBalita(bAge), safeStr(b.namaOrtu), safeStr(b.alamat), safeStr(b.beratBadan), safeStr(b.tinggiBadan), safeStr(b.lingkarKepala), safeStr(b.lingkarLengan), safeStr(b.posyanduName), b.hasAllergy ? safeStr(b.allergyType) : 'Tidak']; });
           const ws = workbook.addWorksheet(sheetName);
           addKop(ws, `DATA PENERIMA MANFAAT - ${sheetName.toUpperCase()}`, headers, rows, [5, 25, 20, 5, 15, 15, 12, 12, 25, 20, 8, 8, 8, 8, 20, 12]);
         }
@@ -857,13 +859,21 @@ export default function MainApp({ onLogout }: MainAppProps) {
   const st = searchTerm.toLowerCase();
   const filteredStudents = students.filter(s => s.nama.toLowerCase().includes(st) || s.schoolName.toLowerCase().includes(st) || (isNumericSearch && s.nisn.includes(searchTerm.trim())) || (isNumericSearch && s.nik.includes(searchTerm.trim())));
   const filteredTeachers = teachers.filter(t => t.fullName.toLowerCase().includes(st) || t.schoolName.toLowerCase().includes(st) || (isNumericSearch && t.nik.includes(searchTerm.trim())) || (isNumericSearch && t.nip.includes(searchTerm.trim())));
+  // Untuk Balita, gunakan tanggalLahirBalita (tgl lahir anak); untuk Bumil/Busui, gunakan birthDate (tgl lahir ibu)
+  const getBalitaAgeMonths = (b: Beneficiary3B) => {
+    if (b.subCategory === 'Balita' && b.tanggalLahirBalita && b.tanggalLahirBalita !== '-') {
+      return getAgeMonths(b.tanggalLahirBalita)
+    }
+    return getAgeMonths(b.birthDate)
+  }
   const filtered3b = beneficiaries3b.filter(b => {
-    if (pmSubTab === 'Balita < 6 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) < 6 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
-    if (pmSubTab === 'Balita 6-11 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 6 && getAgeMonths(b.birthDate) <= 11 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
-    if (pmSubTab === 'Balita 12-60 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 12 && getAgeMonths(b.birthDate) <= 60 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
-    if (pmSubTab === 'Balita > 60 Bln') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) > 60 && getAgeMonths(b.birthDate) < 999 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
-    if (pmSubTab === 'Balita Tdk Dikategorikan') return b.subCategory === 'Balita' && getAgeMonths(b.birthDate) >= 999 && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
-    return b.subCategory === pmSubTab && (st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim())));
+    const matchSearch = st === '' || b.fullName.toLowerCase().includes(st) || b.posyanduName.toLowerCase().includes(st) || (isNumericSearch && b.nik.includes(searchTerm.trim()))
+    if (pmSubTab === 'Balita < 6 Bln') return b.subCategory === 'Balita' && getBalitaAgeMonths(b) < 6 && matchSearch;
+    if (pmSubTab === 'Balita 6-11 Bln') return b.subCategory === 'Balita' && getBalitaAgeMonths(b) >= 6 && getBalitaAgeMonths(b) <= 11 && matchSearch;
+    if (pmSubTab === 'Balita 12-60 Bln') return b.subCategory === 'Balita' && getBalitaAgeMonths(b) >= 12 && getBalitaAgeMonths(b) <= 60 && matchSearch;
+    if (pmSubTab === 'Balita > 60 Bln') return b.subCategory === 'Balita' && getBalitaAgeMonths(b) > 60 && getBalitaAgeMonths(b) < 999 && matchSearch;
+    if (pmSubTab === 'Balita Tdk Dikategorikan') return b.subCategory === 'Balita' && getBalitaAgeMonths(b) >= 999 && matchSearch;
+    return b.subCategory === pmSubTab && matchSearch;
   });
 
   // ===== MOBILE CARD COMPONENTS =====
@@ -942,7 +952,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
         <div className="flex items-center gap-2.5">
           <span className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0">{idx + 1}</span>
           <div className="min-w-0">
-            <p className="font-bold text-slate-800 text-sm truncate">{b.fullName}</p>
+            <p className="font-bold text-slate-800 text-sm truncate">{b.subCategory === 'Balita' && b.namaBalita && b.namaBalita !== '-' ? b.namaBalita : b.fullName}</p>
             <p className="text-[11px] text-slate-400">NIK: {b.nik}</p>
           </div>
         </div>
@@ -950,10 +960,10 @@ export default function MainApp({ onLogout }: MainAppProps) {
       </div>
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
         <div className="col-span-2"><span className="text-slate-400">Posyandu:</span> <span className="font-medium text-slate-700">{b.posyanduName}</span></div>
-        <div><span className="text-slate-400">TTL:</span> <span className="font-medium">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.birthDate}</span></div>
-        <div><span className="text-slate-400">Umur:</span> <span className="font-bold text-blue-600">{calculateAge(b.birthDate)}</span></div>
+        <div><span className="text-slate-400">TTL:</span> <span className="font-medium">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.subCategory === 'Balita' && b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate}</span></div>
+        <div><span className="text-slate-400">Umur:</span> <span className="font-bold text-blue-600">{b.subCategory === 'Balita' && b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : calculateAge(b.birthDate)}</span></div>
         {b.subCategory === 'Balita' ? (<>
-          <div><span className="text-slate-400">Klasifikasi:</span> <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${classifyBalita(b.birthDate) === '6-11 Bln' ? 'bg-amber-50 text-amber-700' : classifyBalita(b.birthDate) === '12-60 Bln' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{classifyBalita(b.birthDate)}</span></div>
+          <div><span className="text-slate-400">Klasifikasi:</span> <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${classifyBalita(b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate) === '6-11 Bln' ? 'bg-amber-50 text-amber-700' : classifyBalita(b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate) === '12-60 Bln' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{classifyBalita(b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate)}</span></div>
           <div className="col-span-2"><span className="text-slate-400">Orang Tua:</span> <span className="font-medium text-slate-700">{b.namaOrtu}</span></div>
           <div className="col-span-2"><span className="text-slate-400">Alamat:</span> <span className="font-medium text-slate-700">{b.alamat}</span></div>
           <div className="grid grid-cols-4 gap-1 text-center">
@@ -1639,12 +1649,12 @@ export default function MainApp({ onLogout }: MainAppProps) {
                       {filtered3b.length > 0 ? filtered3b.map((b, idx) => (
                         <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx+1}</td>
-                          <td className="py-2.5 px-3 border-r border-slate-100"><p className="font-semibold text-slate-800">{b.fullName}</p><p className="text-slate-400 text-[11px]">NIK: {b.nik}</p></td>
+                          <td className="py-2.5 px-3 border-r border-slate-100"><p className="font-semibold text-slate-800">{isBalitaTab() && b.namaBalita && b.namaBalita !== '-' ? b.namaBalita : b.fullName}</p><p className="text-slate-400 text-[11px]">NIK: {b.nik}</p></td>
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold">{b.gender}</td>
-                          <td className="py-2.5 px-3 border-r border-slate-100">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{b.birthDate}</td>
-                          <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-blue-700">{calculateAge(b.birthDate)}</td>
+                          <td className="py-2.5 px-3 border-r border-slate-100">{b.tempatLahir !== '-' ? b.tempatLahir + ', ' : ''}{isBalitaTab() && b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate}</td>
+                          <td className="py-2.5 px-3 text-center border-r border-slate-100 font-bold text-blue-700">{isBalitaTab() && b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? calculateAge(b.tanggalLahirBalita) : calculateAge(b.birthDate)}</td>
                           {isBalitaTab() ? (<>
-                            <td className="py-2.5 px-3 text-center border-r border-slate-100"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${classifyBalita(b.birthDate) === '6-11 Bln' ? 'bg-amber-50 text-amber-700' : classifyBalita(b.birthDate) === '12-60 Bln' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{classifyBalita(b.birthDate)}</span></td>
+                            <td className="py-2.5 px-3 text-center border-r border-slate-100"><span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${classifyBalita(b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate) === '6-11 Bln' ? 'bg-amber-50 text-amber-700' : classifyBalita(b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate) === '12-60 Bln' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{classifyBalita(b.tanggalLahirBalita && b.tanggalLahirBalita !== '-' ? b.tanggalLahirBalita : b.birthDate)}</span></td>
                             <td className="py-2.5 px-3 border-r border-slate-100 font-medium">{b.namaOrtu}</td>
                             <td className="py-2.5 px-3 border-r border-slate-100 max-w-[150px] truncate">{b.alamat}</td>
                             <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-emerald-700">{b.beratBadan || '-'}</td>
