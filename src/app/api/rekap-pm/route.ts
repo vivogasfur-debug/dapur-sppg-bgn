@@ -119,11 +119,20 @@ export async function GET(req: NextRequest) {
     for (const j of ['TK', 'SD', 'SMP', 'SMA', 'Lainnya']) {
       const jStudents = students.filter((s: any) => getJenjang(s.school_name) === j)
       const jTeachers = teachers.filter((t: any) => getJenjang(t.school_name) === j)
+      // Normalize kelas: convert "Kelas 1", "I", "Kls 1" etc. → just the number string "1"
+      const normalizeKelas = (raw: string): string => {
+        if (!raw || raw === '-') return '-'
+        const trimmed = raw.trim()
+        if (trimmed === '-') return '-'
+        const num = extractKelasNum(trimmed)
+        if (num > 0) return String(num)
+        return trimmed // keep original if can't parse
+      }
       // Group by school
       const schoolMap: Record<string, Record<string, { L: number; P: number }>> = {}
       jStudents.forEach((s: any) => {
         const sn = s.school_name || '-'
-        const k = (s.kelas && s.kelas !== '-' && s.kelas.trim()) ? s.kelas.trim() : '-'
+        const k = normalizeKelas(s.kelas)
         if (!schoolMap[sn]) schoolMap[sn] = {}
         if (!schoolMap[sn][k]) schoolMap[sn][k] = { L: 0, P: 0 }
         if (s.jk === 'L') schoolMap[sn][k].L++

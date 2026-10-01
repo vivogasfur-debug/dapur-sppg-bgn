@@ -319,7 +319,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                           <tr className={jenjangHeaderBg(recap.jenjang)}>
                             <th className="px-3 py-2 text-left font-semibold border border-slate-200 min-w-[180px]">Nama Sekolah</th>
                             {hasKelas ? kelasCols.map(k => (
-                              <th key={k} className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[70px]">Kls {k}</th>
+                              <th key={k} className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[70px]">Kelas {k}</th>
                             )) : (
                               <th className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[70px]">Jumlah</th>
                             )}
