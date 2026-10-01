@@ -18,7 +18,7 @@ interface RekapData {
   gender: { siswaL: number; siswaP: number; guruL: number; guruP: number; b3bL: number; b3bP: number };
   alergi: { alergiSekolah: number; alergi3b: number; alergiTotal: number };
   jenjangGroups: Record<string, { siswaCount: number; L: number; P: number; guru: number; schools: [string, number][] }>;
-  sekolahRecap?: { jenjang: string; schools: { schoolName: string; kelasData: Record<string, { L: number; P: number }>; totalL: number; totalP: number }[]; allKelas: string[]; jenjangTotalL: number; jenjangTotalP: number }[];
+  sekolahRecap?: { jenjang: string; schools: { schoolName: string; kelasData: Record<string, { L: number; P: number }>; totalL: number; totalP: number; guruL: number; guruP: number }[]; allKelas: string[]; jenjangTotalL: number; jenjangTotalP: number; jenjangGuruL: number; jenjangGuruP: number }[];
   gizi: { kurang: number; normal: number; lebih: number; noData: number };
   posyandu: { list: { name: string; total: number; bumil: number; busui: number; balita: number; L: number; P: number }[]; balita: number; balita_lt6: number; balita_gt60: number; balita_noCat: number; };
   guruSchoolMap: Record<string, number>;
@@ -41,6 +41,10 @@ interface AuditEntry {
 
 const jenjangColor = (j: string) => { switch (j) { case 'TK': return 'bg-pink-500'; case 'SD': return 'bg-blue-500'; case 'SMP': return 'bg-amber-500'; case 'SMA': return 'bg-violet-500'; default: return 'bg-slate-400'; } };
 const jenjangLabel = (j: string) => { switch (j) { case 'TK': return 'TK / RA'; case 'SD': return 'SD / MI'; case 'SMP': return 'SMP / MTs'; case 'SMA': return 'SMA / SMK / MA'; default: return 'Lainnya'; } };
+const jenjangGradient = (j: string) => { switch (j) { case 'TK': return 'from-pink-500 to-rose-500'; case 'SD': return 'from-blue-500 to-cyan-500'; case 'SMP': return 'from-amber-500 to-orange-500'; case 'SMA': return 'from-violet-500 to-purple-500'; default: return 'from-slate-400 to-slate-500'; } };
+const jenjangLightBg = (j: string) => { switch (j) { case 'TK': return 'bg-pink-50 border-pink-200'; case 'SD': return 'bg-blue-50 border-blue-200'; case 'SMP': return 'bg-amber-50 border-amber-200'; case 'SMA': return 'bg-violet-50 border-violet-200'; default: return 'bg-slate-50 border-slate-200'; } };
+const jenjangText = (j: string) => { switch (j) { case 'TK': return 'text-pink-700'; case 'SD': return 'text-blue-700'; case 'SMP': return 'text-amber-700'; case 'SMA': return 'text-violet-700'; default: return 'text-slate-700'; } };
+const jenjangHeaderBg = (j: string) => { switch (j) { case 'TK': return 'bg-pink-100 text-pink-700'; case 'SD': return 'bg-blue-100 text-blue-700'; case 'SMP': return 'bg-amber-100 text-amber-700'; case 'SMA': return 'bg-violet-100 text-violet-700'; default: return 'bg-slate-100 text-slate-700'; } };
 
 const PERIOD_START = new Date(2026, 7, 31, 0, 0, 0, 0); // 31 Agustus 2026
 const generatePeriods = (startDate: Date, count: number) => {
@@ -72,7 +76,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
   const [mainTab, setMainTab] = useState<'live' | 'periode' | 'trend' | 'audit'>('live');
   const [subTab, setSubTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [exporting, setExporting] = useState(false);
-  const [expandedJenjang, setExpandedJenjang] = useState<string | null>('TK');
+  const [collapsedCards, setCollapsedCards] = useState<Record<string, boolean>>({});
 
   // Snapshot state
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
@@ -269,96 +273,137 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
           </div>
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><div className="flex items-center gap-2 mb-3"><Activity className="w-4 h-4 text-teal-500" /><h4 className="text-xs font-bold text-slate-700">Status Gizi Siswa (BMI)</h4></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-2"><div className="bg-orange-50 border border-orange-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-orange-600">{gz.kurang}</div><div className="text-[10px] font-semibold text-orange-500">Kurus</div></div><div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-emerald-600">{gz.normal}</div><div className="text-[10px] font-semibold text-emerald-500">Normal</div></div><div className="bg-rose-50 border border-rose-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-rose-600">{gz.lebih}</div><div className="text-[10px] font-semibold text-rose-500">Gemuk</div></div><div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-slate-400">{gz.noData}</div><div className="text-[10px] font-semibold text-slate-400">Belum Ada Data</div></div></div></div>
 
-          {/* Rekapitulasi Pertingkatan Sekolah */}
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-            <div className="flex items-center gap-2 mb-3"><GraduationCap className="w-4 h-4 text-indigo-500" /><h4 className="text-xs font-bold text-slate-700">Rekapitulasi Pertingkatan Sekolah</h4></div>
-            <p className="text-[10px] text-slate-400 mb-3">Klasifikasi siswa per sekolah dan kelas berdasarkan jenis kelamin.</p>
-            <div className="overflow-x-auto">
-              {sr.filter(r => r.schools.length > 0).map((recap) => {
-                // Per-jenjang pivot table
-                const kelasCols = recap.allKelas
-                const hasKelas = kelasCols.length > 0 && !(kelasCols.length === 1 && kelasCols[0] === '-')
-                return (
-                  <div key={recap.jenjang} className="mb-4 last:mb-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold">{recap.jenjang}</span>
-                      <span className="text-[10px] text-slate-400">{recap.schools.length} sekolah &middot; L: {recap.jenjangTotalL} | P: {recap.jenjangTotalP} | Total: {recap.jenjangTotalL + recap.jenjangTotalP}</span>
+          {/* Rekapitulasi Pertingkatan Sekolah - Card per Tingkat */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2"><GraduationCap className="w-4 h-4 text-indigo-500" /><h4 className="text-xs font-bold text-slate-700">Rekapitulasi Pertingkatan Sekolah</h4></div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => { const allCollapsed: Record<string, boolean> = {}; sr.filter(r => r.schools.length > 0).forEach(r => { allCollapsed[r.jenjang] = true }); setCollapsedCards(allCollapsed); }} className="px-2 py-1 text-[10px] font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">Minimize All</button>
+                <button onClick={() => setCollapsedCards({})} className="px-2 py-1 text-[10px] font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-md transition-colors">Maximize All</button>
+              </div>
+            </div>
+            {sr.filter(r => r.schools.length > 0).map((recap) => {
+              const kelasCols = recap.allKelas
+              const hasKelas = kelasCols.length > 0 && !(kelasCols.length === 1 && kelasCols[0] === '-')
+              const isCollapsed = collapsedCards[recap.jenjang] === true
+              const totalSiswa = recap.jenjangTotalL + recap.jenjangTotalP
+              const totalGuru = recap.jenjangGuruL + recap.jenjangGuruP
+              return (
+                <div key={recap.jenjang} className={`rounded-2xl border shadow-sm overflow-hidden transition-all duration-300 ${jenjangLightBg(recap.jenjang)}`}>
+                  {/* Card Header */}
+                  <button onClick={() => setCollapsedCards(prev => ({ ...prev, [recap.jenjang]: !prev[recap.jenjang] }))} className={`w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r ${jenjangGradient(recap.jenjang)} text-white hover:opacity-95 transition-opacity`}>
+                    <div className="flex items-center gap-2.5">
+                      <GraduationCap className="w-4 h-4" />
+                      <span className="font-bold text-sm">{jenjangLabel(recap.jenjang)}</span>
+                      <span className="text-[10px] font-medium opacity-80">({recap.schools.length} sekolah)</span>
                     </div>
-                    <table className="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
-                      <thead>
-                        <tr className="bg-indigo-50 text-indigo-700">
-                          <th className="px-3 py-2 text-left font-semibold border border-slate-200 min-w-[160px]">Nama Sekolah</th>
-                          {hasKelas ? kelasCols.map(k => (
-                            <th key={k} className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[80px]">Kelas {k}</th>
-                          )) : (
-                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[80px]">Jumlah</th>
-                          )}
-                          <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-emerald-50 text-emerald-700 min-w-[80px]">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recap.schools.map((school, si) => (
-                          <tr key={school.schoolName} className={`border-b border-slate-100 ${si % 2 === 0 ? '' : 'bg-slate-50/30'} hover:bg-indigo-50/30`}>
-                            <td className="px-3 py-2 font-medium text-slate-700 border border-slate-200">{school.schoolName}</td>
+                    <div className="flex items-center gap-3">
+                      {!isCollapsed && (
+                        <div className="flex items-center gap-3 text-[10px] font-semibold opacity-90">
+                          <span>Siswa: {totalSiswa} <span className="opacity-70">(L:{recap.jenjangTotalL} P:{recap.jenjangTotalP})</span></span>
+                          {totalGuru > 0 && <span>Guru: {totalGuru} <span className="opacity-70">(L:{recap.jenjangGuruL} P:{recap.jenjangGuruP})</span></span>}
+                          <span className="font-extrabold">Total: {totalSiswa + totalGuru}</span>
+                        </div>
+                      )}
+                      {isCollapsed && (
+                        <span className="text-[10px] font-semibold opacity-90">Siswa: {totalSiswa} | Guru: {totalGuru} | Total: {totalSiswa + totalGuru}</span>
+                      )}
+                      {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                    </div>
+                  </button>
+                  {/* Card Body */}
+                  {!isCollapsed && (
+                    <div className="p-3 overflow-x-auto">
+                      <table className="w-full text-xs border-collapse border border-slate-200 rounded-lg overflow-hidden">
+                        <thead>
+                          <tr className={jenjangHeaderBg(recap.jenjang)}>
+                            <th className="px-3 py-2 text-left font-semibold border border-slate-200 min-w-[180px]">Nama Sekolah</th>
+                            {hasKelas ? kelasCols.map(k => (
+                              <th key={k} className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[70px]">Kls {k}</th>
+                            )) : (
+                              <th className="px-2 py-2 text-center font-semibold border border-slate-200 min-w-[70px]">Jumlah</th>
+                            )}
+                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-emerald-50 text-emerald-700 min-w-[70px]">Total Siswa</th>
+                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-sky-50 text-sky-700 min-w-[60px]">Guru L</th>
+                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-sky-50 text-sky-700 min-w-[60px]">Guru P</th>
+                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-sky-50 text-sky-700 min-w-[60px]">Guru Total</th>
+                            <th className="px-2 py-2 text-center font-semibold border border-slate-200 bg-amber-50 text-amber-700 min-w-[70px]">Total All</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {recap.schools.map((school, si) => (
+                            <tr key={school.schoolName} className={`border-b border-slate-100 ${si % 2 === 0 ? '' : 'bg-white/50'} hover:bg-white/80`}>
+                              <td className="px-3 py-2 font-medium text-slate-700 border border-slate-200">{school.schoolName}</td>
+                              {hasKelas ? kelasCols.map(k => {
+                                const d = school.kelasData[k]
+                                if (!d) return <td key={k} className="px-2 py-2 text-center border border-slate-200 text-slate-300">-</td>
+                                return (
+                                  <td key={k} className="px-2 py-2 text-center border border-slate-200">
+                                    <span className="text-blue-600 font-bold">{d.L}</span>
+                                    <span className="text-slate-400 mx-0.5">|</span>
+                                    <span className="text-pink-600 font-bold">{d.P}</span>
+                                  </td>
+                                )
+                              }) : (() => {
+                                const d = school.kelasData['-']
+                                return <td className="px-2 py-2 text-center border border-slate-200">
+                                  <span className="text-blue-600 font-bold">{d?.L || 0}</span>
+                                  <span className="text-slate-400 mx-0.5">|</span>
+                                  <span className="text-pink-600 font-bold">{d?.P || 0}</span>
+                                </td>
+                              })()}
+                              <td className="px-2 py-2 text-center border border-slate-200 bg-emerald-50/30 font-extrabold text-slate-800">
+                                {school.totalL + school.totalP}
+                                <span className="block text-[9px] font-semibold text-slate-400">L{school.totalL} P{school.totalP}</span>
+                              </td>
+                              <td className="px-2 py-2 text-center border border-slate-200 text-blue-600 font-bold">{school.guruL}</td>
+                              <td className="px-2 py-2 text-center border border-slate-200 text-pink-600 font-bold">{school.guruP}</td>
+                              <td className="px-2 py-2 text-center border border-slate-200 font-extrabold text-slate-800">{school.guruL + school.guruP}</td>
+                              <td className="px-2 py-2 text-center border border-slate-200 bg-amber-50/30 font-extrabold text-amber-800">{school.totalL + school.totalP + school.guruL + school.guruP}</td>
+                            </tr>
+                          ))}
+                          {/* Jenjang subtotal */}
+                          <tr className={`${jenjangHeaderBg(recap.jenjang)} border-t-2`}>
+                            <td className={`px-3 py-2 font-bold border border-slate-200 ${jenjangText(recap.jenjang)}`}>Total {recap.jenjang}</td>
                             {hasKelas ? kelasCols.map(k => {
-                              const d = school.kelasData[k]
-                              if (!d) return <td key={k} className="px-2 py-2 text-center border border-slate-200 text-slate-300">-</td>
+                              let kL = 0, kP = 0
+                              recap.schools.forEach(s => { const d = s.kelasData[k]; if (d) { kL += d.L; kP += d.P } })
+                              if (kL === 0 && kP === 0) return <td key={k} className="px-2 py-2 text-center border border-slate-200 text-slate-300">-</td>
                               return (
                                 <td key={k} className="px-2 py-2 text-center border border-slate-200">
-                                  <span className="text-blue-600 font-bold">{d.L}</span>
+                                  <span className="text-blue-700 font-extrabold">{kL}</span>
                                   <span className="text-slate-400 mx-0.5">|</span>
-                                  <span className="text-pink-600 font-bold">{d.P}</span>
+                                  <span className="text-pink-700 font-extrabold">{kP}</span>
                                 </td>
                               )
-                            }) : (() => {
-                              const d = school.kelasData['-']
-                              return <td className="px-2 py-2 text-center border border-slate-200">
-                                <span className="text-blue-600 font-bold">{d?.L || 0}</span>
+                            }) : (
+                              <td className="px-2 py-2 text-center border border-slate-200">
+                                <span className="text-blue-700 font-extrabold">{recap.jenjangTotalL}</span>
                                 <span className="text-slate-400 mx-0.5">|</span>
-                                <span className="text-pink-600 font-bold">{d?.P || 0}</span>
+                                <span className="text-pink-700 font-extrabold">{recap.jenjangTotalP}</span>
                               </td>
-                            })()}
-                            <td className="px-2 py-2 text-center border border-slate-200 bg-emerald-50/30 font-extrabold text-slate-800">
-                              {school.totalL + school.totalP}
-                              <span className="block text-[9px] font-semibold text-slate-400">L{school.totalL} P{school.totalP}</span>
+                            )}
+                            <td className="px-2 py-2 text-center border border-slate-200 bg-emerald-100/50">
+                              <span className="font-extrabold text-emerald-700">{recap.jenjangTotalL + recap.jenjangTotalP}</span>
+                              <span className="block text-[9px] font-semibold text-slate-500">L{recap.jenjangTotalL} P{recap.jenjangTotalP}</span>
+                            </td>
+                            <td className="px-2 py-2 text-center border border-slate-200 text-blue-700 font-extrabold">{recap.jenjangGuruL}</td>
+                            <td className="px-2 py-2 text-center border border-slate-200 text-pink-700 font-extrabold">{recap.jenjangGuruP}</td>
+                            <td className="px-2 py-2 text-center border border-slate-200 font-extrabold text-slate-800">{recap.jenjangGuruL + recap.jenjangGuruP}</td>
+                            <td className="px-2 py-2 text-center border border-slate-200 bg-amber-100/50">
+                              <span className="font-extrabold text-amber-800 text-sm">{recap.jenjangTotalL + recap.jenjangTotalP + recap.jenjangGuruL + recap.jenjangGuruP}</span>
                             </td>
                           </tr>
-                        ))}
-                        {/* Jenjang subtotal */}
-                        <tr className="bg-indigo-50/60 border-t-2 border-indigo-200">
-                          <td className="px-3 py-2 font-bold text-indigo-700 border border-slate-200">Total {recap.jenjang}</td>
-                          {hasKelas ? kelasCols.map(k => {
-                            let kL = 0, kP = 0
-                            recap.schools.forEach(s => { const d = s.kelasData[k]; if (d) { kL += d.L; kP += d.P } })
-                            if (kL === 0 && kP === 0) return <td key={k} className="px-2 py-2 text-center border border-slate-200 text-slate-300">-</td>
-                            return (
-                              <td key={k} className="px-2 py-2 text-center border border-slate-200">
-                                <span className="text-blue-700 font-extrabold">{kL}</span>
-                                <span className="text-slate-400 mx-0.5">|</span>
-                                <span className="text-pink-700 font-extrabold">{kP}</span>
-                              </td>
-                            )
-                          }) : (
-                            <td className="px-2 py-2 text-center border border-slate-200">
-                              <span className="text-blue-700 font-extrabold">{recap.jenjangTotalL}</span>
-                              <span className="text-slate-400 mx-0.5">|</span>
-                              <span className="text-pink-700 font-extrabold">{recap.jenjangTotalP}</span>
-                            </td>
-                          )}
-                          <td className="px-2 py-2 text-center border border-slate-200 bg-emerald-100/50">
-                            <span className="font-extrabold text-emerald-700 text-sm">{recap.jenjangTotalL + recap.jenjangTotalP}</span>
-                            <span className="block text-[9px] font-semibold text-slate-500">L{recap.jenjangTotalL} P{recap.jenjangTotalP}</span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                )
-              })}
-              {sr.filter(r => r.schools.length > 0).length === 0 && (
-                <div className="text-center py-6 text-xs text-slate-400 italic">Belum ada data sekolah.</div>
-              )}
-            </div>
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            {sr.filter(r => r.schools.length > 0).length === 0 && (
+              <div className="text-center py-6 text-xs text-slate-400 italic bg-white rounded-2xl border border-slate-200">Belum ada data sekolah.</div>
+            )}
           </div>
         </>) : (<>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">

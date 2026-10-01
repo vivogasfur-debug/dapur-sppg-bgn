@@ -112,12 +112,13 @@ export async function GET(req: NextRequest) {
     // === SEKOLAH RECAP (per sekolah, kelas as columns) ===
     const sekolahRecap: {
       jenjang: string;
-      schools: { schoolName: string; kelasData: Record<string, { L: number; P: number }>; totalL: number; totalP: number }[];
+      schools: { schoolName: string; kelasData: Record<string, { L: number; P: number }>; totalL: number; totalP: number; guruL: number; guruP: number }[];
       allKelas: string[];
-      jenjangTotalL: number; jenjangTotalP: number;
+      jenjangTotalL: number; jenjangTotalP: number; jenjangGuruL: number; jenjangGuruP: number;
     }[] = []
     for (const j of ['TK', 'SD', 'SMP', 'SMA', 'Lainnya']) {
       const jStudents = students.filter((s: any) => getJenjang(s.school_name) === j)
+      const jTeachers = teachers.filter((t: any) => getJenjang(t.school_name) === j)
       // Group by school
       const schoolMap: Record<string, Record<string, { L: number; P: number }>> = {}
       jStudents.forEach((s: any) => {
@@ -128,21 +129,35 @@ export async function GET(req: NextRequest) {
         if (s.jk === 'L') schoolMap[sn][k].L++
         else schoolMap[sn][k].P++
       })
+      // Guru per school
+      const guruSchoolMap: Record<string, { L: number; P: number }> = {}
+      jTeachers.forEach((t: any) => {
+        const sn = t.school_name || '-'
+        if (!guruSchoolMap[sn]) guruSchoolMap[sn] = { L: 0, P: 0 }
+        if (t.jk === 'L') guruSchoolMap[sn].L++
+        else guruSchoolMap[sn].P++
+      })
       // Collect all unique kelas for this jenjang, sorted
       const allKelasSet = new Set<string>()
       Object.values(schoolMap).forEach(km => Object.keys(km).forEach(k => allKelasSet.add(k)))
       const allKelas = Array.from(allKelasSet).sort((a, b) => extractKelasNum(a) - extractKelasNum(b))
-      // Build schools array
-      const schools = Object.entries(schoolMap)
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([schoolName, kelasData]) => {
+      // Build schools array (include schools that have teachers but no students)
+      const allSchoolNames = new Set([...Object.keys(schoolMap), ...Object.keys(guruSchoolMap)])
+      const schools = Array.from(allSchoolNames)
+        .sort((a, b) => a.localeCompare(b))
+        .map(schoolName => {
+          const kelasData = schoolMap[schoolName] || {}
           let totalL = 0, totalP = 0
           Object.values(kelasData).forEach(c => { totalL += c.L; totalP += c.P })
-          return { schoolName, kelasData, totalL, totalP }
+          const gL = guruSchoolMap[schoolName]?.L || 0
+          const gP = guruSchoolMap[schoolName]?.P || 0
+          return { schoolName, kelasData, totalL, totalP, guruL: gL, guruP: gP }
         })
       const jenjangTotalL = jStudents.filter((s: any) => s.jk === 'L').length
       const jenjangTotalP = jStudents.filter((s: any) => s.jk === 'P').length
-      sekolahRecap.push({ jenjang: j, schools, allKelas, jenjangTotalL, jenjangTotalP })
+      const jenjangGuruL = jTeachers.filter((t: any) => t.jk === 'L').length
+      const jenjangGuruP = jTeachers.filter((t: any) => t.jk === 'P').length
+      sekolahRecap.push({ jenjang: j, schools, allKelas, jenjangTotalL, jenjangTotalP, jenjangGuruL, jenjangGuruP })
     }
 
     // === GIZI BMI ===
