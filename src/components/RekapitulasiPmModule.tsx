@@ -18,7 +18,7 @@ interface RekapData {
   gender: { siswaL: number; siswaP: number; guruL: number; guruP: number; b3bL: number; b3bP: number };
   alergi: { alergiSekolah: number; alergi3b: number; alergiTotal: number };
   jenjangGroups: Record<string, { siswaCount: number; L: number; P: number; guru: number; schools: [string, number][] }>;
-  sekolahRecap: { jenjang: string; kelasGroups: { kelas: string; kelasNum: number; siswaL: number; siswaP: number; siswaTotal: number }[]; guruL: number; guruP: number; guruTotal: number; totalSiswaL: number; totalSiswaP: number; totalSiswa: number; totalAll: number }[];
+  sekolahRecap?: { jenjang: string; kelasGroups: { kelas: string; kelasNum: number; siswaL: number; siswaP: number; siswaTotal: number }[]; guruL: number; guruP: number; guruTotal: number; totalSiswaL: number; totalSiswaP: number; totalSiswa: number; totalAll: number }[];
   gizi: { kurang: number; normal: number; lebih: number; noData: number };
   posyandu: { list: { name: string; total: number; bumil: number; busui: number; balita: number; L: number; P: number }[]; balita: number; balita_lt6: number; balita_gt60: number; balita_noCat: number; };
   guruSchoolMap: Record<string, number>;
@@ -213,6 +213,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
   if (!data) return (<div className="min-h-[60vh] flex flex-col items-center justify-center gap-3"><AlertCircle className="w-8 h-8 text-rose-400" /><span className="text-xs text-slate-400">Gagal memuat data rekapitulasi</span></div>);
 
   const p = data.porsi, g = data.gender, a = data.alergi, gz = data.gizi, ps = data.posyandu, t = data.totals;
+  const sr = data.sekolahRecap || [];
   const jenjangEntries = Object.entries(data.jenjangGroups).filter(([, grp]) => grp.siswaCount > 0 || grp.guru > 0);
   const snapshotExists = (periodStart: string) => snapshots.some(s => s.period_start === periodStart);
   const currentPeriodIdx = getCurrentPeriodIndex(periods);
@@ -292,7 +293,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                   </tr>
                 </thead>
                 <tbody>
-                  {data.sekolahRecap.filter(r => r.totalAll > 0).map((recap) => {
+                  {sr.filter(r => r.totalAll > 0).map((recap) => {
                     const jenjangHasKelas = recap.kelasGroups.length > 1 || (recap.kelasGroups.length === 1 && recap.kelasGroups[0].kelas !== '-')
                     return (
                       <React.Fragment key={recap.jenjang}>
@@ -325,7 +326,7 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
                   })}
                   {/* Grand Total */}
                   {(() => {
-                    const activeRecaps = data.sekolahRecap.filter(r => r.totalAll > 0)
+                    const activeRecaps = sr.filter(r => r.totalAll > 0)
                     if (activeRecaps.length === 0) return null
                     const grandSiswaL = activeRecaps.reduce((s, r) => s + r.totalSiswaL, 0)
                     const grandSiswaP = activeRecaps.reduce((s, r) => s + r.totalSiswaP, 0)

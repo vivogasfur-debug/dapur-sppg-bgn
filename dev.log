@@ -1,6 +1,6 @@
 ▲ Next.js 16.1.3 (Turbopack)
 - Local:         http://localhost:3000
-- Network:       http://21.0.14.80:3000
+- Network:       http://21.0.19.100:3000
 - Environments: .env
 
 ✓ Starting...
@@ -9,12 +9,26 @@ This information is used to shape Next.js' roadmap and prioritize features.
 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
 https://nextjs.org/telemetry
 
-✓ Ready in 762ms
+✓ Ready in 635ms
 ○ Compiling / ...
- GET / 200 in 5.7s (compile: 5.7s, render: 29ms)
- GET / 200 in 9.2s (compile: 8.4s, render: 749ms)
- GET / 200 in 206ms (compile: 183ms, render: 23ms)
- GET / 200 in 207ms (compile: 182ms, render: 25ms)
- GET / 200 in 207ms (compile: 179ms, render: 29ms)
- GET / 200 in 285ms (compile: 242ms, render: 43ms)
- GET / 200 in 233ms (compile: 206ms, render: 27ms)
+ GET / 200 in 5.1s (compile: 4.4s, render: 701ms)
+ GET / 200 in 1396ms (compile: 1353ms, render: 43ms)
+ GET / 200 in 224ms (compile: 198ms, render: 26ms)
+ GET / 200 in 215ms (compile: 191ms, render: 24ms)
+ GET / 200 in 318ms (compile: 293ms, render: 25ms)
+ GET / 200 in 295ms (compile: 262ms, render: 32ms)
+⨯ Error: supabaseUrl is required.
+    at module evaluation (src/lib/supabase.ts:6:37)
+    at module evaluation (src/app/api/rekap-pm/route.ts:2:1)
+    at Object.<anonymous> (.next/dev/server/app/api/rekap-pm/route.js:7:3)
+  4 | const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  5 |
+> 6 | export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    |                                     ^
+  7 |
+  8 | /**
+  9 |  * Build a Supabase query with common options (filter, ilike, order). {
+  page: '/api/rekap-pm'
+}
+ GET /api/rekap-pm 500 in 2.2s (compile: 2.1s, render: 87ms)
+[?25h
