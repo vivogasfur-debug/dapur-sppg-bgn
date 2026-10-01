@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FileBarChart, School, Heart, Users, GraduationCap, UserCheck,
   PieChart, Activity, UtensilsCrossed, Loader2, Download, AlertCircle,
@@ -18,6 +18,7 @@ interface RekapData {
   gender: { siswaL: number; siswaP: number; guruL: number; guruP: number; b3bL: number; b3bP: number };
   alergi: { alergiSekolah: number; alergi3b: number; alergiTotal: number };
   jenjangGroups: Record<string, { siswaCount: number; L: number; P: number; guru: number; schools: [string, number][] }>;
+  sekolahRecap: { jenjang: string; kelasGroups: { kelas: string; kelasNum: number; siswaL: number; siswaP: number; siswaTotal: number }[]; guruL: number; guruP: number; guruTotal: number; totalSiswaL: number; totalSiswaP: number; totalSiswa: number; totalAll: number }[];
   gizi: { kurang: number; normal: number; lebih: number; noData: number };
   posyandu: { list: { name: string; total: number; bumil: number; busui: number; balita: number; L: number; P: number }[]; balita: number; balita_lt6: number; balita_gt60: number; balita_noCat: number; };
   guruSchoolMap: Record<string, number>;
@@ -266,6 +267,90 @@ export default function RekapitulasiPmModule({ activePeriodId }: { activePeriodI
             <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200"><div className="text-[10px] font-bold text-rose-400 uppercase">Alergi</div><h3 className="text-2xl font-extrabold text-rose-600 mt-1">{a.alergiSekolah}</h3><p className="text-[10px] text-slate-400">{(t.students + t.teachers) > 0 ? ((a.alergiSekolah / (t.students + t.teachers)) * 100).toFixed(1) : 0}%</p></div>
           </div>
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><div className="flex items-center gap-2 mb-3"><Activity className="w-4 h-4 text-teal-500" /><h4 className="text-xs font-bold text-slate-700">Status Gizi Siswa (BMI)</h4></div><div className="grid grid-cols-2 lg:grid-cols-4 gap-2"><div className="bg-orange-50 border border-orange-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-orange-600">{gz.kurang}</div><div className="text-[10px] font-semibold text-orange-500">Kurus</div></div><div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-emerald-600">{gz.normal}</div><div className="text-[10px] font-semibold text-emerald-500">Normal</div></div><div className="bg-rose-50 border border-rose-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-rose-600">{gz.lebih}</div><div className="text-[10px] font-semibold text-rose-500">Gemuk</div></div><div className="bg-slate-50 border border-slate-200/60 rounded-xl p-3 text-center"><div className="text-xl font-extrabold text-slate-400">{gz.noData}</div><div className="text-[10px] font-semibold text-slate-400">Belum Ada Data</div></div></div></div>
+
+          {/* Rekapitulasi Pertingkatan Sekolah */}
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+            <div className="flex items-center gap-2 mb-3"><GraduationCap className="w-4 h-4 text-indigo-500" /><h4 className="text-xs font-bold text-slate-700">Rekapitulasi Pertingkatan Sekolah</h4></div>
+            <p className="text-[10px] text-slate-400 mb-3">Klasifikasi siswa dan guru berdasarkan jenjang, kelas, dan jenis kelamin.</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs border-collapse">
+                <thead>
+                  <tr className="bg-indigo-50 text-indigo-700">
+                    <th className="px-3 py-2 text-left font-semibold" rowSpan={2}>Tingkat</th>
+                    <th className="px-3 py-2 text-left font-semibold" rowSpan={2}>Kelas</th>
+                    <th className="px-3 py-2 text-center font-semibold" colSpan={3}>Siswa</th>
+                    <th className="px-3 py-2 text-center font-semibold" colSpan={3}>Guru/Tendik</th>
+                    <th className="px-3 py-2 text-center font-semibold" rowSpan={2}>Total</th>
+                  </tr>
+                  <tr className="bg-indigo-50 text-indigo-600">
+                    <th className="px-2 py-1 text-center font-semibold text-[10px]">L</th>
+                    <th className="px-2 py-1 text-center font-semibold text-[10px]">P</th>
+                    <th className="px-2 py-1 text-center font-semibold text-[10px]">Jml</th>
+                    <th className="px-2 py-1 text-center font-semibold text-[10px]">L</th>
+                    <th className="px-2 py-1 text-center font-semibold text-[10px]">P</th>
+                    <th className="px-2 py-1 text-center font-semibold text-[10px]">Jml</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.sekolahRecap.filter(r => r.totalAll > 0).map((recap) => {
+                    const jenjangHasKelas = recap.kelasGroups.length > 1 || (recap.kelasGroups.length === 1 && recap.kelasGroups[0].kelas !== '-')
+                    return (
+                      <React.Fragment key={recap.jenjang}>
+                        {recap.kelasGroups.map((kg, ki) => (
+                          <tr key={`${recap.jenjang}-k${ki}`} className="border-b border-slate-100 hover:bg-slate-50/50">
+                            {ki === 0 && <td className="px-3 py-2 font-bold text-indigo-700 align-top" rowSpan={recap.kelasGroups.length + (recap.guruTotal > 0 || jenjangHasKelas ? 1 : 0)}>{recap.jenjang}</td>}
+                            <td className="px-3 py-2 text-slate-600">{kg.kelas === '-' ? '—' : `Kelas ${kg.kelas}`}</td>
+                            <td className="px-2 py-2 text-center text-blue-600 font-bold">{kg.siswaL}</td>
+                            <td className="px-2 py-2 text-center text-pink-600 font-bold">{kg.siswaP}</td>
+                            <td className="px-2 py-2 text-center font-extrabold text-slate-800">{kg.siswaTotal}</td>
+                            <td className="px-2 py-2 text-center text-slate-300">-</td>
+                            <td className="px-2 py-2 text-center text-slate-300">-</td>
+                            <td className="px-2 py-2 text-center text-slate-300">-</td>
+                            <td className="px-2 py-2 text-center font-bold text-slate-600">{kg.siswaTotal}</td>
+                          </tr>
+                        ))}
+                        {/* Subtotal row per jenjang (includes guru) */}
+                        <tr className="border-b border-slate-200 bg-slate-50/80">
+                          <td className="px-3 py-2 font-bold text-slate-700 italic">{jenjangHasKelas ? 'Subtotal' : 'Total'}</td>
+                          <td className="px-2 py-2 text-center text-blue-600 font-extrabold">{recap.totalSiswaL}</td>
+                          <td className="px-2 py-2 text-center text-pink-600 font-extrabold">{recap.totalSiswaP}</td>
+                          <td className="px-2 py-2 text-center font-extrabold text-slate-800">{recap.totalSiswa}</td>
+                          <td className="px-2 py-2 text-center text-violet-600 font-bold">{recap.guruL}</td>
+                          <td className="px-2 py-2 text-center text-fuchsia-600 font-bold">{recap.guruP}</td>
+                          <td className="px-2 py-2 text-center font-extrabold text-violet-700">{recap.guruTotal}</td>
+                          <td className="px-2 py-2 text-center font-extrabold text-emerald-700">{recap.totalAll}</td>
+                        </tr>
+                      </React.Fragment>
+                    )
+                  })}
+                  {/* Grand Total */}
+                  {(() => {
+                    const activeRecaps = data.sekolahRecap.filter(r => r.totalAll > 0)
+                    if (activeRecaps.length === 0) return null
+                    const grandSiswaL = activeRecaps.reduce((s, r) => s + r.totalSiswaL, 0)
+                    const grandSiswaP = activeRecaps.reduce((s, r) => s + r.totalSiswaP, 0)
+                    const grandSiswa = activeRecaps.reduce((s, r) => s + r.totalSiswa, 0)
+                    const grandGuruL = activeRecaps.reduce((s, r) => s + r.guruL, 0)
+                    const grandGuruP = activeRecaps.reduce((s, r) => s + r.guruP, 0)
+                    const grandGuru = activeRecaps.reduce((s, r) => s + r.guruTotal, 0)
+                    const grandAll = activeRecaps.reduce((s, r) => s + r.totalAll, 0)
+                    return (
+                      <tr className="bg-emerald-50 border-t-2 border-emerald-200">
+                        <td className="px-3 py-2.5 font-extrabold text-emerald-800" colSpan={2}>Grand Total</td>
+                        <td className="px-2 py-2.5 text-center text-blue-700 font-extrabold">{grandSiswaL}</td>
+                        <td className="px-2 py-2.5 text-center text-pink-700 font-extrabold">{grandSiswaP}</td>
+                        <td className="px-2 py-2.5 text-center font-extrabold text-blue-800">{grandSiswa}</td>
+                        <td className="px-2 py-2.5 text-center text-violet-700 font-extrabold">{grandGuruL}</td>
+                        <td className="px-2 py-2.5 text-center text-fuchsia-700 font-extrabold">{grandGuruP}</td>
+                        <td className="px-2 py-2.5 text-center font-extrabold text-violet-800">{grandGuru}</td>
+                        <td className="px-2 py-2.5 text-center font-extrabold text-emerald-700 text-sm">{grandAll}</td>
+                      </tr>
+                    )
+                  })()}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </>) : (<>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="bg-gradient-to-br from-amber-500 to-amber-600 p-3 rounded-2xl shadow-lg text-white"><div className="text-[10px] font-bold uppercase opacity-80">Total 3B</div><h3 className="text-2xl font-extrabold mt-1">{t.beneficiaries3b}</h3></div>

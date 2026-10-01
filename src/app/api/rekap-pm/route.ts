@@ -109,6 +109,38 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    // === SEKOLAH RECAP (per jenjang + kelas breakdown) ===
+    const sekolahRecap: {
+      jenjang: string; kelasGroups: { kelas: string; kelasNum: number; siswaL: number; siswaP: number; siswaTotal: number }[];
+      guruL: number; guruP: number; guruTotal: number;
+      totalSiswaL: number; totalSiswaP: number; totalSiswa: number; totalAll: number;
+    }[] = []
+    for (const j of ['TK', 'SD', 'SMP', 'SMA', 'Lainnya']) {
+      const jStudents = students.filter((s: any) => getJenjang(s.school_name) === j)
+      const jTeachers = teachers.filter((t: any) => getJenjang(t.school_name) === j)
+      // Group students by kelas
+      const kelasMap: Record<string, { L: number; P: number }> = {}
+      jStudents.forEach((s: any) => {
+        const k = (s.kelas && s.kelas !== '-' && s.kelas.trim()) ? s.kelas.trim() : '-'
+        if (!kelasMap[k]) kelasMap[k] = { L: 0, P: 0 }
+        if (s.jk === 'L') kelasMap[k].L++
+        else kelasMap[k].P++
+      })
+      const kelasGroups = Object.entries(kelasMap)
+        .map(([kelas, cnt]) => ({ kelas, kelasNum: extractKelasNum(kelas), siswaL: cnt.L, siswaP: cnt.P, siswaTotal: cnt.L + cnt.P }))
+        .sort((a, b) => a.kelasNum - b.kelasNum)
+      const gL = jTeachers.filter((t: any) => t.jk === 'L').length
+      const gP = jTeachers.filter((t: any) => t.jk === 'P').length
+      const tSL = jStudents.filter((s: any) => s.jk === 'L').length
+      const tSP = jStudents.filter((s: any) => s.jk === 'P').length
+      sekolahRecap.push({
+        jenjang: j, kelasGroups,
+        guruL: gL, guruP: gP, guruTotal: gL + gP,
+        totalSiswaL: tSL, totalSiswaP: tSP, totalSiswa: jStudents.length,
+        totalAll: jStudents.length + jTeachers.length,
+      })
+    }
+
     // === GIZI BMI ===
     const giziC = { kurang: 0, normal: 0, lebih: 0, noData: 0 }
     students.forEach((s: any) => {
@@ -154,6 +186,7 @@ export async function GET(req: NextRequest) {
       gender: { siswaL, siswaP, guruL, guruP, b3bL, b3bP },
       alergi: { alergiSekolah, alergi3b, alergiTotal: alergiSekolah + alergi3b },
       jenjangGroups,
+      sekolahRecap,
       gizi: giziC,
       posyandu: { list: posyanduDetail, balita, balita_lt6, balita_gt60, balita_noCat },
       guruSchoolMap,
