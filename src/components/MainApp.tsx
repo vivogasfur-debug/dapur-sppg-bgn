@@ -14,7 +14,7 @@ import {
   GraduationCap, Baby, UserCheck, School, Heart, Milk,
   AlertCircle, Calendar, Upload, Loader2, Pencil, Menu, Download,
   Users, PieChart, BarChart3, ShieldCheck, TrendingUp, Activity, UtensilsCrossed,
-  Eraser, Copy, Database, ClipboardCopy, AlertTriangle
+  Eraser, Copy, Database, ClipboardCopy, AlertTriangle, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface StudentBeneficiary {
@@ -1459,7 +1459,9 @@ export default function MainApp({ onLogout }: MainAppProps) {
 
     {/* DESKTOP: TABLE VIEW (hidden on mobile) */}
             <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="flex items-center gap-1 p-1">
+                <button onClick={() => { const el = document.getElementById('pm-table-scroll'); if (el) el.scrollBy({ left: -300, behavior: 'smooth' }); }} className="shrink-0 w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm text-slate-500 hover:text-slate-800 transition-all active:scale-90" title="Geser kiri"><ChevronLeft className="w-5 h-5" /></button>
+                <div className="flex-1 overflow-x-auto scroll-smooth" style={{ scrollbarWidth: 'thin' }} id="pm-table-scroll">
                 {pmMainTab === 'Sekolah' && pmSubTab === 'Siswa' && (
                   <table className="min-w-max w-full text-left border-collapse text-xs whitespace-nowrap">
                     <thead className="bg-slate-50 border-b border-slate-200 font-bold text-slate-500 uppercase tracking-wider text-[11px]">
@@ -1622,6 +1624,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
                     </tbody>
                   </table>
                 )}
+              </div>
+                <button onClick={() => { const el = document.getElementById('pm-table-scroll'); if (el) el.scrollBy({ left: 300, behavior: 'smooth' }); }} className="shrink-0 w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg shadow-sm text-slate-500 hover:text-slate-800 transition-all active:scale-90" title="Geser kanan"><ChevronRight className="w-5 h-5" /></button>
               </div>
             </div>
 
