@@ -604,8 +604,13 @@ export default function MainApp({ onLogout }: MainAppProps) {
           totalInserted += result.inserted || 0;
           totalUpdated += result.updated || 0;
           totalSkipped += result.skipped || 0;
+          // Debug: log info import
+          if (result.sample_record) {
+            console.log('[Import Result] file:', file.name, 'headers:', result.detected_headers, 'sample:', result.sample_record);
+          }
         } else {
           toast.error(`${file.name}: ${result.error || 'Gagal import'}`);
+          console.error('[Import Error] file:', file.name, 'result:', result);
         }
       }
       const parts: string[] = [];
@@ -617,6 +622,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
         fetchData();
       } else {
         toast.info('Semua data sudah ada, tidak ada perubahan.');
+        fetchData(); // refresh tetap dilakukan agar data terbaru tampil
       }
     } catch { toast.error('Gagal membaca file CSV'); }
     finally { setImporting(false); if (csvInputRef.current) csvInputRef.current.value = ''; }

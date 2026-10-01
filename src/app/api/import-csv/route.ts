@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'CSV kosong atau tidak valid' }, { status: 400 })
     }
 
-    const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'))
+    const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_').replace(/[\/()]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''))
     const dataRows = rows.slice(1).filter(r => r.some(cell => cell.length > 0))
 
     let inserted = 0
@@ -120,10 +120,29 @@ export async function POST(req: NextRequest) {
     let errors = 0
 
     const findVal = (obj: Record<string, any>, keywords: string[]): string | null => {
-      for (const key of Object.keys(obj)) {
-        const lowered = key.toLowerCase()
-        for (const kw of keywords) {
-          if (lowered === kw || lowered.includes(kw)) {
+      // Pass 1: exact match (highest priority)
+      for (const kw of keywords) {
+        for (const key of Object.keys(obj)) {
+          if (key.toLowerCase() === kw) {
+            const val = obj[key]
+            if (val && val.toString().trim() !== '' && val.toString().trim() !== '-') return val.toString().trim()
+          }
+        }
+      }
+      // Pass 2: starts-with match
+      for (const kw of keywords) {
+        for (const key of Object.keys(obj)) {
+          const lowered = key.toLowerCase()
+          if (lowered.startsWith(kw + '_') || lowered.startsWith(kw)) {
+            const val = obj[key]
+            if (val && val.toString().trim() !== '' && val.toString().trim() !== '-') return val.toString().trim()
+          }
+        }
+      }
+      // Pass 3: includes match (lowest priority)
+      for (const kw of keywords) {
+        for (const key of Object.keys(obj)) {
+          if (key.toLowerCase().includes(kw)) {
             const val = obj[key]
             if (val && val.toString().trim() !== '' && val.toString().trim() !== '-') return val.toString().trim()
           }
@@ -132,7 +151,7 @@ export async function POST(req: NextRequest) {
       return null
     }
 
-    console.log('[CSV Import] type:', type, 'headers:', headers, 'duplicate_action:', duplicateAction)
+    console.log('[CSV Import] type:', type, 'subCategory:', subCategory, 'headers:', headers, 'duplicate_action:', duplicateAction)
 
     if (type === 'students') {
       const records = dataRows.map(row => {
@@ -258,7 +277,7 @@ export async function POST(req: NextRequest) {
           posyandu_name: findVal(obj, ['posyandu_name', 'posyandu', 'nama_posyandu']) || '-',
           sub_category: detectedCat.charAt(0).toUpperCase() + detectedCat.slice(1).toLowerCase(),
           nik: findVal(obj, ['nik', 'no_nik']) || null,
-          full_name: findVal(obj, ['full_name', 'nama', 'name', 'nama_ibu']) || '-',
+          full_name: findVal(obj, ['full_name', 'nama_ibu', 'nama_busui', 'nama', 'name']) || '-',
           gender: (findVal(obj, ['gender', 'jk', 'jenis_kelamin', 'jenis_kel']) || 'P').charAt(0).toUpperCase(),
           tempat_lahir: findVal(obj, ['tempat_lahir', 'tempat', 'tmpt_lahir', 'tmp_lahir']) || null,
           birth_date: parseDate(findVal(obj, ['birth_date', 'tanggal_lahir', 'ttl', 'tgl_lahir'])),
@@ -273,14 +292,19 @@ export async function POST(req: NextRequest) {
         }
 
         if (isBalita || isBusui) {
-          // Untuk Balita/Busui: full_name = nama orang tua, nama_balita = nama anak
+          // Untuk Balita/Busui: nama_balita = nama anak, nama_orang_tua = nama ibu/orang tua
           record.nama_orang_tua = findVal(obj, ['nama_orang_tua', 'nama_ortu', 'orang_tua', 'nama_ibu', 'nama_ayah']) || null
+          // Jika nama_orang_tua kosong, gunakan full_name (nama ibu) sebagai orang tua
+          if (!record.nama_orang_tua && record.full_name && record.full_name !== '-') {
+            record.nama_orang_tua = record.full_name
+          }
           // Jika full_name kosong tapi nama_orang_tua ada, gunakan itu
           if ((!record.full_name || record.full_name === '-') && record.nama_orang_tua) {
             record.full_name = record.nama_orang_tua
           }
-          record.nama_balita = findVal(obj, ['nama_balita', 'nama_anak', 'nama_bayi', 'nama_balita_busui', 'name']) || null
-          record.tanggal_lahir_balita = parseDate(findVal(obj, ['tanggal_lahir_balita', 'tgl_lahir_balita', 'tgl_lahir_anak', 'tanggal_lahir_anak', 'birth_date_balita', 'birth_date_anak'])) || null
+          record.nama_balita = findVal(obj, ['nama_balita_busui', 'nama_balita', 'nama_anak', 'nama_bayi', 'name']) || null
+          record.tanggal_lahir_balita = parseDate(findVal(obj, ['tgl_lahir_balita', 'tanggal_lahir_balita', 'tgl_lahir_anak', 'tanggal_lahir_anak', 'birth_date_balita', 'birth_date_anak'])) || null
+          console.log('[CSV Import 3B] obj keys:', Object.keys(obj).join(','), '| nama_balita:', record.nama_balita, '| tgl_lahir_balita:', record.tanggal_lahir_balita, '| nama_orang_tua:', record.nama_orang_tua, '| full_name:', record.full_name)
         }
 
         if (isBumil) {
@@ -328,7 +352,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Tipe tidak valid' }, { status: 400 })
     }
 
-    return NextResponse.json({ inserted, updated, skipped, errors, total: dataRows.length, detected_headers: headers })
+    return NextResponse.json({ inserted, updated, skipped, errors, total: dataRows.length, detected_headers: headers, sample_record: records[0] || null })
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Gagal import CSV'
     return NextResponse.json({ error: msg }, { status: 500 })
