@@ -80,6 +80,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
   const [activeMenu, setActiveMenu] = useState('Penerima Manfaat');
   const [pmMainTab, setPmMainTab] = useState<'Sekolah' | '3B'>('Sekolah');
   const [pmSubTab, setPmSubTab] = useState<'Siswa' | 'Guru' | 'Bumil' | 'Busui' | 'Balita < 6 Bln' | 'Balita 6-11 Bln' | 'Balita 12-60 Bln' | 'Balita > 60 Bln' | 'Balita Tdk Dikategorikan'>('Siswa');
+  const [schoolPageIdx, setSchoolPageIdx] = useState(0); // pagination per sekolah
   const isBalitaTab = (tab?: string) => { const t = tab || pmSubTab; return t === 'Balita < 6 Bln' || t === 'Balita 6-11 Bln' || t === 'Balita 12-60 Bln' || t === 'Balita > 60 Bln' || t === 'Balita Tdk Dikategorikan'; };
   const getDbSubCat = (tab?: string) => { const t = tab || pmSubTab; return isBalitaTab(t) ? 'Balita' : t; };
   const getAgeMonths = (birthDateString: string): number => {
@@ -143,6 +144,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
   }, []);
 
   useEffect(() => { fetchPeriods(); }, [fetchPeriods]);
+  // Reset school pagination when tab changes
+  useEffect(() => { setSchoolPageIdx(0); }, [pmMainTab, pmSubTab, searchTerm]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -816,6 +819,29 @@ export default function MainApp({ onLogout }: MainAppProps) {
     return b.subCategory === pmSubTab && matchSearch;
   });
 
+  // ===== PER-SCHOOL PAGINATION =====
+  // Derive unique school names from the filtered data
+  const schoolNames = pmMainTab === 'Sekolah'
+    ? (pmSubTab === 'Siswa'
+      ? [...new Set(filteredStudents.map(s => s.schoolName))].sort((a, b) => a.localeCompare(b))
+      : pmSubTab === 'Guru'
+        ? [...new Set(filteredTeachers.map(t => t.schoolName))].sort((a, b) => a.localeCompare(b))
+        : [])
+    : [...new Set(filtered3b.map(b => b.posyanduName))].sort((a, b) => a.localeCompare(b));
+  const safeSchoolIdx = Math.min(schoolPageIdx, Math.max(schoolNames.length - 1, 0));
+  if (safeSchoolIdx !== schoolPageIdx && schoolNames.length > 0) setSchoolPageIdx(safeSchoolIdx);
+  const currentSchoolName = schoolNames[safeSchoolIdx] || '';
+  // Apply per-school filter
+  const pagedStudents = pmMainTab === 'Sekolah' && currentSchoolName
+    ? filteredStudents.filter(s => s.schoolName === currentSchoolName)
+    : filteredStudents;
+  const pagedTeachers = pmMainTab === 'Sekolah' && currentSchoolName
+    ? filteredTeachers.filter(t => t.schoolName === currentSchoolName)
+    : filteredTeachers;
+  const paged3b = pmMainTab === '3B' && currentSchoolName
+    ? filtered3b.filter(b => b.posyanduName === currentSchoolName)
+    : filtered3b;
+
   // ===== MOBILE CARD COMPONENTS =====
   const StudentCard = ({ s, idx }: { s: StudentBeneficiary; idx: number }) => (
     <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2.5">
@@ -1455,6 +1481,24 @@ export default function MainApp({ onLogout }: MainAppProps) {
               </>
             </div>
 
+    {/* PER-SCHOOL PAGINATION */}
+            {schoolNames.length > 1 && (
+              <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-2.5">
+                <button onClick={() => { setSchoolPageIdx(prev => Math.max(0, prev - 1)); }} disabled={safeSchoolIdx === 0} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed"><ChevronLeft className="w-4 h-4" />Sebelumnya</button>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] text-slate-400 font-semibold">{pmMainTab === 'Sekolah' ? 'SEKOLAH' : 'POSYANDU'}</span>
+                  <span className="text-sm font-bold text-slate-800 max-w-[300px] truncate">{currentSchoolName}</span>
+                  <span className="text-[10px] text-slate-400">{safeSchoolIdx + 1} dari {schoolNames.length}</span>
+                </div>
+                <button onClick={() => { setSchoolPageIdx(prev => Math.min(schoolNames.length - 1, prev + 1)); }} disabled={safeSchoolIdx >= schoolNames.length - 1} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed">Selanjutnya<ChevronRight className="w-4 h-4" /></button>
+              </div>
+            )}
+            {schoolNames.length === 1 && currentSchoolName && (
+              <div className="flex items-center justify-center bg-white rounded-2xl shadow-sm border border-slate-200 px-4 py-2 gap-2">
+                <School className="w-4 h-4 text-emerald-500" />
+                <span className="text-xs font-bold text-slate-700">{currentSchoolName}</span>
+              </div>
+            )}
 
 
     {/* DESKTOP: TABLE VIEW (hidden on mobile) */}
@@ -1486,7 +1530,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
-                      {filteredStudents.length > 0 ? filteredStudents.map((s, idx) => (
+                      {pagedStudents.length > 0 ? pagedStudents.map((s, idx) => (
                         <tr key={s.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx+1}</td>
                           <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100">{s.nama}</td>
@@ -1531,7 +1575,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
-                      {filteredTeachers.length > 0 ? filteredTeachers.map((t, idx) => (
+                      {pagedTeachers.length > 0 ? pagedTeachers.map((t, idx) => (
                         <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx+1}</td>
                           <td className="py-2.5 px-3 font-semibold text-slate-900 border-r border-slate-100">{t.fullName}</td>
@@ -1588,7 +1632,7 @@ export default function MainApp({ onLogout }: MainAppProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-slate-700">
-                      {filtered3b.length > 0 ? filtered3b.map((b, idx) => (
+                      {paged3b.length > 0 ? paged3b.map((b, idx) => (
                         <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                           <td className="py-2.5 px-3 text-center border-r border-slate-100 font-semibold text-slate-400">{idx+1}</td>
                           <td className="py-2.5 px-3 border-r border-slate-100"><p className="font-semibold text-slate-800">{isBalitaTab() && b.namaBalita && b.namaBalita !== '-' ? b.namaBalita : b.fullName}</p><p className="text-slate-400 text-[11px]">NIK: {b.nik}</p></td>
@@ -1632,17 +1676,17 @@ export default function MainApp({ onLogout }: MainAppProps) {
             {/* MOBILE: CARD VIEW (hidden on desktop) */}
             <div className="md:hidden space-y-3">
               {pmMainTab === 'Sekolah' && pmSubTab === 'Siswa' && (
-                filteredStudents.length > 0 ? filteredStudents.map((s, idx) => <StudentCard key={s.id} s={s} idx={idx} />) : (
+                pagedStudents.length > 0 ? pagedStudents.map((s, idx) => <StudentCard key={s.id} s={s} idx={idx} />) : (
                   <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic">Data siswa tidak ditemukan...</div>
                 )
               )}
               {pmMainTab === 'Sekolah' && pmSubTab === 'Guru' && (
-                filteredTeachers.length > 0 ? filteredTeachers.map((t, idx) => <TeacherCard key={t.id} t={t} idx={idx} />) : (
+                pagedTeachers.length > 0 ? pagedTeachers.map((t, idx) => <TeacherCard key={t.id} t={t} idx={idx} />) : (
                   <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic">Data guru / tendik tidak ditemukan...</div>
                 )
               )}
               {pmMainTab === '3B' && (
-                filtered3b.length > 0 ? filtered3b.map((b, idx) => <Card3B key={b.id} b={b} idx={idx} />) : (
+                paged3b.length > 0 ? paged3b.map((b, idx) => <Card3B key={b.id} b={b} idx={idx} />) : (
                   <div className="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic">Data {pmSubTab} tidak ditemukan...</div>
                 )
               )}
