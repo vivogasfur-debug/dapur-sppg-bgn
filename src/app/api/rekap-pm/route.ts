@@ -2,20 +2,36 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase, fetchAll } from '@/lib/supabase'
 
 const getJenjang = (name: string): string => {
+  if (!name) return 'Lainnya'
   const u = name.toUpperCase().replace(/[^A-Z ]/g, '').trim()
-  if (/^(TK|RA|RAUDHATUL)/.test(u)) return 'TK'
-  if (/^(SD|MI|SDLB|MIN)/.test(u)) return 'SD'
-  if (/^(SMP|MTS|SMPLB)/.test(u)) return 'SMP'
-  if (/^(SMA|SMK|MA|MAK|SMAS|SMAN|SMKN|SMKS)/.test(u)) return 'SMA'
+  if (/^(TK|RA|RAUDHATUL|PLAYGROUP|PG|TKL|TKIT)/.test(u)) return 'TK'
+  if (/^(SD|MI|SDLB|MIN|SDN|SDIT|SDS)/.test(u)) return 'SD'
+  if (/^(SMP|MTS|SMPLB|SMPN|SMPIT|SPM)/.test(u)) return 'SMP'
+  if (/^(SMA|SMK|MA|MAK|SMAS|SMAN|SMKN|SMKS|SMKIT|SMAT|SMKT|SMAN|SMKN)/.test(u)) return 'SMA'
+  // Fallback: check keywords anywhere in name
+  if (/\b(SMP|MTS|SMPN)\b/.test(u)) return 'SMP'
+  if (/\b(SMA|SMK|SMAN|SMKN|MAK)\b/.test(u)) return 'SMA'
+  if (/\b(SD|MI|SDN|SDIT)\b/.test(u)) return 'SD'
+  if (/\b(TK|RA)\b/.test(u)) return 'TK'
   return 'Lainnya'
 }
 
 const extractKelasNum = (kelas: string): number => {
   if (!kelas || kelas === '-') return -1
+  // Try digits first (e.g. "7A" → 7, "Kelas 9" → 9)
   const cleaned = kelas.replace(/[^0-9]/g, '')
   if (cleaned) return parseInt(cleaned)
+  // Try Roman numerals, including with suffixes (e.g. "VII A", "IX-B", "VIIA")
   const roman: Record<string, number> = { 'I': 1, 'II': 2, 'III': 3, 'IV': 4, 'V': 5, 'VI': 6, 'VII': 7, 'VIII': 8, 'IX': 9, 'X': 10, 'XI': 11, 'XII': 12 }
-  return roman[kelas.toUpperCase().trim()] ?? -1
+  const u = kelas.toUpperCase().trim()
+  if (roman[u] !== undefined) return roman[u]
+  // Extract leading Roman numeral (e.g. "VII A" → "VII" → 7)
+  const romanMatch = u.match(/^(X{0,1}(IX|IV|V?I{0,3}))/)
+  if (romanMatch && romanMatch[1]) {
+    const rv = roman[romanMatch[1]]
+    if (rv !== undefined) return rv
+  }
+  return -1
 }
 
 const classifyBalita = (birthDateString: string): string => {
@@ -127,9 +143,10 @@ export async function GET(req: NextRequest) {
         if (trimmed === '-') return '-'
         const num = extractKelasNum(trimmed)
         if (num > 0) {
-          // For SMP & SMA: extract letter suffix (A, B, C, etc.) after the number
+          // For SMP & SMA: extract letter suffix (A, B, C, D, E, F) after the number
           if (j === 'SMP' || j === 'SMA') {
-            const letterMatch = trimmed.toUpperCase().match(/([A-C])/)
+            // Try to find a trailing single letter A-F (e.g. "7A", "VII B", "9-C")
+            const letterMatch = trimmed.toUpperCase().match(/([A-F])\s*$/)
             if (letterMatch) return String(num) + letterMatch[1]
           }
           return String(num)
