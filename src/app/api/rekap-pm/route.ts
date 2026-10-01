@@ -120,12 +120,20 @@ export async function GET(req: NextRequest) {
       const jStudents = students.filter((s: any) => getJenjang(s.school_name) === j)
       const jTeachers = teachers.filter((t: any) => getJenjang(t.school_name) === j)
       // Normalize kelas: convert "Kelas 1", "I", "Kls 1" etc. → just the number string "1"
+      // For SMP/SMA: preserve letter suffix like 7A, 7B, 8A etc.
       const normalizeKelas = (raw: string): string => {
         if (!raw || raw === '-') return '-'
         const trimmed = raw.trim()
         if (trimmed === '-') return '-'
         const num = extractKelasNum(trimmed)
-        if (num > 0) return String(num)
+        if (num > 0) {
+          // For SMP & SMA: extract letter suffix (A, B, C, etc.) after the number
+          if (j === 'SMP' || j === 'SMA') {
+            const letterMatch = trimmed.toUpperCase().match(/([A-C])/)
+            if (letterMatch) return String(num) + letterMatch[1]
+          }
+          return String(num)
+        }
         return trimmed // keep original if can't parse
       }
       // Group by school
@@ -149,7 +157,13 @@ export async function GET(req: NextRequest) {
       // Collect all unique kelas for this jenjang, sorted
       const allKelasSet = new Set<string>()
       Object.values(schoolMap).forEach(km => Object.keys(km).forEach(k => allKelasSet.add(k)))
-      const allKelas = Array.from(allKelasSet).sort((a, b) => extractKelasNum(a) - extractKelasNum(b))
+      const allKelas = Array.from(allKelasSet).sort((a, b) => {
+        const numA = extractKelasNum(a), numB = extractKelasNum(b)
+        if (numA !== numB) return numA - numB
+        // Same number: sort by letter suffix (A < B < C)
+        const letterA = a.replace(/[0-9]/g, ''), letterB = b.replace(/[0-9]/g, '')
+        return letterA.localeCompare(letterB)
+      })
       // Build schools array (include schools that have teachers but no students)
       const allSchoolNames = new Set([...Object.keys(schoolMap), ...Object.keys(guruSchoolMap)])
       const schools = Array.from(allSchoolNames)
