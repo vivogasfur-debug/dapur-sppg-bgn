@@ -144,8 +144,6 @@ export default function MainApp({ onLogout }: MainAppProps) {
   }, []);
 
   useEffect(() => { fetchPeriods(); }, [fetchPeriods]);
-  // Reset school pagination when tab changes
-  useEffect(() => { setSchoolPageIdx(0); }, [pmMainTab, pmSubTab, searchTerm]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -192,6 +190,8 @@ export default function MainApp({ onLogout }: MainAppProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  // Reset school pagination when tab changes
+  useEffect(() => { setSchoolPageIdx(0); }, [pmMainTab, pmSubTab, searchTerm]);
   const [importing, setImporting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [duplicateAction, setDuplicateAction] = useState<'update' | 'skip'>('update');
@@ -470,8 +470,9 @@ export default function MainApp({ onLogout }: MainAppProps) {
       count = filtered.length;
       idsToDelete = filtered.map(b => b.id);
     } else {
-      count = beneficiaries3b.filter(b => b.subCategory === pmSubTab).length;
-      idsToDelete = beneficiaries3b.filter(b => b.subCategory === pmSubTab).map(b => b.id);
+      const dbSubCat = getDbSubCat();
+      count = beneficiaries3b.filter(b => b.subCategory === dbSubCat).length;
+      idsToDelete = beneficiaries3b.filter(b => b.subCategory === dbSubCat).map(b => b.id);
     }
 
     if (count === 0) { toast.error('Tidak ada data untuk dihapus'); return; }
